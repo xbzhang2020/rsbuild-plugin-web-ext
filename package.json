@@ -1,7 +1,7 @@
 {
   "name": "rsbuild-plugin-web-ext",
-  "version": "0.0.0",
-  "repository": "https://github.com/rspack-contrib/rsbuild-plugin-template",
+  "version": "0.0.1-alpha.1",
+  "repository": "https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -32,6 +32,7 @@
     "@playwright/test": "^1.48.2",
     "@rsbuild/core": "^1.1.4",
     "@rslib/core": "^0.1.0",
+    "@types/chrome": "^0.0.284",
     "@types/node": "^22.8.6",
     "playwright": "^1.48.2",
     "simple-git-hooks": "^2.11.1",
