@@ -9,9 +9,9 @@ const manifest: chrome.runtime.ManifestV3 = {
       matches: ['<all_urls>'],
     },
   ],
-  "action": {
-    "default_popup": "./src/popup.ts"
-  }
+  action: {
+    default_popup: './src/popup.ts',
+  },
 };
 
 export default manifest;
