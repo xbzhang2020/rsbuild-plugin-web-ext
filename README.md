@@ -23,25 +23,30 @@ Add plugin to your `rsbuild.config.ts`:
 ```ts
 // rsbuild.config.ts
 import { pluginWebExt } from "rsbuild-plugin-web-ext";
+import manifest from "./manifest";
 
 export default {
-  plugins: [pluginWebExt()],
+  plugins: [
+    pluginWebExt({
+      manifest,
+    }),
+  ],
 };
 ```
 
 ## Options
 
-### foo
+### manifest
 
-Some description.
+An object refers to `manifest.json`。
 
-- Type: `string`
+- Type: `chrome.runtime.ManifestV3`
 - Default: `undefined`
 - Example:
 
 ```js
 pluginWebExt({
-  foo: "bar",
+  manifest,
 });
 ```
 
