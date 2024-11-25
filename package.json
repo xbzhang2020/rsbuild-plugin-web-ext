@@ -1,7 +1,10 @@
 {
   "name": "rsbuild-plugin-web-ext",
   "version": "0.0.1-alpha.1",
+  "description": "A plugin that builds web extension within Rsbuild.",
+  "keywords": ["web extensions", "browser extensions", "rsbuild plugin"],
   "repository": "https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git",
+  "homepage": "https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git#readme",
   "license": "MIT",
   "type": "module",
   "exports": {
