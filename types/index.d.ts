@@ -1,0 +1,1 @@
+export type ManifestV3 = chrome.runtime.ManifestV3;
