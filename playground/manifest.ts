@@ -16,6 +16,11 @@ const manifest: chrome.runtime.ManifestV3 = {
   action: {
     default_popup: './src/popup.ts',
   },
+  options_ui: {
+    page: './src/options',
+    open_in_tab: true,
+  },
+  devtools_page: './src/devtools.ts',
 };
 
 export default manifest;
