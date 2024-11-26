@@ -6,12 +6,13 @@ const manifest: chrome.runtime.ManifestV3 = {
   background: {
     service_worker: './src/background',
   },
-  // content_scripts: [
-  //   {
-  //     js: ['./src/content.ts'],
-  //     matches: ['<all_urls>'],
-  //   },
-  // ],
+  content_scripts: [
+    {
+      js: ['./src/content.ts'],
+      css: ['./src/content.css'],
+      matches: ['<all_urls>'],
+    },
+  ],
   action: {
     default_popup: './src/popup.ts',
   },

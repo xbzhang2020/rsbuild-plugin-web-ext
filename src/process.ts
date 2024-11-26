@@ -5,7 +5,6 @@ import type { ManifestV3 } from '../types/index.js';
 
 export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
   const entryMap: Record<string, string | string[]> = {};
-  const entry: RsbuildEntry = {};
 
   // background
   const service_worker = myManifest.background?.service_worker || myManifest.background?.scripts;
@@ -13,30 +12,28 @@ export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
     entryMap.background = service_worker;
   }
 
+  // content_scripts
+  const contentScripts = myManifest.content_scripts;
+  contentScripts?.forEach((contentScript, index) => {
+    const name = `content${index === 0 ? '' : index}`;
+    const { js = [], css = [] } = contentScript;
+    entryMap[name] = [...js, ...css];
+  });
+
   // popup
   const popup = myManifest.action?.default_popup;
   if (popup) {
     entryMap.popup = popup;
   }
 
-  // contents
-  const contentScripts = myManifest.content_scripts;
-  if (contentScripts) {
-    contentScripts.forEach((contentScript, index) => {
-      if (contentScript.js?.length) {
-        const name = `content${index === 0 ? '' : index}`;
-        entryMap[name] = contentScript.js;
-      }
-    });
-  }
-
+  const res: RsbuildEntry = {};
   for (const [key, value] of Object.entries(entryMap)) {
-    entry[key] = {
+    res[key] = {
       import: value,
       html: key === 'popup',
     };
   }
-  return entry;
+  return res;
 }
 
 export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Stats): ManifestV3 {
@@ -46,6 +43,8 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
 
   for (const [key, entrypoint] of Object.entries(entrypoints)) {
     const assets = entrypoint.assets?.map((item) => item.name);
+    console.log('assets', assets);
+
     if (!assets) continue;
 
     if (key === 'background' && myManifest.background) {
@@ -55,16 +54,16 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
       myManifest.background.service_worker = assets[0];
     }
 
-    if (key === 'popup' && myManifest.action) {
-      myManifest.action.default_popup = `${entrypoint.name}.html`;
-    }
-
     if (key.startsWith('content') && myManifest.content_scripts) {
       const index = Number(key.replace('content', '') || '0');
       myManifest.content_scripts[index].js = assets.filter(
         (item) => item.endsWith('.js') && !item.includes('.hot-update.'),
       );
       myManifest.content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
+    }
+
+    if (key === 'popup' && myManifest.action) {
+      myManifest.action.default_popup = `${entrypoint.name}.html`;
     }
   }
   return myManifest;
