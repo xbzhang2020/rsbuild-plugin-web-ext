@@ -1,7 +1,7 @@
 import { cp, writeFile } from 'node:fs/promises';
-import type { RsbuildPlugin, RsbuildConfig } from '@rsbuild/core';
-import { collectEntries, modifyManifestEntries, processManifestIcons } from './process.js';
+import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ManifestV3 } from '../types/index.js';
+import { collectEntries, modifyManifestEntries, processManifestIcons } from './process.js';
 
 export type PluginWebExtOptions = {
   manifest?: ManifestV3;
@@ -52,7 +52,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       // manifest.json
       await writeFile(`${outDir}/manifest.json`, JSON.stringify(myManifest));
-      console.log('hello', env);
       console.log('Built the extension successfully');
     });
   },

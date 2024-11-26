@@ -3,6 +3,9 @@ const manifest: chrome.runtime.ManifestV3 = {
   name: 'Hello Extensions',
   description: 'Base Level Extension',
   version: '1.0',
+  background: {
+    service_worker: './src/background',
+  },
   // content_scripts: [
   //   {
   //     js: ['./src/content.ts'],

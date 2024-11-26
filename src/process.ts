@@ -1,4 +1,4 @@
-import { cp, writeFile } from 'node:fs/promises';
+import { cp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { ManifestV3 } from '../types/index.js';
@@ -8,7 +8,7 @@ export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
   const entry: RsbuildEntry = {};
 
   // background
-  const service_worker = myManifest.background?.service_worker;
+  const service_worker = myManifest.background?.service_worker || myManifest.background?.scripts;
   if (service_worker) {
     entryMap.background = service_worker;
   }
@@ -46,18 +46,20 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
 
   for (const [key, entrypoint] of Object.entries(entrypoints)) {
     const assets = entrypoint.assets?.map((item) => item.name);
+    if (!assets) continue;
 
-    if (key === 'background' && assets) {
-      myManifest.background = {
-        service_worker: assets[0],
-      };
+    if (key === 'background' && myManifest.background) {
+      if (myManifest.background?.scripts) {
+        myManifest.background.scripts = assets;
+      }
+      myManifest.background.service_worker = assets[0];
     }
 
     if (key === 'popup' && myManifest.action) {
       myManifest.action.default_popup = `${entrypoint.name}.html`;
     }
 
-    if (key.startsWith('content') && myManifest.content_scripts && assets) {
+    if (key.startsWith('content') && myManifest.content_scripts) {
       const index = Number(key.replace('content', '') || '0');
       myManifest.content_scripts[index].js = assets.filter(
         (item) => item.endsWith('.js') && !item.includes('.hot-update.'),
