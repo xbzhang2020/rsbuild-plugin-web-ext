@@ -1,10 +1,10 @@
-import { cp, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ManifestV3 } from '../types/index.js';
 import { collectEntries, modifyManifestEntries, processManifestIcons } from './process.js';
 
 export type PluginWebExtOptions = {
-  manifest?: ManifestV3;
+  manifest?: unknown;
 };
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
@@ -14,22 +14,27 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const { manifest } = options;
     if (!manifest) return;
 
-    const env = process.env.NODE_ENV;
-    let myManifest = {
-      ...(manifest || {}),
-    };
+    let myManifest = manifest as ManifestV3;
 
     api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) => {
+      const imagePath = config.output?.distPath?.image || 'static/image';
+
       const extraConfig: RsbuildConfig = {
         source: {
-          entry: collectEntries(manifest),
+          entry: collectEntries(myManifest),
+        },
+        output: {
+          copy: [...processManifestIcons(myManifest, imagePath)],
         },
         dev: {
           writeToDisk: true,
+          // TODO: error in dev
+          hmr: false,
+          liveReload: false,
         },
         performance: {
           chunkSplit: {
-            // background
+            // for background
             strategy: 'all-in-one',
           },
         },
@@ -39,19 +44,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
-      if (env === 'development') {
-        myManifest.version_name = 'development';
-      }
-
       myManifest = modifyManifestEntries(myManifest, stats);
 
-      const outDir = environment.distPath;
-
-      // icons
-      await processManifestIcons(myManifest, outDir);
-
       // manifest.json
-      await writeFile(`${outDir}/manifest.json`, JSON.stringify(myManifest));
+      await writeFile(`${environment.distPath}/manifest.json`, JSON.stringify(myManifest));
       console.log('Built the extension successfully');
     });
   },
