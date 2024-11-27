@@ -10,7 +10,7 @@ export type ManifestV3 = chrome.runtime.ManifestV3 & {
     | undefined;
 };
 
-export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
+export function collectManifestEntries(myManifest: ManifestV3): RsbuildEntry {
   const entryMap: Record<string, string | string[]> = {};
 
   const service_worker = myManifest.background?.service_worker || myManifest.background?.scripts;
@@ -40,11 +40,17 @@ export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
     entryMap.devtools = devtools;
   }
 
+  const sandboxPages = myManifest.sandbox?.pages;
+  sandboxPages?.forEach((page, index) => {
+    const name = `sandbox${index === 0 ? '' : index}`;
+    entryMap[name] = page;
+  });
+
   const res: RsbuildEntry = {};
   for (const [key, value] of Object.entries(entryMap)) {
     res[key] = {
       import: value,
-      html: ['popup', 'options', 'devtools'].includes(key),
+      html: ['popup', 'options', 'devtools'].includes(key) || key.startsWith('sandbox'),
     };
   }
   return res;
@@ -92,6 +98,11 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
     if (key === 'devtools') {
       myManifest.devtools_page = `${entrypoint.name}.html`;
     }
+
+    if (key.startsWith('sandbox') && myManifest.sandbox?.pages) {
+      const index = Number(key.replace('content', '') || '0');
+      myManifest.sandbox.pages[index] = `${entrypoint.name}.html`;
+    }
   }
   return myManifest;
 }
@@ -124,4 +135,19 @@ export function processManifestIcons(myManifest: ManifestV3, distImagePath: stri
   }
 
   return paths;
+}
+
+export function processWebAccessibleResources(myManifest: ManifestV3) {
+  const { web_accessible_resources } = myManifest;
+  if (!web_accessible_resources) return [];
+
+  const resources: string[] = [];
+  for (const item of web_accessible_resources) {
+    resources.push(...item.resources);
+  }
+
+  return resources.map((item) => ({
+    from: item,
+    to: item.includes('*') ? undefined : item,
+  }));
 }

@@ -1,7 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ManifestV3 } from './process.js';
-import { collectEntries, modifyManifestEntries, processManifestIcons } from './process.js';
+import {
+  collectManifestEntries,
+  modifyManifestEntries,
+  processManifestIcons,
+  processWebAccessibleResources,
+} from './process.js';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
@@ -21,10 +26,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       const extraConfig: RsbuildConfig = {
         source: {
-          entry: collectEntries(myManifest),
+          entry: collectManifestEntries(myManifest),
         },
         output: {
-          copy: [...processManifestIcons(myManifest, imagePath)],
+          copy: [...processManifestIcons(myManifest, imagePath), ...processWebAccessibleResources(myManifest)],
         },
         dev: {
           writeToDisk: true,
@@ -40,13 +45,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
       };
 
-      return mergeRsbuildConfig(config, extraConfig);
+      return mergeRsbuildConfig(extraConfig, config);
     });
 
     api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
       myManifest = modifyManifestEntries(myManifest, stats);
 
-      // manifest.json
       await writeFile(`${environment.distPath}/manifest.json`, JSON.stringify(myManifest));
       console.log('Built the extension successfully');
     });
