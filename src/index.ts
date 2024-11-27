@@ -5,8 +5,8 @@ import {
   collectManifestEntries,
   modifyManifestEntries,
   processManifestIcons,
-  processManifestWebAccessibleResources,
   processManifestLocales,
+  processManifestWebAccessibleResources,
 } from './process.js';
 
 export type PluginWebExtOptions = {
