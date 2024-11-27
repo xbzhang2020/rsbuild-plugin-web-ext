@@ -1,5 +1,14 @@
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../types/index.js';
+
+export type ManifestV3 = chrome.runtime.ManifestV3 & {
+  background:
+    | {
+        service_worker?: string; // chrome, safari
+        scripts?: string[]; // firefox
+        type?: 'module';
+      }
+    | undefined;
+};
 
 export function collectEntries(myManifest: ManifestV3): RsbuildEntry {
   const entryMap: Record<string, string | string[]> = {};

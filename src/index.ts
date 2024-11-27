@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { ManifestV3 } from '../types/index.js';
+import type { ManifestV3 } from './process.js';
 import { collectEntries, modifyManifestEntries, processManifestIcons } from './process.js';
 
 export type PluginWebExtOptions = {
@@ -34,7 +34,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
         performance: {
           chunkSplit: {
-            // for background
+            // TODO: for background, need optimization
             strategy: 'all-in-one',
           },
         },
