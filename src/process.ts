@@ -64,6 +64,7 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
   if (!entrypoints) return myManifest;
 
   for (const [key, entrypoint] of Object.entries(entrypoints)) {
+    const entrypointName = entrypoint.name;
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
 
     if (!assets) continue;
@@ -82,11 +83,11 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
     }
 
     if (key === 'popup' && myManifest.action) {
-      myManifest.action.default_popup = `${entrypoint.name}.html`;
+      myManifest.action.default_popup = `${entrypointName}.html`;
     }
 
     if (key === 'options') {
-      const filename = `${entrypoint.name}.html`;
+      const filename = `${entrypointName}.html`;
       if (myManifest.options_page) {
         myManifest.options_page = filename;
       }
@@ -137,7 +138,7 @@ export function processManifestIcons(myManifest: ManifestV3, distImagePath: stri
   return paths;
 }
 
-export function processWebAccessibleResources(myManifest: ManifestV3) {
+export function processManifestWebAccessibleResources(myManifest: ManifestV3) {
   const { web_accessible_resources } = myManifest;
   if (!web_accessible_resources) return [];
 
@@ -150,4 +151,10 @@ export function processWebAccessibleResources(myManifest: ManifestV3) {
     from: item,
     to: item.includes('*') ? undefined : item,
   }));
+}
+
+export function processManifestLocales(myManifest: ManifestV3) {
+  const { default_locale } = myManifest;
+  if (!default_locale) return [];
+  return [{ from: './_locales', to: '_locales' }];
 }

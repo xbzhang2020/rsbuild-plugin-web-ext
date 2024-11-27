@@ -1,6 +1,6 @@
 # rsbuild-plugin-web-ext
 
-A plugin that builds web extension within Rsbuild.
+A plugin for developing and building browser extensions within Rsbuild.
 
 <p>
   <a href="https://npmjs.com/package/rsbuild-plugin-web-ext">
@@ -34,11 +34,13 @@ export default {
 };
 ```
 
+There are lots of [usage exampes](./examples/) for you.
+
 ## Options
 
 ### manifest
 
-An object refers to `manifest.json`。
+An object related to `manifest.json`。
 
 - Type: `chrome.runtime.ManifestV3`
 - Default: `undefined`

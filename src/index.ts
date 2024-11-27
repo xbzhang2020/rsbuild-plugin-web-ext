@@ -5,7 +5,8 @@ import {
   collectManifestEntries,
   modifyManifestEntries,
   processManifestIcons,
-  processWebAccessibleResources,
+  processManifestWebAccessibleResources,
+  processManifestLocales,
 } from './process.js';
 
 export type PluginWebExtOptions = {
@@ -29,13 +30,14 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
           entry: collectManifestEntries(myManifest),
         },
         output: {
-          copy: [...processManifestIcons(myManifest, imagePath), ...processWebAccessibleResources(myManifest)],
+          copy: [
+            ...processManifestIcons(myManifest, imagePath),
+            ...processManifestWebAccessibleResources(myManifest),
+            ...processManifestLocales(myManifest),
+          ],
         },
         dev: {
-          writeToDisk: true,
-          // TODO: error in dev
-          hmr: false,
-          liveReload: false,
+          writeToDisk: (file) => !file.includes('.hot-update.'),
         },
         performance: {
           chunkSplit: {
@@ -45,7 +47,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
       };
 
-      return mergeRsbuildConfig(extraConfig, config);
+      return mergeRsbuildConfig(config, extraConfig);
     });
 
     api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
