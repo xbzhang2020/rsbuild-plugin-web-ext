@@ -1,14 +1,5 @@
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
-
-export type ManifestV3 = chrome.runtime.ManifestV3 & {
-  background:
-    | {
-        service_worker?: string; // chrome, safari
-        scripts?: string[]; // firefox
-        type?: 'module';
-      }
-    | undefined;
-};
+import type { ManifestV3 } from './manifest.js';
 
 export function collectManifestEntries(myManifest: ManifestV3): RsbuildEntry {
   const entryMap: Record<string, string | string[]> = {};
@@ -56,10 +47,9 @@ export function collectManifestEntries(myManifest: ManifestV3): RsbuildEntry {
   return res;
 }
 
-export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Stats): ManifestV3 {
+export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Stats) {
   // refer to https://rspack.dev/api/javascript-api/stats-json
   const entrypoints = stats?.toJson().entrypoints;
-  const assets = stats?.toJson().assets;
 
   if (!entrypoints) return myManifest;
 
@@ -105,7 +95,6 @@ export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Sta
       myManifest.sandbox.pages[index] = `${entrypoint.name}.html`;
     }
   }
-  return myManifest;
 }
 
 export function processManifestIcons(myManifest: ManifestV3, distImagePath: string) {

@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { ManifestV3 } from './process.js';
+import type { ManifestV3 } from './manifest.js';
 import {
   collectManifestEntries,
   modifyManifestEntries,
@@ -20,40 +20,69 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const { manifest } = options;
     if (!manifest) return;
 
-    let myManifest = manifest as ManifestV3;
+    const myManifest = manifest as ManifestV3;
 
     api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) => {
       const imagePath = config.output?.distPath?.image || 'static/image';
+      const { background, ...entries } = collectManifestEntries(myManifest);
+      const environments: RsbuildConfig['environments'] = {};
+
+      if (background) {
+        environments.webWorker = {
+          source: {
+            entry: { background },
+          },
+          output: {
+            target: 'web-worker',
+          },
+        };
+      }
+
+      if (Object.keys(entries).length) {
+        environments.web = {
+          source: {
+            entry: entries,
+          },
+          output: {
+            target: 'web',
+          },
+        };
+      }
+
+      const defaultEnvironment = environments.web || environments.webWorker;
+      if (defaultEnvironment?.output) {
+        defaultEnvironment.output.copy = [
+          ...processManifestIcons(myManifest, imagePath),
+          ...processManifestWebAccessibleResources(myManifest),
+          ...processManifestLocales(myManifest),
+        ];
+      }
 
       const extraConfig: RsbuildConfig = {
-        source: {
-          entry: collectManifestEntries(myManifest),
-        },
-        output: {
-          copy: [
-            ...processManifestIcons(myManifest, imagePath),
-            ...processManifestWebAccessibleResources(myManifest),
-            ...processManifestLocales(myManifest),
-          ],
-        },
+        environments,
         dev: {
           writeToDisk: (file) => !file.includes('.hot-update.'),
-        },
-        performance: {
-          chunkSplit: {
-            // TODO: for background, need optimization
-            strategy: 'all-in-one',
-          },
         },
       };
 
       return mergeRsbuildConfig(config, extraConfig);
     });
 
-    api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
-      myManifest = modifyManifestEntries(myManifest, stats);
+    api.onAfterEnvironmentCompile(({ stats }) => {
+      modifyManifestEntries(myManifest, stats);
+    });
 
-      await writeFile(`${environment.distPath}/manifest.json`, JSON.stringify(myManifest));
+    api.onAfterBuild(async () => {
+      const config = api.getNormalizedConfig();
+      const distPath = config.output.distPath.root;
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(myManifest));
+      console.log('Built the extension successfully');
+    });
+
+    api.onDevCompileDone(async () => {
+      const config = api.getNormalizedConfig();
+      const distPath = config.output.distPath.root;
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(myManifest));
       console.log('Built the extension successfully');
     });
   },
