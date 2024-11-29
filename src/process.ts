@@ -50,51 +50,57 @@ export function collectManifestEntries(myManifest: ManifestV3): RsbuildEntry {
 export function modifyManifestEntries(myManifest: ManifestV3, stats?: Rspack.Stats) {
   // refer to https://rspack.dev/api/javascript-api/stats-json
   const entrypoints = stats?.toJson().entrypoints;
-
   if (!entrypoints) return myManifest;
 
-  for (const [key, entrypoint] of Object.entries(entrypoints)) {
-    const entrypointName = entrypoint.name;
+  Object.entries(entrypoints).forEach(([key, entrypoint]) => {
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
+    if (!assets) return;
 
-    if (!assets) continue;
-
-    if (key === 'background' && myManifest.background) {
+    if (key === 'background') {
+      if (!myManifest.background) return;
       if (myManifest.background.scripts) {
         myManifest.background.scripts = assets;
       }
       myManifest.background.service_worker = assets[0];
+      return;
     }
 
-    if (key.startsWith('content') && myManifest.content_scripts) {
+    if (key.startsWith('content')) {
+      if (!myManifest.content_scripts) return;
       const index = Number(key.replace('content', '') || '0');
       myManifest.content_scripts[index].js = assets.filter((item) => item.endsWith('.js'));
       myManifest.content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
+      return;
     }
 
-    if (key === 'popup' && myManifest.action) {
-      myManifest.action.default_popup = `${entrypointName}.html`;
+    if (key === 'popup') {
+      if (!myManifest.action) return;
+      myManifest.action.default_popup = `${entrypoint.name}.html`;
+      return;
     }
 
     if (key === 'options') {
-      const filename = `${entrypointName}.html`;
+      const filename = `${entrypoint.name}.html`;
       if (myManifest.options_page) {
         myManifest.options_page = filename;
       }
       if (myManifest.options_ui) {
         myManifest.options_ui.page = filename;
       }
+      return;
     }
 
     if (key === 'devtools') {
       myManifest.devtools_page = `${entrypoint.name}.html`;
+      return;
     }
 
-    if (key.startsWith('sandbox') && myManifest.sandbox?.pages) {
+    if (key.startsWith('sandbox')) {
+      if (!myManifest.sandbox?.pages) return;
       const index = Number(key.replace('content', '') || '0');
       myManifest.sandbox.pages[index] = `${entrypoint.name}.html`;
     }
-  }
+  });
 }
 
 export function processManifestIcons(myManifest: ManifestV3, distImagePath: string) {
@@ -106,8 +112,7 @@ export function processManifestIcons(myManifest: ManifestV3, distImagePath: stri
       const from = icons[key];
       const filename = from.split('/').at(-1);
       if (filename) {
-        const newFilename = `${distImagePath}/${filename}`;
-        icons[key] = newFilename;
+        icons[key] = `${distImagePath}/${filename}`;
       }
       paths.push({
         from,
@@ -123,7 +128,6 @@ export function processManifestIcons(myManifest: ManifestV3, distImagePath: stri
   if (action?.default_icon) {
     helper(action.default_icon);
   }
-
   return paths;
 }
 
