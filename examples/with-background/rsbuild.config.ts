@@ -1,5 +1,5 @@
 import { defineConfig } from '@rsbuild/core';
-import { pluginWebExt } from '../src';
+import { pluginWebExt } from '../../src';
 import manifest from './manifest';
 
 export default defineConfig({
