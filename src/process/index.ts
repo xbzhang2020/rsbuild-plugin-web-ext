@@ -1,4 +1,5 @@
 import { readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
@@ -22,13 +23,30 @@ function isJavaScriptFile(file: string) {
 
 export async function mergeManifestEntries(rootPath: string, manifest: ManifestV3) {
   try {
-    const files = await readdir(rootPath);
+    const files = await readdir(rootPath, {
+      withFileTypes: true,
+    });
+    const contentFiles: string[] = [];
+
     for (const file of files) {
-      if (isJavaScriptFile(file)) {
-        const filePath = `./${file}`;
-        switch (getFileName(file)) {
+      const { name } = file;
+      const filePath = `./${name}`;
+
+      if (file.isDirectory() && ['contents'].includes(name)) {
+        const directoryPath = resolve(rootPath, filePath);
+        const subFiles = await readdir(directoryPath, { recursive: true });
+        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
+
+        if (name === 'contents') {
+          contentFiles.push(...subFilePaths);
+        }
+        continue;
+      }
+
+      if (isJavaScriptFile(name)) {
+        switch (getFileName(name)) {
           case 'content': {
-            await mergeContentsEntry(manifest, rootPath, filePath);
+            contentFiles.unshift(filePath);
             break;
           }
           case 'background': {
@@ -54,13 +72,17 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
         }
       }
     }
+
+    if (contentFiles.length) {
+      await mergeContentsEntry(manifest, rootPath, contentFiles);
+    }
   } catch (err) {
     console.error(err);
   }
 }
 
 export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
-  const entryMap: RsbuildEntry = {
+  return {
     ...getContentsEntry(manifest),
     ...getBackgroundEntry(manifest),
     ...getPopupEntry(manifest),
@@ -68,8 +90,6 @@ export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
     ...getDevtoolsEntry(manifest),
     ...getSandboxEntry(manifest),
   };
-
-  return entryMap;
 }
 
 export function writeManifestEntries(manifest: ManifestV3, stats?: Rspack.Stats) {

@@ -25,7 +25,7 @@ function astToObject(node: t.Node): unknown {
   return null;
 }
 
-function getContentConfig(code: string) {
+function getContentConfig(code: string): ManifestV3ContentConfig | null {
   const configName = 'config';
   const ast = parse(code, {
     sourceType: 'module',
@@ -49,36 +49,45 @@ function getContentConfig(code: string) {
       }
     },
   });
+
   return configValue;
 }
 
-async function getManifestContents(rootPath: string, contentFilePath: string) {
+async function getManifestContent(rootPath: string, contentFilePath: string) {
   const path = resolve(rootPath, contentFilePath);
   const data = await readFile(path, 'utf-8');
   if (!data) return;
 
-  const extraConfig = getContentConfig(data) || {};
+  const extraConfig = getContentConfig(data) || {
+    matches: ['<all_urls>'],
+  };
 
   const config: ManifestV3ContentConfig = {
     ...extraConfig,
     js: [contentFilePath],
   };
 
-  return [config];
+  return config;
 }
 
-export async function mergeContentsEntry(myManifest: ManifestV3, rootPath: string, filePath: string) {
+export async function mergeContentsEntry(myManifest: ManifestV3, rootPath: string, filePaths: string[]) {
   if (myManifest.content_scripts?.length) return;
-  const data = await getManifestContents(rootPath, filePath);
-  if (data) {
-    myManifest.content_scripts = data;
+  if (!myManifest.content_scripts) {
+    myManifest.content_scripts = [];
+  }
+  for await (const filePath of filePaths) {
+    const data = await getManifestContent(rootPath, filePath);
+    if (data) {
+      myManifest.content_scripts.push(data);
+    }
   }
 }
 
 export function getContentsEntry(manifest: ManifestV3) {
   const entry: RsbuildEntry = {};
-  manifest.content_scripts?.forEach((contentScript, index) => {
-    const name = `content${index === 0 ? '' : index}`;
+  const contentScripts = manifest.content_scripts || [];
+  contentScripts.forEach((contentScript, index) => {
+    const name = `content${contentScripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
     entry[name] = {
       import: [...js, ...css],
