@@ -8,7 +8,7 @@ export type ManifestV3 = chrome.runtime.ManifestV3 & {
     | undefined;
 };
 
-export type ManifestV3ContentConfig = {
+export type ContentConfig = {
   matches?: string[] | undefined;
   exclude_matches?: string[] | undefined;
   css?: string[] | undefined;
@@ -20,11 +20,3 @@ export type ManifestV3ContentConfig = {
   exclude_globs?: string[] | undefined;
   world?: 'ISOLATED' | 'MAIN' | undefined;
 };
-
-export function getDefaultManifest(): ManifestV3 {
-  return {
-    manifest_version: 3,
-    name: '',
-    version: '',
-  };
-}

@@ -1,7 +1,8 @@
 import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { ManifestV3 } from './manifest.js';
+import type { ManifestV3, ContentConfig } from './manifest.js';
 import {
+  getDefaultManifest,
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
@@ -14,20 +15,26 @@ export type PluginWebExtOptions = {
   manifest?: unknown;
 };
 
+export type ContentScriptConfig = ContentConfig;
+
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
 
   setup: (api) => {
-    const { manifest } = options;
-    if (!manifest) return;
-
-    const myManifest = manifest as ManifestV3;
+    let finalManifest = {} as ManifestV3;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      await mergeManifestEntries(api.context.rootPath, myManifest);
+      const rootPath = api.context.rootPath;
+
+      const defaultManifest = await getDefaultManifest(rootPath);
+      finalManifest = {
+        ...defaultManifest,
+        ...(options.manifest as ManifestV3),
+      };
+      await mergeManifestEntries(rootPath, finalManifest);
 
       const imagePath = config.output?.distPath?.image || 'static/image';
-      const { background, ...entries } = readManifestEntries(myManifest);
+      const { background, ...entries } = readManifestEntries(finalManifest);
       const environments: RsbuildConfig['environments'] = {};
 
       if (background) {
@@ -55,9 +62,9 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const defaultEnvironment = environments.web || environments.webWorker;
       if (defaultEnvironment?.output) {
         defaultEnvironment.output.copy = [
-          ...copyIcons(myManifest, imagePath),
-          ...copyWebAccessibleResources(myManifest),
-          ...copyLocales(myManifest),
+          ...copyIcons(finalManifest, imagePath),
+          ...copyWebAccessibleResources(finalManifest),
+          ...copyLocales(finalManifest),
         ];
       }
 
@@ -72,20 +79,20 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterEnvironmentCompile(({ stats }) => {
-      writeManifestEntries(myManifest, stats);
+      writeManifestEntries(finalManifest, stats);
     });
 
     api.onAfterBuild(async () => {
       const config = api.getNormalizedConfig();
       const distPath = config.output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(myManifest));
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
       console.log('Built the extension successfully');
     });
 
     api.onDevCompileDone(async () => {
       const config = api.getNormalizedConfig();
       const distPath = config.output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(myManifest));
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
       console.log('Built the extension successfully');
     });
   },

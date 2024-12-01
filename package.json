@@ -1,6 +1,6 @@
 {
   "name": "rsbuild-plugin-web-ext",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "A plugin for developing and building browser extensions within Rsbuild.",
   "keywords": ["web extensions", "browser extensions", "rsbuild plugin"],
   "repository": {

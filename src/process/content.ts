@@ -4,7 +4,7 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3, ManifestV3ContentConfig } from '../manifest.js';
+import type { ManifestV3, ContentConfig } from '../manifest.js';
 
 function astToObject(node: t.Node): unknown {
   if (t.isObjectExpression(node)) {
@@ -25,14 +25,14 @@ function astToObject(node: t.Node): unknown {
   return null;
 }
 
-function getContentConfig(code: string): ManifestV3ContentConfig | null {
+function getContentConfig(code: string): ContentConfig | null {
   const configName = 'config';
   const ast = parse(code, {
     sourceType: 'module',
     plugins: ['typescript', 'jsx'],
   });
 
-  let configValue: ManifestV3ContentConfig | null = null;
+  let configValue: ContentConfig | null = null;
 
   traverse.default(ast, {
     ExportNamedDeclaration(path: NodePath<t.ExportNamedDeclaration>) {
@@ -44,7 +44,7 @@ function getContentConfig(code: string): ManifestV3ContentConfig | null {
           t.isIdentifier(declarator.id, { name: configName }) &&
           declarator.init
         ) {
-          configValue = astToObject(declarator.init) as ManifestV3ContentConfig;
+          configValue = astToObject(declarator.init) as ContentConfig;
         }
       }
     },
@@ -62,7 +62,7 @@ async function getManifestContent(rootPath: string, contentFilePath: string) {
     matches: ['<all_urls>'],
   };
 
-  const config: ManifestV3ContentConfig = {
+  const config: ContentConfig = {
     ...extraConfig,
     js: [contentFilePath],
   };

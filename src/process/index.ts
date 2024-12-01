@@ -1,13 +1,13 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import type { RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
-import type { RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';
@@ -19,6 +19,27 @@ function getFileName(file: string) {
 
 function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
+}
+
+export async function getDefaultManifest(rootPath: string) {
+  const res = {
+    manifest_version: 3,
+  } as ManifestV3;
+
+  try {
+    const filePath = resolve(rootPath, './package.json');
+    const content = await readFile(filePath, 'utf-8');
+    const { name, displayName, version, description, author, homepage } = JSON.parse(content);
+    res.name = displayName || name;
+    res.version = version;
+    res.description = description;
+    res.author = author;
+    res.homepage_url = homepage;
+  } catch (e) {
+    console.log(e);
+  }
+
+  return res;
 }
 
 export async function mergeManifestEntries(rootPath: string, manifest: ManifestV3) {
