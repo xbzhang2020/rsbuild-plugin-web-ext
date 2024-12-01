@@ -3,9 +3,6 @@ const manifest: chrome.runtime.ManifestV3 = {
   name: 'With background',
   description: 'A basic browser extension',
   version: '1.0',
-  background: {
-    service_worker: './background.ts',
-  },
 };
 
 export default manifest;

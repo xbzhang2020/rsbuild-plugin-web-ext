@@ -2,12 +2,13 @@ import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ManifestV3 } from './manifest.js';
 import {
-  collectManifestEntries,
-  modifyManifestEntries,
-  processManifestIcons,
-  processManifestLocales,
-  processManifestWebAccessibleResources,
-} from './process.js';
+  mergeManifestEntries,
+  readManifestEntries,
+  writeManifestEntries,
+  copyIcons,
+  copyWebAccessibleResources,
+  copyLocales,
+} from './process/index.js';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
@@ -22,9 +23,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     const myManifest = manifest as ManifestV3;
 
-    api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) => {
+    api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
+      await mergeManifestEntries(api.context.rootPath, myManifest);
+
       const imagePath = config.output?.distPath?.image || 'static/image';
-      const { background, ...entries } = collectManifestEntries(myManifest);
+      const { background, ...entries } = readManifestEntries(myManifest);
       const environments: RsbuildConfig['environments'] = {};
 
       if (background) {
@@ -52,9 +55,9 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const defaultEnvironment = environments.web || environments.webWorker;
       if (defaultEnvironment?.output) {
         defaultEnvironment.output.copy = [
-          ...processManifestIcons(myManifest, imagePath),
-          ...processManifestWebAccessibleResources(myManifest),
-          ...processManifestLocales(myManifest),
+          ...copyIcons(myManifest, imagePath),
+          ...copyWebAccessibleResources(myManifest),
+          ...copyLocales(myManifest),
         ];
       }
 
@@ -69,7 +72,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterEnvironmentCompile(({ stats }) => {
-      modifyManifestEntries(myManifest, stats);
+      writeManifestEntries(myManifest, stats);
     });
 
     api.onAfterBuild(async () => {

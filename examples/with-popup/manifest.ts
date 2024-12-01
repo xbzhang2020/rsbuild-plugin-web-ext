@@ -7,7 +7,7 @@ const manifest: chrome.runtime.ManifestV3 = {
     default_icon: {
       16: './hello_extensions.png',
     },
-    default_popup: './popup.ts',
+    // default_popup: './popup.ts',
   },
 };
 
