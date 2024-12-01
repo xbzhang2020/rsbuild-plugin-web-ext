@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';

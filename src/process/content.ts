@@ -4,7 +4,7 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3, ContentConfig } from '../manifest.js';
+import type { ContentConfig, ManifestV3 } from '../manifest.js';
 
 function astToObject(node: t.Node): unknown {
   if (t.isObjectExpression(node)) {

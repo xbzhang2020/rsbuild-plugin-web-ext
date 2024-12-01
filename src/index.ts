@@ -1,11 +1,11 @@
 import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { ManifestV3, ContentConfig } from './manifest.js';
+import type { ContentConfig, ManifestV3 } from './manifest.js';
 import {
-  getDefaultManifest,
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
+  getDefaultManifest,
   mergeManifestEntries,
   readManifestEntries,
   writeManifestEntries,
