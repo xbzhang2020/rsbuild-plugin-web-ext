@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import type { ManifestV3ContentConfig, ManifestV3 } from '../manifest.js';
 import type { RsbuildEntry } from '@rsbuild/core';
+import type { ManifestV3, ManifestV3ContentConfig } from '../manifest.js';
 
 function astToObject(node: t.Node): unknown {
   if (t.isObjectExpression(node)) {

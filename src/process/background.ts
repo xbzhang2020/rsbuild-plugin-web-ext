@@ -1,5 +1,5 @@
-import type { ManifestV3 } from '../manifest.js';
 import type { RsbuildEntry } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 
 export function mergeBackgroundEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
   if (manifest.background?.service_worker || manifest.background?.scripts?.length) return;

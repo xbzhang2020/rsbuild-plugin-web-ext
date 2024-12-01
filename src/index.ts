@@ -2,12 +2,12 @@ import { writeFile } from 'node:fs/promises';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ManifestV3 } from './manifest.js';
 import {
+  copyIcons,
+  copyLocales,
+  copyWebAccessibleResources,
   mergeManifestEntries,
   readManifestEntries,
   writeManifestEntries,
-  copyIcons,
-  copyWebAccessibleResources,
-  copyLocales,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {

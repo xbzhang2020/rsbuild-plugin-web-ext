@@ -1,12 +1,12 @@
 import { readdir } from 'node:fs/promises';
 import type { RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
-import { mergeContentsEntry, getContentsEntry, writeContentsEntry } from './content.js';
-import { mergeBackgroundEntry, getBackgroundEntry, writeBackgroundEntry } from './background.js';
-import { mergePopupEntry, getPopupEntry, writePopupEntry } from './popup.js';
-import { mergeOptionsEntry, getOptionsEntry, writeOptionsEntry } from './options.js';
-import { mergeDevtoolsEntry, getDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
-import { mergeSandboxEntry, getSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
+import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
+import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
+import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
+import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
+import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';
