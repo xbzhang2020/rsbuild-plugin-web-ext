@@ -1,13 +1,13 @@
 import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import type { RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';
@@ -17,7 +17,7 @@ function getFileName(file: string) {
   return file.split('.')[0];
 }
 
-function isJavaScriptFile(file: string) {
+function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
 }
 
@@ -27,23 +27,27 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
       withFileTypes: true,
     });
     const contentFiles: string[] = [];
+    const sandboxFiles: string[] = [];
 
     for (const file of files) {
       const { name } = file;
       const filePath = `./${name}`;
 
-      if (file.isDirectory() && ['contents'].includes(name)) {
+      if (file.isDirectory() && ['contents', 'sandboxes'].includes(name)) {
         const directoryPath = resolve(rootPath, filePath);
         const subFiles = await readdir(directoryPath, { recursive: true });
-        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
+        const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
 
         if (name === 'contents') {
           contentFiles.push(...subFilePaths);
         }
+        if (name === 'sandboxes') {
+          sandboxFiles.push(...subFilePaths);
+        }
         continue;
       }
 
-      if (isJavaScriptFile(name)) {
+      if (isEntryFile(name)) {
         switch (getFileName(name)) {
           case 'content': {
             contentFiles.unshift(filePath);
@@ -66,7 +70,7 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
             break;
           }
           case 'sandbox': {
-            mergeSandboxEntry(manifest, rootPath, filePath);
+            sandboxFiles.unshift(filePath);
             break;
           }
         }
@@ -75,6 +79,10 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
 
     if (contentFiles.length) {
       await mergeContentsEntry(manifest, rootPath, contentFiles);
+    }
+
+    if (sandboxFiles.length) {
+      mergeSandboxEntry(manifest, rootPath, sandboxFiles);
     }
   } catch (err) {
     console.error(err);

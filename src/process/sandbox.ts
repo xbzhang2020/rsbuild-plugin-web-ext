@@ -1,7 +1,7 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 
-export function mergeSandboxEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
+export function mergeSandboxEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
   const sandboxPages = manifest.sandbox?.pages;
   if (sandboxPages?.length) return;
   if (!manifest.sandbox) {
@@ -9,17 +9,17 @@ export function mergeSandboxEntry(manifest: ManifestV3, rootPath: string, filePa
       pages: [],
     };
   }
-  manifest.sandbox.pages = [filePath];
+  manifest.sandbox.pages = filePaths;
 }
 
 export function getSandboxEntry(manifest: ManifestV3) {
   const entry: RsbuildEntry = {};
 
-  const sandboxPages = manifest.sandbox?.pages;
-  sandboxPages?.forEach((page, index) => {
-    const name = `sandbox${index === 0 ? '' : index}`;
+  const sandboxPages = manifest.sandbox?.pages || [];
+  sandboxPages.forEach((page, index) => {
+    const name = `sandbox${sandboxPages.length === 1 ? '' : index}`;
     entry[name] = {
-      import: name,
+      import: page,
       html: true,
     };
   });

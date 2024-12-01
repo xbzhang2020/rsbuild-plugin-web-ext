@@ -70,15 +70,15 @@ async function getManifestContent(rootPath: string, contentFilePath: string) {
   return config;
 }
 
-export async function mergeContentsEntry(myManifest: ManifestV3, rootPath: string, filePaths: string[]) {
-  if (myManifest.content_scripts?.length) return;
-  if (!myManifest.content_scripts) {
-    myManifest.content_scripts = [];
+export async function mergeContentsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
+  if (manifest.content_scripts?.length) return;
+  if (!manifest.content_scripts) {
+    manifest.content_scripts = [];
   }
   for await (const filePath of filePaths) {
     const data = await getManifestContent(rootPath, filePath);
     if (data) {
-      myManifest.content_scripts.push(data);
+      manifest.content_scripts.push(data);
     }
   }
 }
