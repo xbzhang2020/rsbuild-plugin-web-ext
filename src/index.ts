@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from './manifest.js';
 import {
@@ -10,7 +11,6 @@ import {
   readManifestEntries,
   writeManifestEntries,
 } from './process/index.js';
-import { resolve } from 'node:path';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
