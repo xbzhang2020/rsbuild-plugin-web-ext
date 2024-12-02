@@ -8,6 +8,7 @@ import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devt
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import { mergeIconsEntry } from './icons.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';
@@ -21,13 +22,13 @@ function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
 }
 
-export async function getDefaultManifest(rootPath: string) {
+export async function getDefaultManifest(srcPath: string) {
   const res = {
     manifest_version: 3,
   } as ManifestV3;
 
   try {
-    const filePath = resolve(rootPath, './package.json');
+    const filePath = resolve(srcPath, './package.json');
     const content = await readFile(filePath, 'utf-8');
     const { name, displayName, version, description, author, homepage } = JSON.parse(content);
     res.name = displayName || name;
@@ -42,9 +43,9 @@ export async function getDefaultManifest(rootPath: string) {
   return res;
 }
 
-export async function mergeManifestEntries(rootPath: string, manifest: ManifestV3) {
+export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3) {
   try {
-    const files = await readdir(rootPath, {
+    const files = await readdir(srcPath, {
       withFileTypes: true,
     });
     const contentFiles: string[] = [];
@@ -54,15 +55,21 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
       const { name } = file;
       const filePath = `./${name}`;
 
-      if (file.isDirectory() && ['contents', 'sandboxes'].includes(name)) {
-        const directoryPath = resolve(rootPath, filePath);
+      if (file.isDirectory() && ['assets', 'contents', 'sandboxes'].includes(name)) {
+        const directoryPath = resolve(srcPath, filePath);
         const subFiles = await readdir(directoryPath, { recursive: true });
-        const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
+
+        if (name === 'assets') {
+          const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
+          mergeIconsEntry(manifest, srcPath, subFilePaths);
+        }
 
         if (name === 'contents') {
+          const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
           contentFiles.push(...subFilePaths);
         }
         if (name === 'sandboxes') {
+          const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
           sandboxFiles.push(...subFilePaths);
         }
         continue;
@@ -75,19 +82,19 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
             break;
           }
           case 'background': {
-            mergeBackgroundEntry(manifest, rootPath, filePath);
+            mergeBackgroundEntry(manifest, srcPath, filePath);
             break;
           }
           case 'popup': {
-            mergePopupEntry(manifest, rootPath, filePath);
+            mergePopupEntry(manifest, srcPath, filePath);
             break;
           }
           case 'options': {
-            mergeOptionsEntry(manifest, rootPath, filePath);
+            mergeOptionsEntry(manifest, srcPath, filePath);
             break;
           }
           case 'devtools': {
-            mergeDevtoolsEntry(manifest, rootPath, filePath);
+            mergeDevtoolsEntry(manifest, srcPath, filePath);
             break;
           }
           case 'sandbox': {
@@ -99,11 +106,11 @@ export async function mergeManifestEntries(rootPath: string, manifest: ManifestV
     }
 
     if (contentFiles.length) {
-      await mergeContentsEntry(manifest, rootPath, contentFiles);
+      await mergeContentsEntry(manifest, srcPath, contentFiles);
     }
 
     if (sandboxFiles.length) {
-      mergeSandboxEntry(manifest, rootPath, sandboxFiles);
+      mergeSandboxEntry(manifest, srcPath, sandboxFiles);
     }
   } catch (err) {
     console.error(err);

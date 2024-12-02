@@ -1,5 +1,31 @@
 import type { ManifestV3 } from '../manifest.js';
 
+export function mergeIconsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
+  const assetsIcons: ManifestV3['icons'] = {};
+  for (const filePath of filePaths) {
+    const res = filePath.match(/icon-?(\d+)\.png$/);
+    if (res?.[1]) {
+      const size = Number(res[1]);
+      assetsIcons[size] = filePath;
+    }
+  }
+
+  if (!Object.keys(assetsIcons).length) return;
+
+  manifest.icons = {
+    ...assetsIcons,
+    ...(manifest.icons || {}),
+  };
+
+  if (!manifest.action) {
+    manifest.action = {};
+  }
+  manifest.action.default_icon = {
+    ...assetsIcons,
+    ...(manifest.action.default_icon || {}),
+  };
+}
+
 export function copyIcons(manifest: ManifestV3, distImagePath: string) {
   const paths: { from: string; to: string }[] = [];
 

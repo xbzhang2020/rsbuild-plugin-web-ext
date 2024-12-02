@@ -10,9 +10,11 @@ import {
   readManifestEntries,
   writeManifestEntries,
 } from './process/index.js';
+import { resolve } from 'node:path';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
+  srcDir?: string;
 };
 
 export type ContentScriptConfig = ContentConfig;
@@ -25,13 +27,14 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       const rootPath = api.context.rootPath;
+      const srcParth = resolve(rootPath, options.srcDir || './');
 
       const defaultManifest = await getDefaultManifest(rootPath);
       finalManifest = {
         ...defaultManifest,
         ...(options.manifest as ManifestV3),
       };
-      await mergeManifestEntries(rootPath, finalManifest);
+      await mergeManifestEntries(srcParth, finalManifest);
 
       const imagePath = config.output?.distPath?.image || 'static/image';
       const { background, ...entries } = readManifestEntries(finalManifest);
