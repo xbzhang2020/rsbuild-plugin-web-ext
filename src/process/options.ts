@@ -1,4 +1,3 @@
-import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 
 export function mergeOptionsEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
@@ -14,14 +13,10 @@ export function mergeOptionsEntry(manifest: ManifestV3, rootPath: string, filePa
 }
 
 export function getOptionsEntry(manifest: ManifestV3) {
-  const entry: RsbuildEntry = {};
-
+  const entry: Record<string, string | string[]> = {};
   const options = manifest.options_ui?.page || manifest.options_page;
   if (options) {
-    entry.options = {
-      import: options,
-      html: true,
-    };
+    entry.options = options;
   }
 
   return entry;

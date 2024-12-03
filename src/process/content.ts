@@ -66,15 +66,12 @@ export function mergeContentsEntry(manifest: ManifestV3, rootPath: string, fileP
 }
 
 export function getContentsEntry(manifest: ManifestV3) {
-  const entry: RsbuildEntry = {};
+  const entry: Record<string, string | string[]> = {};
   const contentScripts = manifest.content_scripts || [];
   contentScripts.forEach((contentScript, index) => {
     const name = `content${contentScripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
-    entry[name] = {
-      import: [...js, ...css],
-      html: false,
-    };
+    entry[name] = [...js, ...css];
   });
   return entry;
 }

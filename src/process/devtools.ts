@@ -1,4 +1,3 @@
-import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 
 export function mergeDevtoolsEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
@@ -7,14 +6,11 @@ export function mergeDevtoolsEntry(manifest: ManifestV3, rootPath: string, fileP
 }
 
 export function getDevtoolsEntry(manifest: ManifestV3) {
-  const entry: RsbuildEntry = {};
+  const entry: Record<string, string | string[]> = {};
 
   const devtools = manifest.devtools_page;
   if (devtools) {
-    entry.devtools = {
-      import: devtools,
-      html: true,
-    };
+    entry.devtools = [devtools];
   }
 
   return entry;

@@ -148,10 +148,10 @@ export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3
   }
 }
 
-export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
+export function readManifestEntries(manifest: ManifestV3) {
   return {
-    ...getContentsEntry(manifest),
     ...getBackgroundEntry(manifest),
+    ...getContentsEntry(manifest),
     ...getPopupEntry(manifest),
     ...getOptionsEntry(manifest),
     ...getDevtoolsEntry(manifest),

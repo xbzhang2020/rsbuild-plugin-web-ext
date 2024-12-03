@@ -9,13 +9,11 @@ export function mergeBackgroundEntry(manifest: ManifestV3, rootPath: string, fil
 }
 
 export function getBackgroundEntry(manifest: ManifestV3) {
-  const entry: RsbuildEntry = {};
   const service_worker = manifest.background?.service_worker || manifest.background?.scripts;
+  const entry: Record<string, string | string[]> = {};
+
   if (service_worker) {
-    entry.background = {
-      import: service_worker,
-      html: false,
-    };
+    entry.background = service_worker;
   }
   return entry;
 }

@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
+import type { RsbuildConfig, RsbuildPlugin, RsbuildEntry } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from './manifest.js';
 import {
   copyIcons,
@@ -29,13 +29,21 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       manifest = await normalizeManifest({ manifest: options.manifest as ManifestV3, srcPath, rootPath });
 
-      const { background, ...entries } = readManifestEntries(manifest);
       const environments: RsbuildConfig['environments'] = {};
+      const { background, ...otherEntries } = readManifestEntries(manifest);
+      const isDev = process.env.NODE_ENV === 'development';
 
-      if (background) {
+      if (background || isDev) {
+        const defaultBackgound = resolve(__dirname, './assets/default-background.js');
+        const backgrounds = Array.isArray(background) ? background : [background];
         environments.webWorker = {
           source: {
-            entry: { background },
+            entry: {
+              background: {
+                import: [defaultBackgound, ...backgrounds],
+                html: false,
+              },
+            },
           },
           output: {
             target: 'web-worker',
@@ -43,10 +51,18 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      if (Object.keys(entries).length) {
+      if (Object.keys(otherEntries).length) {
+        const entry = Object.keys(otherEntries).reduce((entry, key) => {
+          entry[key] = {
+            import: otherEntries[key],
+            html: ['popup', 'devtools', 'options'].includes(key) || key.startsWith('sandbox'),
+          };
+          return entry;
+        }, {} as RsbuildEntry);
+        
         environments.web = {
           source: {
-            entry: entries,
+            entry,
           },
           output: {
             target: 'web',

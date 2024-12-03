@@ -2,7 +2,11 @@
   "name": "rsbuild-plugin-web-ext",
   "version": "0.0.1-alpha.3",
   "description": "A plugin for developing and building browser extensions within Rsbuild.",
-  "keywords": ["web extensions", "browser extensions", "rsbuild plugin"],
+  "keywords": [
+    "web extensions",
+    "browser extensions",
+    "rsbuild plugin"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git"
@@ -20,7 +24,9 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
@@ -35,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@microsoft/api-extractor": "^7.48.0",
     "@playwright/test": "^1.48.2",
     "@rsbuild/core": "^1.1.6",
     "@rslib/core": "^0.1.0",
