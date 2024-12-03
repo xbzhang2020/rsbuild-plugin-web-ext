@@ -82,21 +82,20 @@ export function getContentsEntry(manifest: ManifestV3) {
 export async function writeContentsEntry(
   manifest: ManifestV3,
   key: string,
-
   assets: string[],
   extra: {
     originManifest: ManifestV3 | undefined;
     rootPath: string;
-    srcPath: string;
+    filePath: string;
   },
 ) {
   if (!manifest.content_scripts) return;
-  const { originManifest, rootPath, srcPath } = extra;
+  const { originManifest, rootPath, filePath } = extra;
   const index = Number(key.replace('content', '') || '0');
   const explicit = originManifest?.content_scripts?.length;
 
   if (!explicit) {
-    const path = resolve(rootPath, srcPath);
+    const path = resolve(rootPath, filePath);
     const code = await readFile(path, 'utf-8');
     const extraConfig = getContentConfig(code) || {
       matches: ['<all_urls>'],

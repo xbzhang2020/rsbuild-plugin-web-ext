@@ -6,10 +6,9 @@ import {
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
-  getDefaultManifest,
-  mergeManifestEntries,
   readManifestEntries,
   writeManifestEntries,
+  normalizeManifest,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -23,21 +22,14 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
   name: 'rsbuild:plugin-web-ext',
 
   setup: (api) => {
-    let finalManifest = {} as ManifestV3;
+    const rootPath = api.context.rootPath;
+    const srcPath = resolve(rootPath, options.srcDir || './');
+    let manifest = {} as ManifestV3;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      const rootPath = api.context.rootPath;
-      const srcParth = resolve(rootPath, options.srcDir || './');
+      manifest = await normalizeManifest({ manifest: options.manifest as ManifestV3, srcPath, rootPath });
 
-      const defaultManifest = await getDefaultManifest(rootPath);
-      finalManifest = {
-        ...defaultManifest,
-        ...(options.manifest as ManifestV3),
-      };
-      await mergeManifestEntries(srcParth, finalManifest);
-
-      const imagePath = config.output?.distPath?.image || 'static/image';
-      const { background, ...entries } = readManifestEntries(finalManifest);
+      const { background, ...entries } = readManifestEntries(manifest);
       const environments: RsbuildConfig['environments'] = {};
 
       if (background) {
@@ -62,12 +54,27 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      const defaultEnvironment = environments.web || environments.webWorker;
+      let defaultEnvironment = environments.web || environments.webWorker;
+      if (!defaultEnvironment) {
+        // should provide an entry at least.
+        defaultEnvironment = environments.web = {
+          source: {
+            entry: {
+              index: {
+                import: [],
+                html: false,
+              },
+            },
+          },
+        };
+      }
+
       if (defaultEnvironment?.output) {
+        const imagePath = config.output?.distPath?.image || 'static/image';
         defaultEnvironment.output.copy = [
-          ...copyIcons(finalManifest, imagePath),
-          ...copyWebAccessibleResources(finalManifest),
-          ...copyLocales(finalManifest),
+          ...copyIcons(manifest, imagePath),
+          ...copyWebAccessibleResources(manifest),
+          ...copyLocales(manifest),
         ];
       }
 
@@ -78,11 +85,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
       };
 
-      return mergeRsbuildConfig(config, extraConfig);
+      return mergeRsbuildConfig(extraConfig, config);
     });
 
     api.onAfterEnvironmentCompile(async (params) => {
-      await writeManifestEntries(finalManifest, {
+      await writeManifestEntries(manifest, {
         ...params,
         originManifest: options.manifest as ManifestV3,
       });
@@ -90,13 +97,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onAfterBuild(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest));
       console.log('Built the extension successfully');
     });
 
     api.onDevCompileDone(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest));
       console.log('Built the extension successfully');
     });
   },

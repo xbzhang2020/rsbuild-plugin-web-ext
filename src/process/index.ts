@@ -35,6 +35,24 @@ function getEntryFile(entries: RsbuildEntry, key: string) {
   return srcPath;
 }
 
+interface NormalizeManifestProps {
+  manifest?: ManifestV3;
+  rootPath: string;
+  srcPath: string;
+}
+
+export async function normalizeManifest({ manifest, rootPath, srcPath }: NormalizeManifestProps) {
+  let finalManifest = {} as ManifestV3;
+  const defaultManifest = await getDefaultManifest(rootPath);
+
+  finalManifest = {
+    ...defaultManifest,
+    ...(manifest || ({} as ManifestV3)),
+  };
+  await mergeManifestEntries(srcPath, finalManifest);
+  return finalManifest;
+}
+
 export async function getDefaultManifest(srcPath: string) {
   const res = {
     manifest_version: 3,
@@ -163,8 +181,8 @@ export async function writeManifestEntries(
       writeBackgroundEntry(manifest, key, assets);
     } else if (key.startsWith('content')) {
       const rootPath = environment.config.root;
-      const srcPath = getEntryFile(environment.entry, key);
-      await writeContentsEntry(manifest, key, assets, { originManifest, rootPath, srcPath });
+      const filePath = getEntryFile(environment.entry, key);
+      await writeContentsEntry(manifest, key, assets, { originManifest, rootPath, filePath });
     } else if (key === 'popup') {
       writePopupEntry(manifest, key);
     } else if (key === 'options') {
