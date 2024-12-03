@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { RsbuildEntry, Rspack, EnvironmentContext } from '@rsbuild/core';
+import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
@@ -147,7 +147,10 @@ interface WriteManifestOptions {
   originManifest?: ManifestV3;
 }
 
-export async function writeManifestEntries(manifest: ManifestV3, { stats, environment, originManifest }: WriteManifestOptions) {
+export async function writeManifestEntries(
+  manifest: ManifestV3,
+  { stats, environment, originManifest }: WriteManifestOptions,
+) {
   // refer to https://rspack.dev/api/javascript-api/stats-json
   const entrypoints = stats?.toJson().entrypoints;
   if (!entrypoints) return manifest;
@@ -161,7 +164,7 @@ export async function writeManifestEntries(manifest: ManifestV3, { stats, enviro
     } else if (key.startsWith('content')) {
       const rootPath = environment.config.root;
       const srcPath = getEntryFile(environment.entry, key);
-      await writeContentsEntry(manifest, originManifest, key, assets, rootPath, srcPath);
+      await writeContentsEntry(manifest, key, assets, { originManifest, rootPath, srcPath });
     } else if (key === 'popup') {
       writePopupEntry(manifest, key);
     } else if (key === 'options') {

@@ -89,15 +89,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterBuild(async () => {
-      const config = api.getNormalizedConfig();
-      const distPath = config.output.distPath.root;
+      const distPath = api.getNormalizedConfig().output.distPath.root;
       await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
       console.log('Built the extension successfully');
     });
 
     api.onDevCompileDone(async () => {
-      const config = api.getNormalizedConfig();
-      const distPath = config.output.distPath.root;
+      const distPath = api.getNormalizedConfig().output.distPath.root;
       await writeFile(`${distPath}/manifest.json`, JSON.stringify(finalManifest));
       console.log('Built the extension successfully');
     });
