@@ -6,9 +6,9 @@ import {
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
+  normalizeManifest,
   readManifestEntries,
   writeManifestEntries,
-  normalizeManifest,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
