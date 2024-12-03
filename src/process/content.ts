@@ -53,33 +53,15 @@ function getContentConfig(code: string): ContentConfig | null {
   return configValue;
 }
 
-async function getManifestContent(rootPath: string, contentFilePath: string) {
-  const path = resolve(rootPath, contentFilePath);
-  const data = await readFile(path, 'utf-8');
-  if (!data) return;
-
-  const extraConfig = getContentConfig(data) || {
-    matches: ['<all_urls>'],
-  };
-
-  const config: ContentConfig = {
-    ...extraConfig,
-    js: [contentFilePath],
-  };
-
-  return config;
-}
-
-export async function mergeContentsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
+export function mergeContentsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
   if (manifest.content_scripts?.length) return;
   if (!manifest.content_scripts) {
     manifest.content_scripts = [];
   }
-  for await (const filePath of filePaths) {
-    const data = await getManifestContent(rootPath, filePath);
-    if (data) {
-      manifest.content_scripts.push(data);
-    }
+  for (const filePath of filePaths) {
+    manifest.content_scripts.push({
+      js: [filePath],
+    });
   }
 }
 
@@ -97,9 +79,44 @@ export function getContentsEntry(manifest: ManifestV3) {
   return entry;
 }
 
-export function writeContentsEntry(manifest: ManifestV3, key: string, assets: string[]) {
+async function getManifestContent(rootPath: string, contentFilePath: string) {
+  const path = resolve(rootPath, contentFilePath);
+  const data = await readFile(path, 'utf-8');
+  if (!data) return;
+
+  const extraConfig = getContentConfig(data) || {
+    matches: ['<all_urls>'],
+  };
+
+  const config: ContentConfig = {
+    ...extraConfig,
+    js: [contentFilePath],
+  };
+
+  return config;
+}
+
+export async function writeContentsEntry(
+  manifest: ManifestV3,
+  originManifest: ManifestV3 | undefined,
+  key: string,
+  assets: string[],
+  rootPath: string,
+  srcPath: string,
+) {
   if (!manifest.content_scripts) return;
   const index = Number(key.replace('content', '') || '0');
-  manifest.content_scripts[index].js = assets.filter((item) => item.endsWith('.js'));
-  manifest.content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
+  const explicit = originManifest?.content_scripts?.length;
+  if (!explicit) {
+    const data = await getManifestContent(rootPath, srcPath);
+    if (data) {
+      manifest.content_scripts[index] = {
+        ...manifest.content_scripts[index],
+        ...data,
+      };
+    }
+  }
+  const item = manifest.content_scripts[index];
+  item.js = assets.filter((item) => item.endsWith('.js'));
+  item.css = assets.filter((item) => item.endsWith('.css'));
 }

@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { RsbuildEntry, Rspack, EnvironmentContext } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
@@ -20,6 +20,19 @@ function getFileName(file: string) {
 
 function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
+}
+
+function getEntryFile(entries: RsbuildEntry, key: string) {
+  const entry = entries[key];
+  let srcPath = '';
+  if (typeof entry === 'string') {
+    srcPath = entry;
+  } else if (Array.isArray(entry)) {
+    srcPath = entry[0];
+  } else if (typeof entry === 'object') {
+    srcPath = Array.isArray(entry.import) ? entry.import[0] : entry.import;
+  }
+  return srcPath;
 }
 
 export async function getDefaultManifest(srcPath: string) {
@@ -106,7 +119,7 @@ export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3
     }
 
     if (contentFiles.length) {
-      await mergeContentsEntry(manifest, srcPath, contentFiles);
+      mergeContentsEntry(manifest, srcPath, contentFiles);
     }
 
     if (sandboxFiles.length) {
@@ -128,42 +141,37 @@ export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
   };
 }
 
-export function writeManifestEntries(manifest: ManifestV3, stats?: Rspack.Stats) {
+interface WriteManifestOptions {
+  stats?: Rspack.Stats;
+  environment: EnvironmentContext;
+  originManifest?: ManifestV3;
+}
+
+export async function writeManifestEntries(manifest: ManifestV3, { stats, environment, originManifest }: WriteManifestOptions) {
   // refer to https://rspack.dev/api/javascript-api/stats-json
   const entrypoints = stats?.toJson().entrypoints;
   if (!entrypoints) return manifest;
 
-  Object.entries(entrypoints).forEach(([key, entrypoint]) => {
+  for (const [key, entrypoint] of Object.entries(entrypoints)) {
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
-    if (!assets) return;
+    if (!assets) continue;
 
     if (key === 'background') {
       writeBackgroundEntry(manifest, key, assets);
-      return;
-    }
-
-    if (key.startsWith('content')) {
-      writeContentsEntry(manifest, key, assets);
-      return;
-    }
-
-    if (key === 'popup') {
+    } else if (key.startsWith('content')) {
+      const rootPath = environment.config.root;
+      const srcPath = getEntryFile(environment.entry, key);
+      await writeContentsEntry(manifest, originManifest, key, assets, rootPath, srcPath);
+    } else if (key === 'popup') {
       writePopupEntry(manifest, key);
-      return;
-    }
-
-    if (key === 'options') {
+    } else if (key === 'options') {
       writeOptionsEntry(manifest, key);
       return;
-    }
-
-    if (key === 'devtools') {
+    } else if (key === 'devtools') {
       writeDevtoolsEntry(manifest, key);
       return;
-    }
-
-    if (key.startsWith('sandbox')) {
+    } else if (key.startsWith('sandbox')) {
       writeSandboxEntry(manifest, key);
     }
-  });
+  }
 }

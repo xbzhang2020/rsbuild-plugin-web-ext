@@ -81,8 +81,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       return mergeRsbuildConfig(config, extraConfig);
     });
 
-    api.onAfterEnvironmentCompile(({ stats }) => {
-      writeManifestEntries(finalManifest, stats);
+    api.onAfterEnvironmentCompile(async (params) => {
+      await writeManifestEntries(finalManifest, {
+        ...params,
+        originManifest: options.manifest as ManifestV3,
+      });
     });
 
     api.onAfterBuild(async () => {
