@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { RsbuildConfig, RsbuildPlugin, RsbuildEntry } from '@rsbuild/core';
+import type { RsbuildConfig, RsbuildEntry, RsbuildPlugin } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from './manifest.js';
 import {
   copyIcons,
@@ -59,7 +59,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
           };
           return entry;
         }, {} as RsbuildEntry);
-        
+
         environments.web = {
           source: {
             entry,
