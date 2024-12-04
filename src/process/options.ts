@@ -1,5 +1,5 @@
-import type { ManifestV3 } from '../manifest.js';
 import type { RsbuildEntry } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 
 export function mergeOptionsEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
   const options = manifest.options_ui?.page || manifest.options_page;

@@ -1,15 +1,15 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
-import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 import type { NormalizeManifestProps } from './process.js';
-import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';

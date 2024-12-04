@@ -1,5 +1,5 @@
-import type { ManifestV3 } from '../manifest.js';
 import type { RsbuildEntry } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 
 export function mergeSandboxEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
   const sandboxPages = manifest.sandbox?.pages;
