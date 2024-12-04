@@ -5,26 +5,28 @@ import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from '../manifest.js';
+import type { NormailzeMainfestEntryProps } from './process.js';
 
-export function mergeContentsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
-  if (manifest.content_scripts?.length) return;
+export function mergeContentsEntry({ manifest, entryPath, selfRootPath }: NormailzeMainfestEntryProps) {
+  const filePaths = entryPath as string[];
+  if (!manifest.content_scripts?.length && filePaths.length) {
+    if (!manifest.content_scripts) {
+      manifest.content_scripts = [];
+    }
 
-  if (!manifest.content_scripts) {
-    manifest.content_scripts = [];
+    for (const filePath of filePaths) {
+      manifest.content_scripts.push({
+        js: [filePath],
+      });
+    }
   }
-  for (const filePath of filePaths) {
-    manifest.content_scripts.push({
-      js: [filePath],
-    });
-  }
 
-  if (process.env.NODE_ENV === 'development') {
-    const defaultContent = resolve(__dirname, './assets/default-content.js');
+  if (process.env.NODE_ENV === 'development' && manifest.content_scripts) {
+    const defaultContent = resolve(selfRootPath, './assets/default-content.js');
     for (const script of manifest.content_scripts) {
       script.js?.unshift(defaultContent);
     }
   }
-  console.log('content', manifest);
 }
 
 export function getContentsEntry(manifest: ManifestV3) {

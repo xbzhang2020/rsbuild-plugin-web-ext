@@ -8,5 +8,5 @@ export interface NormalizeManifestProps {
 }
 
 export interface NormailzeMainfestEntryProps extends NormalizeManifestProps {
-  entryPath: string;
+  entryPath?: string | string[];
 }

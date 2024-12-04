@@ -16,8 +16,8 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: Norm
     scripts.push(background.service_worker);
   } else if (background?.scripts?.length) {
     scripts.push(...background.scripts);
-  } else {
-    scripts.push(entryPath);
+  } else if (entryPath) {
+    scripts.push(entryPath as string);
   }
 
   manifest.background = {

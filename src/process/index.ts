@@ -45,7 +45,11 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
     ...defaultManifest,
     ...(manifest || ({} as ManifestV3)),
   };
-  finalManifest = await mergeManifestEntries(props);
+
+  await mergeManifestEntries({
+    ...props,
+    manifest: finalManifest,
+  });
   return finalManifest;
 }
 
@@ -77,6 +81,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
     const files = await readdir(srcPath, {
       withFileTypes: true,
     });
+    let backgroundFile: string | undefined = undefined;
     const contentFiles: string[] = [];
     const sandboxFiles: string[] = [];
 
@@ -111,10 +116,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
             break;
           }
           case 'background': {
-            mergeBackgroundEntry({
-              ...props,
-              entryPath: filePath,
-            });
+            backgroundFile = filePath;
             break;
           }
           case 'popup': {
@@ -137,17 +139,21 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
       }
     }
 
-    if (contentFiles.length) {
-      mergeContentsEntry(manifest, srcPath, contentFiles);
-    }
+    mergeBackgroundEntry({
+      ...props,
+      entryPath: backgroundFile,
+    });
+
+    mergeContentsEntry({
+      ...props,
+      entryPath: contentFiles,
+    });
 
     if (sandboxFiles.length) {
       mergeSandboxEntry(manifest, srcPath, sandboxFiles);
     }
-    return manifest;
   } catch (err) {
     console.error(err);
-    return manifest;
   }
 }
 
