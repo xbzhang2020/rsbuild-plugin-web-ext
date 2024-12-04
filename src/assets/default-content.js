@@ -5,6 +5,7 @@ if (module?.hot) {
       chrome.runtime.sendMessage({
         action: 'reload-extenison',
       });
+      location.reload();
     }
   });
 }

@@ -12,6 +12,18 @@ A plugin for developing and building browser extensions within Rsbuild.
 
 ## Features
 
+* **Declarative Development with Fewer Configurations.** Inspired by Plasmo, it can automatically build modules and generate manifest.json based on the conventional directory structure.
+
+* **Live-Reloading + HMR.** It will automatically reload the extension and refresh pages when watching changes of code. There is no longer  a need to reload the extension manually.
+
+* **Natural TypeScript Support.**
+
+* **Cross-browser Compatibility.** It supports Chrome, Firefox and Safari friendly.
+
+* **No Frameworks Preference.** Just enjoy any frontend frameworks you like.
+
+* **Lightning Fast.** Thanks to Rsbuild.
+
 ## Usage
 
 Install:
