@@ -1,4 +1,5 @@
 import type { ManifestV3 } from '../manifest.js';
+import type { RsbuildEntry } from '@rsbuild/core';
 
 export function mergePopupEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
   if (manifest.action?.default_popup) return;
@@ -9,10 +10,13 @@ export function mergePopupEntry(manifest: ManifestV3, rootPath: string, filePath
 }
 
 export function getPopupEntry(manifest: ManifestV3) {
-  const entry: Record<string, string | string[]> = {};
+  const entry: RsbuildEntry = {};
   const popup = manifest.action?.default_popup;
   if (popup) {
-    entry.popup = popup;
+    entry.popup = {
+      import: popup,
+      html: true,
+    };
   }
 
   return entry;

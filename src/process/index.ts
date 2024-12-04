@@ -1,7 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
@@ -9,6 +7,9 @@ import { mergeIconsEntry } from './icons.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import type { NormalizeManifestProps } from './process.js';
+import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { ManifestV3 } from '../manifest.js';
 
 export { copyIcons } from './icons.js';
 export { copyWebAccessibleResources } from './resources.js';
@@ -35,13 +36,8 @@ function getEntryFile(entries: RsbuildEntry, key: string) {
   return srcPath;
 }
 
-interface NormalizeManifestProps {
-  manifest?: ManifestV3;
-  rootPath: string;
-  srcPath: string;
-}
-
-export async function normalizeManifest({ manifest, rootPath, srcPath }: NormalizeManifestProps) {
+export async function normalizeManifest(props: NormalizeManifestProps) {
+  const { manifest, rootPath } = props;
   let finalManifest = {} as ManifestV3;
   const defaultManifest = await getDefaultManifest(rootPath);
 
@@ -49,7 +45,7 @@ export async function normalizeManifest({ manifest, rootPath, srcPath }: Normali
     ...defaultManifest,
     ...(manifest || ({} as ManifestV3)),
   };
-  await mergeManifestEntries(srcPath, finalManifest);
+  finalManifest = await mergeManifestEntries(props);
   return finalManifest;
 }
 
@@ -74,7 +70,9 @@ export async function getDefaultManifest(srcPath: string) {
   return res;
 }
 
-export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3) {
+export async function mergeManifestEntries(props: NormalizeManifestProps) {
+  const { manifest, srcPath } = props;
+
   try {
     const files = await readdir(srcPath, {
       withFileTypes: true,
@@ -113,7 +111,10 @@ export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3
             break;
           }
           case 'background': {
-            mergeBackgroundEntry(manifest, srcPath, filePath);
+            mergeBackgroundEntry({
+              ...props,
+              entryPath: filePath,
+            });
             break;
           }
           case 'popup': {
@@ -143,12 +144,14 @@ export async function mergeManifestEntries(srcPath: string, manifest: ManifestV3
     if (sandboxFiles.length) {
       mergeSandboxEntry(manifest, srcPath, sandboxFiles);
     }
+    return manifest;
   } catch (err) {
     console.error(err);
+    return manifest;
   }
 }
 
-export function readManifestEntries(manifest: ManifestV3) {
+export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
   return {
     ...getBackgroundEntry(manifest),
     ...getContentsEntry(manifest),
