@@ -3,27 +3,32 @@ import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
+function hasBackgroundEntry(manifest: ManifestV3) {
+  const background = manifest.background;
+  if (background?.service_worker || background?.scripts?.length) return true;
+  return false;
+}
+
 export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: NormailzeMainfestEntryProps) {
-  const scripts: string[] = [];
+  if (entryPath && !hasBackgroundEntry(manifest)) {
+    manifest.background = {
+      service_worker: entryPath as string,
+    };
+  }
 
   if (process.env.NODE_ENV === 'development') {
     const defaultBackground = resolve(selfRootPath, './assets/default-background.js');
-    scripts.push(defaultBackground);
+    const { background } = manifest;
+    if (background?.service_worker) {
+      background.service_worker = [defaultBackground, background.service_worker].join(',');
+    } else if (background?.scripts?.length) {
+      background.scripts.unshift(defaultBackground);
+    } else {
+      manifest.background = {
+        service_worker: defaultBackground,
+      };
+    }
   }
-
-  const { background } = manifest;
-  if (background?.service_worker) {
-    scripts.push(background.service_worker);
-  } else if (background?.scripts?.length) {
-    scripts.push(...background.scripts);
-  } else if (entryPath) {
-    scripts.push(entryPath as string);
-  }
-
-  manifest.background = {
-    service_worker: scripts.length === 1 ? scripts[0] : '',
-    scripts,
-  };
 }
 
 export function getBackgroundEntry(manifest: ManifestV3) {

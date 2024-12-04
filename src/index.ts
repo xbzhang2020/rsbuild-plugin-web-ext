@@ -1,4 +1,4 @@
-import { writeFile, readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from './manifest.js';
@@ -6,10 +6,10 @@ import {
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
+  getRsbuildEntryFile,
   normalizeManifest,
   readManifestEntries,
   writeManifestEntries,
-  getRsbuildEntryFile,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -107,7 +107,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onBeforeStartDevServer(async ({ environments }) => {
       const webEntry = environments.web?.entry;
       if (!webEntry) return;
-      
+
       const contentEntryNames = Object.keys(webEntry).filter((item) => item.startsWith('content'));
       if (contentEntryNames.length) {
         const contentFiles = contentEntryNames
