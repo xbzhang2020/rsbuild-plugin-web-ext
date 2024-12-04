@@ -89,10 +89,17 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         environments,
         dev: {
           writeToDisk: (file) => !file.includes('.hot-update.'),
+          client: {
+            host: '127.0.0.1:<port>',
+            port: '<port>',
+            protocol: 'ws',
+          },
         },
+
       };
 
-      return mergeRsbuildConfig(extraConfig, config);
+      // extraConfig must be at the end, for dev.writeToDisk
+      return mergeRsbuildConfig(config, extraConfig);
     });
 
     api.onAfterEnvironmentCompile(async (params) => {

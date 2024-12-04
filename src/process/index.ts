@@ -144,7 +144,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
       entryPath: backgroundFile,
     });
 
-    mergeContentsEntry({
+    await mergeContentsEntry({
       ...props,
       entryPath: contentFiles,
     });

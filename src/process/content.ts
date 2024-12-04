@@ -7,7 +7,7 @@ import type { RsbuildEntry } from '@rsbuild/core';
 import type { ContentConfig, ManifestV3 } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
-export function mergeContentsEntry({ manifest, entryPath, selfRootPath }: NormailzeMainfestEntryProps) {
+export function mergeContentsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
   const filePaths = entryPath as string[];
   if (!manifest.content_scripts?.length && filePaths.length) {
     if (!manifest.content_scripts) {
@@ -21,12 +21,12 @@ export function mergeContentsEntry({ manifest, entryPath, selfRootPath }: Normai
     }
   }
 
-  if (process.env.NODE_ENV === 'development' && manifest.content_scripts) {
-    const defaultContent = resolve(selfRootPath, './assets/default-content.js');
-    for (const script of manifest.content_scripts) {
-      script.js?.unshift(defaultContent);
-    }
-  }
+  // if (process.env.NODE_ENV === 'development' && manifest.content_scripts) {
+  //   const defaultContent = resolve(selfRootPath, './assets/default-content.js');
+  //   for (const script of manifest.content_scripts) {
+  //     script.js?.unshift(defaultContent);
+  //   }
+  // }
 }
 
 export function getContentsEntry(manifest: ManifestV3) {
