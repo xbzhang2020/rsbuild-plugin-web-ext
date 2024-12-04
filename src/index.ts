@@ -24,21 +24,19 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
   setup: (api) => {
     const rootPath = api.context.rootPath;
-    const srcPath = resolve(rootPath, options.srcDir || './');
     const selfRootPath = __dirname;
     let manifest = {} as ManifestV3;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       manifest = await normalizeManifest({
         manifest: options.manifest as ManifestV3,
-        srcPath,
+        srcPath: resolve(rootPath, options.srcDir || './'),
         rootPath,
         selfRootPath,
       });
 
+      const { background, ...webEntries } = readManifestEntries(manifest);
       const environments: RsbuildConfig['environments'] = {};
-      const { background, ...otherEntries } = readManifestEntries(manifest);
-
       if (background) {
         environments.webWorker = {
           source: {
@@ -52,10 +50,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      if (Object.keys(otherEntries).length) {
+      if (Object.keys(webEntries).length) {
         environments.web = {
           source: {
-            entry: otherEntries,
+            entry: webEntries,
           },
           output: {
             target: 'web',
@@ -63,13 +61,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      let defaultEnvironment = environments.web || environments.webWorker;
-      if (!defaultEnvironment) {
+      if (!environments.webWorker || !environments.web) {
         // should provide an entry at least.
-        defaultEnvironment = environments.web = {
+        environments.web = {
           source: {
             entry: {
-              index: {
+              empty: {
                 import: [],
                 html: false,
               },
@@ -78,7 +75,8 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      if (defaultEnvironment?.output) {
+      const defaultEnvironment = environments.web || environments.webWorker;
+      if (defaultEnvironment.output) {
         const imagePath = config.output?.distPath?.image || 'static/image';
         defaultEnvironment.output.copy = [
           ...copyIcons(manifest, imagePath),
@@ -114,10 +112,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
           .flatMap((key) => getRsbuildEntryFile(webEntry, key))
           .map((fileName) => resolve(rootPath, fileName));
         const defaultContentFile = resolve(selfRootPath, './assets/default-content.js');
-        const content = await readFile(defaultContentFile, 'utf-8');
+        const defaultContent = await readFile(defaultContentFile, 'utf-8');
 
         api.transform({ test: (resource) => contentFiles.includes(resource), environments: ['web'] }, ({ code }) => {
-          return `${code}\n${content}`;
+          return `${code}\n${defaultContent}`;
         });
       }
     });
@@ -129,13 +127,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
-    api.onAfterBuild(async () => {
+    api.onDevCompileDone(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest));
+      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest, null, 2));
       console.log('Built the extension successfully');
     });
 
-    api.onDevCompileDone(async () => {
+    api.onAfterBuild(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
       await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest));
       console.log('Built the extension successfully');

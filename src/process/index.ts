@@ -115,15 +115,24 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
             break;
           }
           case 'popup': {
-            mergePopupEntry(manifest, srcPath, filePath);
+            mergePopupEntry({
+              ...props,
+              entryPath: filePath,
+            });
             break;
           }
           case 'options': {
-            mergeOptionsEntry(manifest, srcPath, filePath);
+            mergeOptionsEntry({
+              ...props,
+              entryPath: filePath,
+            });
             break;
           }
           case 'devtools': {
-            mergeDevtoolsEntry(manifest, srcPath, filePath);
+            mergeDevtoolsEntry({
+              ...props,
+              entryPath: filePath,
+            });
             break;
           }
           case 'sandbox': {
@@ -139,13 +148,16 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
       entryPath: backgroundFile,
     });
 
-    await mergeContentsEntry({
+    mergeContentsEntry({
       ...props,
       entryPath: contentFiles,
     });
 
     if (sandboxFiles.length) {
-      mergeSandboxEntry(manifest, srcPath, sandboxFiles);
+      mergeSandboxEntry({
+        ...props,
+        entryPath: sandboxFiles,
+      });
     }
   } catch (err) {
     console.error(err);

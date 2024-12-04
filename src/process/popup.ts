@@ -1,12 +1,13 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
+import type { NormailzeMainfestEntryProps } from './process.js';
 
-export function mergePopupEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
-  if (manifest.action?.default_popup) return;
+export function mergePopupEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
+  if (manifest.action?.default_popup || !entryPath) return;
   if (!manifest.action) {
     manifest.action = {};
   }
-  manifest.action.default_popup = filePath;
+  manifest.action.default_popup = entryPath as string;
 }
 
 export function getPopupEntry(manifest: ManifestV3) {

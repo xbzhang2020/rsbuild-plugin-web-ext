@@ -1,16 +1,17 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { ManifestV3 } from '../manifest.js';
+import type { NormailzeMainfestEntryProps } from './process.js';
 
-export function mergeOptionsEntry(manifest: ManifestV3, rootPath: string, filePath: string) {
+export function mergeOptionsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
   const options = manifest.options_ui?.page || manifest.options_page;
-  if (options) return;
+  if (options || !entryPath) return;
 
   if (!manifest.options_ui) {
     manifest.options_ui = {
       open_in_tab: true,
     };
   }
-  manifest.options_ui.page = filePath;
+  manifest.options_ui.page = entryPath as string;
 }
 
 export function getOptionsEntry(manifest: ManifestV3) {
