@@ -50,15 +50,16 @@ export async function writeContentsEntry(
   extra: {
     originManifest: ManifestV3 | undefined;
     rootPath: string;
-    filePath: string;
+    entry: string | string[];
   },
 ) {
   if (!manifest.content_scripts) return;
-  const { originManifest, rootPath, filePath } = extra;
+  const { originManifest, rootPath, entry } = extra;
   const index = Number(key.replace('content', '') || '0');
   const explicit = originManifest?.content_scripts?.length;
 
   if (!explicit) {
+    const filePath = Array.isArray(entry) ? entry[0] : entry;
     const path = resolve(rootPath, filePath);
     const code = await readFile(path, 'utf-8');
     const extraConfig = getContentConfig(code) || {

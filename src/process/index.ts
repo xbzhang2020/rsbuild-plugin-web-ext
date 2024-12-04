@@ -23,17 +23,12 @@ function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
 }
 
-function getEntryFile(entries: RsbuildEntry, key: string) {
+export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
-  let srcPath = '';
-  if (typeof entry === 'string') {
-    srcPath = entry;
-  } else if (Array.isArray(entry)) {
-    srcPath = entry[0];
-  } else if (typeof entry === 'object') {
-    srcPath = Array.isArray(entry.import) ? entry.import[0] : entry.import;
+  if (typeof entry === 'string' || Array.isArray(entry)) {
+    return entry;
   }
-  return srcPath;
+  return entry.import;
 }
 
 export async function normalizeManifest(props: NormalizeManifestProps) {
@@ -189,9 +184,11 @@ export async function writeManifestEntries(
     if (key === 'background') {
       writeBackgroundEntry(manifest, key, assets);
     } else if (key.startsWith('content')) {
-      const rootPath = environment.config.root;
-      const filePath = getEntryFile(environment.entry, key);
-      await writeContentsEntry(manifest, key, assets, { originManifest, rootPath, filePath });
+      await writeContentsEntry(manifest, key, assets, {
+        originManifest,
+        rootPath: environment.config.root,
+        entry: getRsbuildEntryFile(environment.entry, key),
+      });
     } else if (key === 'popup') {
       writePopupEntry(manifest, key);
     } else if (key === 'options') {
