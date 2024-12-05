@@ -23,5 +23,3 @@ export type ContentConfig = {
 };
 
 export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
-
-

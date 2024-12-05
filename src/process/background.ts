@@ -39,7 +39,7 @@ export function getBackgroundEntry(manifest: Manifest) {
   } else if (background?.scripts?.length) {
     scripts.push(...background.scripts);
   }
-  
+
   const entry: RsbuildEntry = {};
   if (scripts.length) {
     entry.background = {

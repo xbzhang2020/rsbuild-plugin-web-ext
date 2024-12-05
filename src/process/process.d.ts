@@ -1,4 +1,4 @@
-import type { Manifest, BrowserTarget } from '../manifest.ts';
+import type { BrowserTarget, Manifest } from '../manifest.ts';
 
 export interface NormalizeManifestProps {
   manifest: Manifest;
