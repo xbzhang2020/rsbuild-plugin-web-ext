@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
@@ -33,12 +33,12 @@ function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
 
 export async function normalizeManifest(props: NormalizeManifestProps) {
   const { manifest, rootPath } = props;
-  let finalManifest = {} as ManifestV3;
+  let finalManifest = {} as Manifest;
   const defaultManifest = await getDefaultManifest(rootPath);
 
   finalManifest = {
     ...defaultManifest,
-    ...(manifest || ({} as ManifestV3)),
+    ...(manifest || ({} as Manifest)),
   };
 
   await mergeManifestEntries({
@@ -51,7 +51,7 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
 export async function getDefaultManifest(srcPath: string) {
   const res = {
     manifest_version: 3,
-  } as ManifestV3;
+  } as Manifest;
 
   try {
     const filePath = resolve(srcPath, './package.json');
@@ -164,7 +164,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
   }
 }
 
-export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
+export function readManifestEntries(manifest: Manifest): RsbuildEntry {
   return {
     ...getBackgroundEntry(manifest),
     ...getContentsEntry(manifest),
@@ -178,11 +178,11 @@ export function readManifestEntries(manifest: ManifestV3): RsbuildEntry {
 interface WriteManifestOptions {
   stats?: Rspack.Stats;
   environment: EnvironmentContext;
-  originManifest?: ManifestV3;
+  originManifest?: Manifest;
 }
 
 export async function writeManifestEntries(
-  manifest: ManifestV3,
+  manifest: Manifest,
   { stats, environment, originManifest }: WriteManifestOptions,
 ) {
   // refer to https://rspack.dev/api/javascript-api/stats-json

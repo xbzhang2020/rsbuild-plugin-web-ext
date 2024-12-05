@@ -1,5 +1,5 @@
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
 export function mergeSandboxEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
@@ -13,7 +13,7 @@ export function mergeSandboxEntry({ manifest, entryPath }: NormailzeMainfestEntr
   manifest.sandbox.pages = entryPath as string[];
 }
 
-export function getSandboxEntry(manifest: ManifestV3) {
+export function getSandboxEntry(manifest: Manifest) {
   const entry: RsbuildEntry = {};
 
   const sandboxPages = manifest.sandbox?.pages || [];
@@ -28,7 +28,7 @@ export function getSandboxEntry(manifest: ManifestV3) {
   return entry;
 }
 
-export function writeSandboxEntry(manifest: ManifestV3, key: string) {
+export function writeSandboxEntry(manifest: Manifest, key: string) {
   if (!manifest.sandbox?.pages) return;
   const index = Number(key.replace('content', '') || '0');
   manifest.sandbox.pages[index] = `${key}.html`;

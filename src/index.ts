@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { ContentConfig, ManifestV3 } from './manifest.js';
+import type { ContentConfig, Manifest, BrowserTarget } from './manifest.js';
 import {
   copyIcons,
   copyLocales,
@@ -14,6 +14,7 @@ import {
 export type PluginWebExtOptions = {
   manifest?: unknown;
   srcDir?: string;
+  target?: BrowserTarget;
 };
 
 export type ContentScriptConfig = ContentConfig;
@@ -24,11 +25,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
   setup: (api) => {
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
-    let manifest = {} as ManifestV3;
+    let manifest = {} as Manifest;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       manifest = await normalizeManifest({
-        manifest: options.manifest as ManifestV3,
+        manifest: options.manifest as Manifest,
+        target: options.target || 'chrome-mv3',
         srcPath: resolve(rootPath, options.srcDir || './'),
         rootPath,
         selfRootPath,
@@ -113,7 +115,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onAfterEnvironmentCompile(async (params) => {
       await writeManifestEntries(manifest, {
         ...params,
-        originManifest: options.manifest as ManifestV3,
+        originManifest: options.manifest as Manifest,
       });
     });
 

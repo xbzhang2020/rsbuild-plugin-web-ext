@@ -1,5 +1,5 @@
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
 export function mergeDevtoolsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
@@ -7,7 +7,7 @@ export function mergeDevtoolsEntry({ manifest, entryPath }: NormailzeMainfestEnt
   manifest.devtools_page = entryPath as string;
 }
 
-export function getDevtoolsEntry(manifest: ManifestV3) {
+export function getDevtoolsEntry(manifest: Manifest) {
   const entry: RsbuildEntry = {};
 
   const devtools = manifest.devtools_page;
@@ -21,6 +21,6 @@ export function getDevtoolsEntry(manifest: ManifestV3) {
   return entry;
 }
 
-export function writeDevtoolsEntry(manifest: ManifestV3, key: string) {
+export function writeDevtoolsEntry(manifest: Manifest, key: string) {
   manifest.devtools_page = `${key}.html`;
 }

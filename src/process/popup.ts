@@ -1,5 +1,5 @@
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
 export function mergePopupEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
@@ -10,7 +10,7 @@ export function mergePopupEntry({ manifest, entryPath }: NormailzeMainfestEntryP
   manifest.action.default_popup = entryPath as string;
 }
 
-export function getPopupEntry(manifest: ManifestV3) {
+export function getPopupEntry(manifest: Manifest) {
   const entry: RsbuildEntry = {};
   const popup = manifest.action?.default_popup;
   if (popup) {
@@ -23,7 +23,7 @@ export function getPopupEntry(manifest: ManifestV3) {
   return entry;
 }
 
-export function writePopupEntry(manifest: ManifestV3, key: string) {
+export function writePopupEntry(manifest: Manifest, key: string) {
   if (!manifest.action) return;
   manifest.action.default_popup = `${key}.html`;
 }

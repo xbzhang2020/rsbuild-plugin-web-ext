@@ -1,4 +1,5 @@
-export type ManifestV3 = chrome.runtime.ManifestV3 & {
+export type Manifest = chrome.runtime.ManifestV3 & {
+  manifest_version: 3 | 2;
   background?:
     | {
         service_worker?: string; // chrome, safari
@@ -20,3 +21,7 @@ export type ContentConfig = {
   exclude_globs?: string[] | undefined;
   world?: 'ISOLATED' | 'MAIN' | undefined;
 };
+
+export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
+
+

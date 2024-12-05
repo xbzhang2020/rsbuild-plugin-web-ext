@@ -4,7 +4,7 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ContentConfig, ManifestV3 } from '../manifest.js';
+import type { ContentConfig, Manifest } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
@@ -23,7 +23,7 @@ export function mergeContentsEntry({ manifest, entryPath }: NormailzeMainfestEnt
   }
 }
 
-export function getContentsEntry(manifest: ManifestV3) {
+export function getContentsEntry(manifest: Manifest) {
   const entry: RsbuildEntry = {};
   const contentScripts = manifest.content_scripts || [];
   contentScripts.forEach((contentScript, index) => {
@@ -38,11 +38,11 @@ export function getContentsEntry(manifest: ManifestV3) {
 }
 
 export async function writeContentsEntry(
-  manifest: ManifestV3,
+  manifest: Manifest,
   key: string,
   assets: string[],
   extra: {
-    originManifest: ManifestV3 | undefined;
+    originManifest: Manifest | undefined;
     rootPath: string;
     entry: string | string[];
   },

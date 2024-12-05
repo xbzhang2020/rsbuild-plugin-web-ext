@@ -1,7 +1,7 @@
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 
-export function mergeIconsEntry(manifest: ManifestV3, rootPath: string, filePaths: string[]) {
-  const assetsIcons: ManifestV3['icons'] = {};
+export function mergeIconsEntry(manifest: Manifest, rootPath: string, filePaths: string[]) {
+  const assetsIcons: Manifest['icons'] = {};
   for (const filePath of filePaths) {
     const res = filePath.match(/icon-?(\d+)\.png$/);
     if (res?.[1]) {
@@ -26,7 +26,7 @@ export function mergeIconsEntry(manifest: ManifestV3, rootPath: string, filePath
   };
 }
 
-export function copyIcons(manifest: ManifestV3, distImagePath: string) {
+export function copyIcons(manifest: Manifest, distImagePath: string) {
   const paths: { from: string; to: string }[] = [];
 
   function helper(icons?: Record<number, string>) {

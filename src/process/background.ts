@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 import type { NormailzeMainfestEntryProps } from './process.js';
 
-function hasBackgroundEntry(manifest: ManifestV3) {
+function hasBackgroundEntry(manifest: Manifest) {
   const background = manifest.background;
   if (background?.service_worker || background?.scripts?.length) return true;
   return false;
@@ -31,7 +31,7 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: Norm
   }
 }
 
-export function getBackgroundEntry(manifest: ManifestV3) {
+export function getBackgroundEntry(manifest: Manifest) {
   const scripts: string[] = [];
   const { background } = manifest;
   if (background?.service_worker) {
@@ -39,6 +39,7 @@ export function getBackgroundEntry(manifest: ManifestV3) {
   } else if (background?.scripts?.length) {
     scripts.push(...background.scripts);
   }
+  
   const entry: RsbuildEntry = {};
   if (scripts.length) {
     entry.background = {
@@ -49,7 +50,7 @@ export function getBackgroundEntry(manifest: ManifestV3) {
   return entry;
 }
 
-export function writeBackgroundEntry(manifest: ManifestV3, key: string, assets: string[]) {
+export function writeBackgroundEntry(manifest: Manifest, key: string, assets: string[]) {
   if (!manifest.background) return;
   if (manifest.background.scripts) {
     manifest.background.scripts = assets;

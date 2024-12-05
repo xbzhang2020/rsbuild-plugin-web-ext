@@ -2,18 +2,6 @@
 const config = RSBUILD_CLIENT_CONFIG;
 const liveReload = RSBUILD_DEV_LIVE_RELOAD;
 
-function formatURL({ port, protocol, hostname, pathname }) {
-  if (typeof URL !== 'undefined') {
-    const url = new URL('http://localhost');
-    url.port = String(port);
-    url.hostname = hostname;
-    url.protocol = protocol;
-    url.pathname = pathname;
-    return url.toString();
-  }
-  return `${protocol}${colon}//${hostname}:${port}${pathname}`;
-}
-
 let hasCompileErrors = false;
 
 function clearOutdatedErrors() {
@@ -25,14 +13,12 @@ function clearOutdatedErrors() {
 function handleSuccess() {
   clearOutdatedErrors();
   hasCompileErrors = false;
-  applyUpdates();
+  tryApplyUpdates();
 }
 
 function handleWarnings(warnings) {
   clearOutdatedErrors();
-
   hasCompileErrors = false;
-
   for (let i = 0; i < warnings.length; i++) {
     if (i === 5) {
       console.warn('There were more warnings in other files, you can find a complete log in the terminal.');
@@ -41,14 +27,12 @@ function handleWarnings(warnings) {
     console.warn(formatted.warnings[i]);
   }
 
-  applyUpdates();
+  tryApplyUpdates();
 }
 
 function handleErrors(errors) {
   clearOutdatedErrors();
-
   hasCompileErrors = true;
-
   for (const error of errors) {
     console.error(error);
   }
@@ -67,7 +51,7 @@ function onMessage(e) {
   switch (message.type) {
     case 'hash':
       break;
-    case 'still-ok':
+    // case 'still-ok':
     case 'ok':
       handleSuccess();
       break;
@@ -122,15 +106,29 @@ function removeListeners() {
   }
 }
 
-function applyUpdates() {
+function tryApplyUpdates() {
   reloadExtension();
 }
 
 function reloadExtension() {
-  if (liveReload) {
-    // TODO: 跨浏览器兼容
+  if (!liveReload) return;
+  if (typeof chrome !== 'undefined') {
     chrome.runtime.reload();
+  } else if (typeof browser !== 'undefined') {
+    browser.runtime.reload();
   }
 }
 
+function formatURL({ port, protocol, hostname, pathname }) {
+  if (typeof URL !== 'undefined') {
+    const url = new URL('http://localhost');
+    url.port = String(port);
+    url.hostname = hostname;
+    url.protocol = protocol;
+    url.pathname = pathname;
+    return url.toString();
+  }
+  const colon = protocol.indexOf(':') === -1 ? ':' : '';
+  return `${protocol}${colon}//${hostname}:${port}${pathname}`;
+}
 connect();

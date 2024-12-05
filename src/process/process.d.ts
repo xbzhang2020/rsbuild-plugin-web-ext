@@ -1,7 +1,8 @@
-import type { ManifestV3 } from '../manifest.ts';
+import type { Manifest, BrowserTarget } from '../manifest.ts';
 
 export interface NormalizeManifestProps {
-  manifest: ManifestV3;
+  manifest: Manifest;
+  target: BrowserTarget;
   rootPath: string;
   srcPath: string;
   selfRootPath: string;

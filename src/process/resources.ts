@@ -1,6 +1,6 @@
-import type { ManifestV3 } from '../manifest.js';
+import type { Manifest } from '../manifest.js';
 
-export function copyWebAccessibleResources(manifest: ManifestV3) {
+export function copyWebAccessibleResources(manifest: Manifest) {
   const { web_accessible_resources } = manifest;
   if (!web_accessible_resources) return [];
 
