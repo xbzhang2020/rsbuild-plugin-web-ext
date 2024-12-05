@@ -23,7 +23,7 @@ function isEntryFile(file: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
 }
 
-export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
+function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
   if (typeof entry === 'string' || Array.isArray(entry)) {
     return entry;

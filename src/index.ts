@@ -6,7 +6,6 @@ import {
   copyIcons,
   copyLocales,
   copyWebAccessibleResources,
-  getRsbuildEntryFile,
   normalizeManifest,
   readManifestEntries,
   writeManifestEntries,
@@ -89,11 +88,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         environments,
         dev: {
           writeToDisk: (file) => !file.includes('.hot-update.'),
-          assetPrefix: true,
           client: {
             host: '127.0.0.1:<port>',
             port: '<port>',
             protocol: 'ws',
+            reconnect: 20,
           },
         },
       };
@@ -102,22 +101,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       return mergeRsbuildConfig(config, extraConfig);
     });
 
-    api.onBeforeStartDevServer(async ({ environments }) => {
-      const webEntry = environments.web?.entry;
-      if (!webEntry) return;
-
-      const contentEntryNames = Object.keys(webEntry).filter((item) => item.startsWith('content'));
-      if (contentEntryNames.length) {
-        const contentFiles = contentEntryNames
-          .flatMap((key) => getRsbuildEntryFile(webEntry, key))
-          .map((fileName) => resolve(rootPath, fileName));
-        const defaultContentFile = resolve(selfRootPath, './assets/default-content.js');
-        const defaultContent = await readFile(defaultContentFile, 'utf-8');
-
-        api.transform({ test: (resource) => contentFiles.includes(resource), environments: ['web'] }, ({ code }) => {
-          return `${code}\n${defaultContent}`;
-        });
-      }
+    api.onBeforeStartDevServer(async () => {
+      const config = api.getNormalizedConfig();
+      const client = JSON.stringify(config.dev.client);
+      const liveReload = JSON.stringify(config.dev.liveReload);
+      api.transform({ test: /background-runtime\.js$/, environments: ['webWorker'] }, ({ code }) => {
+        return code.replace('RSBUILD_CLIENT_CONFIG', client).replace('RSBUILD_DEV_LIVE_RELOAD', liveReload);
+      });
     });
 
     api.onAfterEnvironmentCompile(async (params) => {

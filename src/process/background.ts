@@ -17,7 +17,7 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: Norm
   }
 
   if (process.env.NODE_ENV === 'development') {
-    const defaultBackground = resolve(selfRootPath, './assets/default-background.js');
+    const defaultBackground = resolve(selfRootPath, './assets/background-runtime.js');
     const { background } = manifest;
     if (background?.service_worker) {
       background.service_worker = [defaultBackground, background.service_worker].join(',');
@@ -32,10 +32,15 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: Norm
 }
 
 export function getBackgroundEntry(manifest: ManifestV3) {
-  const scripts = manifest.background?.service_worker || manifest.background?.scripts;
+  const scripts: string[] = [];
+  const { background } = manifest;
+  if (background?.service_worker) {
+    scripts.push(...background.service_worker.split(','));
+  } else if (background?.scripts?.length) {
+    scripts.push(...background.scripts);
+  }
   const entry: RsbuildEntry = {};
-
-  if (scripts) {
+  if (scripts.length) {
     entry.background = {
       import: scripts,
       html: false,
