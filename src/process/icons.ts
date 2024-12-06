@@ -47,7 +47,7 @@ export function copyIcons(manifest: Manifest, distImagePath: string) {
   function helper(icons?: Record<number, string> | string) {
     if (!icons) return;
     const noramlIcons = typeof icons === 'string' ? { 16: icons } : icons;
-    
+
     for (const key in noramlIcons) {
       const from = icons[key];
       const filename = from.split('/').at(-1);
