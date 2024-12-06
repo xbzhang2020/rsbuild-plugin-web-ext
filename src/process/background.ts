@@ -1,43 +1,51 @@
 import { resolve } from 'node:path';
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { Manifest } from '../manifest.js';
-import type { NormailzeMainfestEntryProps } from './process.js';
+import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
 
-function hasBackgroundEntry(manifest: Manifest) {
-  const background = manifest.background;
-  if (background?.service_worker || background?.scripts?.length) return true;
-  return false;
-}
+export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target }: NormalizeMainfestEntryProps) {
+  const scripts: string[] = [];
+  const { background } = manifest;
 
-export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath }: NormailzeMainfestEntryProps) {
-  if (entryPath && !hasBackgroundEntry(manifest)) {
-    manifest.background = {
-      service_worker: entryPath as string,
-    };
+  if (background && 'service_worker' in background) {
+    scripts.push(background.service_worker);
+  } else if (background && 'scripts' in background && background.scripts) {
+    scripts.push(...background.scripts);
+  } else if (entryPath) {
+    scripts.push(entryPath as string);
   }
 
   if (process.env.NODE_ENV === 'development') {
     const defaultBackground = resolve(selfRootPath, './assets/background-runtime.js');
-    const { background } = manifest;
-    if (background?.service_worker) {
-      background.service_worker = [defaultBackground, background.service_worker].join(',');
-    } else if (background?.scripts?.length) {
-      background.scripts.unshift(defaultBackground);
+    scripts.push(defaultBackground);
+  }
+
+  if (scripts.length) {
+    // Firefox only supports background.scripts
+    const isFirefox = target.includes('firefox');
+    if (isFirefox) {
+      manifest.background = {
+        ...(manifest.background || {}),
+        scripts,
+      };
     } else {
       manifest.background = {
-        service_worker: defaultBackground,
+        ...(manifest.background || {}),
+        service_worker: scripts.join(','),
       };
     }
   }
 }
 
 export function getBackgroundEntry(manifest: Manifest) {
-  const scripts: string[] = [];
+  let scripts: string[] = [];
   const { background } = manifest;
-  if (background?.service_worker) {
-    scripts.push(...background.service_worker.split(','));
-  } else if (background?.scripts?.length) {
-    scripts.push(...background.scripts);
+  if (background) {
+    if ('service_worker' in background) {
+      scripts = background.service_worker.split(',');
+    } else if ('scripts' in background) {
+      scripts = background.scripts || [];
+    }
   }
 
   const entry: RsbuildEntry = {};
@@ -50,10 +58,14 @@ export function getBackgroundEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writeBackgroundEntry(manifest: Manifest, key: string, assets: string[]) {
-  if (!manifest.background) return;
-  if (manifest.background.scripts) {
-    manifest.background.scripts = assets;
+export function writeBackgroundEntry({ manifest, assets }: WriteMainfestEntryProps) {
+  const { background } = manifest;
+  if (!background) return;
+  if ('scripts' in background) {
+    background.scripts = assets;
   }
-  manifest.background.service_worker = assets[0];
+  if ('service_worker' in background) {
+    // assests only have one element.
+    background.service_worker = assets[0];
+  }
 }

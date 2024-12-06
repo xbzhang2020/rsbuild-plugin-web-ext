@@ -1,8 +1,8 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { Manifest } from '../manifest.js';
-import type { NormailzeMainfestEntryProps } from './process.js';
+import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
 
-export function mergeOptionsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
+export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const options = manifest.options_ui?.page || manifest.options_page;
   if (options || !entryPath) return;
 
@@ -27,7 +27,7 @@ export function getOptionsEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writeOptionsEntry(manifest: Manifest, key: string) {
+export function writeOptionsEntry({ manifest, key }: WriteMainfestEntryProps) {
   const filename = `${key}.html`;
   if (manifest.options_page) {
     manifest.options_page = filename;

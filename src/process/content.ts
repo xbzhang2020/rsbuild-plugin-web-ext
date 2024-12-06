@@ -5,12 +5,13 @@ import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { ContentConfig, Manifest } from '../manifest.js';
-import type { NormailzeMainfestEntryProps } from './process.js';
+import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
 
-export function mergeContentsEntry({ manifest, entryPath }: NormailzeMainfestEntryProps) {
-  // TODO: 适配 Firefox
+export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const filePaths = entryPath as string[];
-  if (!manifest.content_scripts?.length && filePaths.length) {
+  const { content_scripts } = manifest;
+
+  if (!content_scripts?.length && filePaths.length) {
     if (!manifest.content_scripts) {
       manifest.content_scripts = [];
     }
@@ -25,9 +26,10 @@ export function mergeContentsEntry({ manifest, entryPath }: NormailzeMainfestEnt
 
 export function getContentsEntry(manifest: Manifest) {
   const entry: RsbuildEntry = {};
-  const contentScripts = manifest.content_scripts || [];
-  contentScripts.forEach((contentScript, index) => {
-    const name = `content${contentScripts.length === 1 ? '' : index}`;
+  const { content_scripts = [] } = manifest;
+
+  content_scripts.forEach((contentScript, index) => {
+    const name = `content${content_scripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
     entry[name] = {
       import: [...js, ...css],
@@ -37,38 +39,35 @@ export function getContentsEntry(manifest: Manifest) {
   return entry;
 }
 
-export async function writeContentsEntry(
-  manifest: Manifest,
-  key: string,
-  assets: string[],
-  extra: {
-    originManifest: Manifest | undefined;
-    rootPath: string;
-    entry: string | string[];
-  },
-) {
-  if (!manifest.content_scripts) return;
-  const { originManifest, rootPath, entry } = extra;
+export async function writeContentsEntry({
+  manifest,
+  originManifest,
+  rootPath,
+  entryPath,
+  key,
+  assets,
+}: WriteMainfestEntryProps) {
+  const { content_scripts } = manifest;
+  if (!content_scripts) return;
   const index = Number(key.replace('content', '') || '0');
-  const explicit = originManifest?.content_scripts?.length;
+  const declarative = !originManifest?.content_scripts?.length && entryPath;
 
-  if (!explicit) {
-    const filePath = Array.isArray(entry) ? entry[0] : entry;
-    const path = resolve(rootPath, filePath);
-    const code = await readFile(path, 'utf-8');
+  if (declarative) {
+    // declarative entry is a sinlge file
+    const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+    const code = await readFile(resolve(rootPath, filePath), 'utf-8');
     const extraConfig = getContentConfig(code) || {
       matches: ['<all_urls>'],
     };
-
     if (extraConfig) {
-      manifest.content_scripts[index] = {
-        ...manifest.content_scripts[index],
+      content_scripts[index] = {
+        ...content_scripts[index],
         ...extraConfig,
       };
     }
   }
 
-  const item = manifest.content_scripts[index];
+  const item = content_scripts[index];
   item.js = assets.filter((item) => item.endsWith('.js'));
   item.css = assets.filter((item) => item.endsWith('.css'));
 }

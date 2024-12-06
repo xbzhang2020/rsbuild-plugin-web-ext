@@ -6,7 +6,12 @@ export function copyWebAccessibleResources(manifest: Manifest) {
 
   const resources: string[] = [];
   for (const item of web_accessible_resources) {
-    resources.push(...item.resources);
+    // web_accessible_resources key is an array of string in Manifest V2
+    if (typeof item === 'string') {
+      resources.push(...item);
+    } else {
+      resources.push(...item.resources);
+    }
   }
 
   return resources.map((item) => ({

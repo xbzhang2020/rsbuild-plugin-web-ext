@@ -1,14 +1,14 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { Manifest } from '../manifest.js';
+import type { Manifest, BrowserTarget, ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
-import type { NormalizeManifestProps } from './process.js';
+import type { NormalizeManifestProps, WriteMainfestEntryProps } from './process.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
@@ -32,13 +32,13 @@ function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
 }
 
 export async function normalizeManifest(props: NormalizeManifestProps) {
-  const { manifest, rootPath } = props;
-  let finalManifest = {} as Manifest;
-  const defaultManifest = await getDefaultManifest(rootPath);
+  const { manifest, rootPath, target } = props;
+  let finalManifest = {} as ManifestV3;
+  const defaultManifest = (await getDefaultManifest(rootPath, target)) as ManifestV3;
 
   finalManifest = {
     ...defaultManifest,
-    ...(manifest || ({} as Manifest)),
+    ...((manifest || {}) as ManifestV3),
   };
 
   await mergeManifestEntries({
@@ -48,13 +48,13 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
   return finalManifest;
 }
 
-export async function getDefaultManifest(srcPath: string) {
+export async function getDefaultManifest(rootPath: string, target: BrowserTarget) {
   const res = {
-    manifest_version: 3,
+    manifest_version: target.includes('2') ? 2 : 3,
   } as Manifest;
 
   try {
-    const filePath = resolve(srcPath, './package.json');
+    const filePath = resolve(rootPath, './package.json');
     const content = await readFile(filePath, 'utf-8');
     const { name, displayName, version, description, author, homepage } = JSON.parse(content);
     res.name = displayName || name;
@@ -193,24 +193,29 @@ export async function writeManifestEntries(
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
     if (!assets) continue;
 
+    const props: WriteMainfestEntryProps = {
+      key,
+      assets,
+      manifest,
+      originManifest,
+      rootPath: environment.config.root,
+    };
+
     if (key === 'background') {
-      writeBackgroundEntry(manifest, key, assets);
+      writeBackgroundEntry(props);
     } else if (key.startsWith('content')) {
-      await writeContentsEntry(manifest, key, assets, {
-        originManifest,
-        rootPath: environment.config.root,
-        entry: getRsbuildEntryFile(environment.entry, key),
-      });
+      const entryPath = getRsbuildEntryFile(environment.entry, key);
+      await writeContentsEntry({ ...props, entryPath });
     } else if (key === 'popup') {
-      writePopupEntry(manifest, key);
+      writePopupEntry(props);
     } else if (key === 'options') {
-      writeOptionsEntry(manifest, key);
+      writeOptionsEntry(props);
       return;
     } else if (key === 'devtools') {
-      writeDevtoolsEntry(manifest, key);
+      writeDevtoolsEntry(props);
       return;
     } else if (key.startsWith('sandbox')) {
-      writeSandboxEntry(manifest, key);
+      writeSandboxEntry(props);
     }
   }
 }

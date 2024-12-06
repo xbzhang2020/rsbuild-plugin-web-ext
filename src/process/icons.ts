@@ -1,6 +1,7 @@
 import type { Manifest } from '../manifest.js';
 
 export function mergeIconsEntry(manifest: Manifest, rootPath: string, filePaths: string[]) {
+  // TODO: support mv2; icons might be a string
   const assetsIcons: Manifest['icons'] = {};
   for (const filePath of filePaths) {
     const res = filePath.match(/icon-?(\d+)\.png$/);

@@ -1,13 +1,8 @@
-export type Manifest = chrome.runtime.ManifestV3 & {
-  manifest_version: 3 | 2;
-  background?:
-    | {
-        service_worker?: string; // chrome, safari
-        scripts?: string[]; // firefox
-        type?: 'module';
-      }
-    | undefined;
-};
+export type ManifestV2 = chrome.runtime.ManifestV2;
+
+export type ManifestV3 = chrome.runtime.ManifestV3;
+
+export type Manifest = ManifestV3 | ManifestV2;
 
 export type ContentConfig = {
   matches?: string[] | undefined;
