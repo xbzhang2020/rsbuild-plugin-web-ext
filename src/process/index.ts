@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
-import type { Manifest, BrowserTarget, ManifestV3 } from '../manifest.js';
+import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
@@ -70,7 +70,7 @@ export async function getDefaultManifest(rootPath: string, target: BrowserTarget
 }
 
 export async function mergeManifestEntries(props: NormalizeManifestProps) {
-  const { manifest, srcPath } = props;
+  const { srcPath } = props;
 
   try {
     const files = await readdir(srcPath, {
@@ -90,7 +90,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
 
         if (name === 'assets') {
           const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
-          mergeIconsEntry(manifest, srcPath, subFilePaths);
+          mergeIconsEntry({ ...props, entryPath: subFilePaths });
         }
 
         if (name === 'contents') {

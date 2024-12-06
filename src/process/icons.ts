@@ -1,8 +1,11 @@
 import type { Manifest } from '../manifest.js';
+import type { NormalizeMainfestEntryProps } from './process.js';
 
-export function mergeIconsEntry(manifest: Manifest, rootPath: string, filePaths: string[]) {
-  // TODO: support mv2; icons might be a string
+export function mergeIconsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+  if (!entryPath) return;
   const assetsIcons: Manifest['icons'] = {};
+  const filePaths = entryPath as string[];
+
   for (const filePath of filePaths) {
     const res = filePath.match(/icon-?(\d+)\.png$/);
     if (res?.[1]) {
@@ -12,31 +15,44 @@ export function mergeIconsEntry(manifest: Manifest, rootPath: string, filePaths:
   }
 
   if (!Object.keys(assetsIcons).length) return;
-
   manifest.icons = {
     ...assetsIcons,
     ...(manifest.icons || {}),
   };
 
-  if (!manifest.action) {
-    manifest.action = {};
+  const { manifest_version, action, browser_action } = manifest;
+  if (manifest_version === 2) {
+    if (!browser_action) {
+      manifest.browser_action = {};
+    }
+  } else {
+    if (!action) {
+      manifest.action = {};
+    }
   }
-  manifest.action.default_icon = {
-    ...assetsIcons,
-    ...(manifest.action.default_icon || {}),
-  };
+
+  const actionPointer = manifest_version === 2 ? browser_action : action;
+  if (actionPointer) {
+    if (typeof actionPointer.default_icon === 'string') return;
+    actionPointer.default_icon = {
+      ...assetsIcons,
+      ...(actionPointer.default_icon || {}),
+    };
+  }
 }
 
 export function copyIcons(manifest: Manifest, distImagePath: string) {
   const paths: { from: string; to: string }[] = [];
 
-  function helper(icons?: Record<number, string>) {
+  function helper(icons?: Record<number, string> | string) {
     if (!icons) return;
-    for (const key in icons) {
+    const noramlIcons = typeof icons === 'string' ? { 16: icons } : icons;
+    
+    for (const key in noramlIcons) {
       const from = icons[key];
       const filename = from.split('/').at(-1);
       if (filename) {
-        icons[key] = `${distImagePath}/${filename}`;
+        noramlIcons[key] = `${distImagePath}/${filename}`;
       }
       paths.push({
         from,
@@ -45,12 +61,16 @@ export function copyIcons(manifest: Manifest, distImagePath: string) {
     }
   }
 
-  const { icons, action } = manifest;
+  const { icons, action, browser_action, manifest_version } = manifest;
   if (icons) {
     helper(icons);
   }
-  if (action?.default_icon) {
-    helper(action.default_icon);
+
+  if (manifest_version === 2) {
+    helper(browser_action?.default_icon);
+  } else {
+    helper(action?.default_icon);
   }
+
   return paths;
 }
