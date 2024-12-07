@@ -119,13 +119,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const reloadExtensionCode = await readFile(resolve(selfRootPath, './runtime/reload_extension_fn.js'), 'utf-8');
       const liveReload = api.getNormalizedConfig().dev.liveReload;
 
-      if (!manifest.permissions) {
-        manifest.permissions = [];
-      }
-      if (!manifest.permissions.includes('scripting')) {
-        manifest.permissions.push('scripting');
-      }
-
       // only transform in the first compile
       const transformedFiles: string[] = [];
       api.transform({ environments: ['web'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ }, ({ code, resourcePath }) => {
@@ -136,12 +129,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
             return `${code}\n${loadScript}`;
           }
 
+          // volatile, the best choice is that rsbuild exposes an API.
           if (resourcePath.endsWith('hmr.js') && liveReload) {
             const reloadCode = 'window.location.reload();';
             return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
           }
         }
-
         return code;
       });
     });

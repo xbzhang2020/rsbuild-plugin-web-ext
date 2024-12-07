@@ -41,6 +41,20 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
     ...((manifest || {}) as ManifestV3),
   };
 
+  if (process.env.NODE_ENV === 'development') {
+    finalManifest.version_name ??= `${finalManifest.version} (development)`;
+    finalManifest.permissions ??= [];
+    finalManifest.host_permissions ??= [];
+
+    if (!finalManifest.permissions.includes('scripting')) {
+      finalManifest.permissions.push('scripting');
+    }
+
+    if (!finalManifest.host_permissions.includes('*://*/*')) {
+      finalManifest.host_permissions.push('*://*/*');
+    }
+  }
+
   await mergeManifestEntries({
     ...props,
     manifest: finalManifest,
