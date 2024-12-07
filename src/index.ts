@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, ContentConfig, Manifest } from './manifest.js';
@@ -9,6 +9,7 @@ import {
   normalizeManifest,
   readManifestEntries,
   writeManifestEntries,
+  getRsbuildEntryFile,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -89,7 +90,8 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {
-          writeToDisk: (file) => !file.includes('.hot-update.'),
+          writeToDisk: true,
+          assetPrefix: true,
           client: {
             host: '127.0.0.1:<port>',
             port: '<port>',
@@ -103,12 +105,44 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       return mergeRsbuildConfig(config, extraConfig);
     });
 
-    api.onBeforeStartDevServer(async () => {
-      const config = api.getNormalizedConfig();
-      const client = JSON.stringify(config.dev.client);
-      const liveReload = JSON.stringify(config.dev.liveReload);
-      api.transform({ test: /background-runtime\.js$/, environments: ['webWorker'] }, ({ code }) => {
-        return code.replace('RSBUILD_CLIENT_CONFIG', client).replace('RSBUILD_DEV_LIVE_RELOAD', liveReload);
+    api.onBeforeStartDevServer(async ({ environments }) => {
+      const environment = environments.web;
+      if (!environment) return;
+
+      const contentFiles = Object.keys(environment.entry)
+        .filter((key) => key.startsWith('content'))
+        .flatMap((key) => getRsbuildEntryFile(environment.entry, key))
+        .map((file) => resolve(rootPath, file));
+
+      if (!contentFiles.length) return;
+      const loadScript = await readFile(resolve(selfRootPath, './runtime/load_script.js'), 'utf-8');
+      const reloadExtensionCode = await readFile(resolve(selfRootPath, './runtime/reload_extension_fn.js'), 'utf-8');
+      const liveReload = api.getNormalizedConfig().dev.liveReload;
+
+      if (!manifest.permissions) {
+        manifest.permissions = [];
+      }
+      if (!manifest.permissions.includes('scripting')) {
+        manifest.permissions.push('scripting');
+      }
+
+      // only transform in the first compile
+      const transformedFiles: string[] = [];
+      api.transform({ environments: ['web'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ }, ({ code, resourcePath }) => {
+        if (!transformedFiles.includes(resourcePath)) {
+          transformedFiles.push(resourcePath);
+
+          if (contentFiles.includes(resourcePath)) {
+            return `${code}\n${loadScript}`;
+          }
+
+          if (resourcePath.endsWith('hmr.js') && liveReload) {
+            const reloadCode = 'window.location.reload();';
+            return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
+          }
+        }
+
+        return code;
       });
     });
 
