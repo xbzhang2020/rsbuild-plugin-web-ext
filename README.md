@@ -1,5 +1,7 @@
 # rsbuild-plugin-web-ext
 
+English | [简体中文](./README-zh-CN.md)
+
 A plugin for developing and building browser extensions within Rsbuild.
 
 <p>
@@ -12,17 +14,17 @@ A plugin for developing and building browser extensions within Rsbuild.
 
 ## Features
 
-* **Declarative Development with Fewer Configurations.** Inspired by Plasmo, it can automatically build modules and generate manifest.json based on the conventional directory structure.
+* **Declarative Development.** Generates `manifest.json` and builds modules automatically from your directory structure - no complex configuration needed.
 
-* **Live-Reloading + HMR.** It will automatically reload the extension and refresh pages when watching changes of code. There is no longer  a need to reload the extension manually.
+* **Seamless Live Development.** Instant page updates and true Hot Module Replacement (HMR) for content scripts, with optimized extension-specific reloading that eliminates manual refresh.
 
-* **Natural TypeScript Support.**
+* **First-Class TypeScript Support.** Built-in TypeScript support with no additional setup required.
 
-* **Cross-browser Compatibility.** It supports Chrome, Firefox and Safari friendly.
+* **Cross-Browser Compatibility.** Unified APIs and polyfills for seamless development across Chrome, Firefox and Safari.
 
-* **No Frameworks Preference.** Just enjoy any frontend frameworks you like.
+* **Framework Agnostic.** Complete freedom to use any frontend framework or library you prefer.
 
-* **Lightning Fast.** Thanks to Rsbuild.
+* **Blazing Fast Performance.** Leverages Rsbuild's optimized build system for lightning quick development and production builds.
 
 ## Usage
 
