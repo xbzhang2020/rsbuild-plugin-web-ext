@@ -1,5 +1,6 @@
 {
   "name": "with-icons",
+  "displayName": "With Icons",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -9,5 +10,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "A basic browser extension"
 }

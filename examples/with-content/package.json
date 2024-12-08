@@ -1,5 +1,6 @@
 {
   "name": "with-content-scripts",
+  "displayName": "With Content Scripts",
   "version": "1.0.0",
   "private": "true",
   "main": "index.js",
@@ -9,7 +10,7 @@
     "build": "npx rsbuild build"
   },
   "keywords": [],
-  "author": "",
+  "author": "xbzhang",
   "license": "ISC",
-  "description": ""
+  "description": "A basic browser extension"
 }

@@ -1,5 +1,6 @@
 {
-  "name": "with-content-scripts",
+  "name": "with-multi-contents",
+  "displayName": "With Multi Contents",
   "version": "1.0.0",
   "private": "true",
   "main": "index.js",
@@ -8,7 +9,6 @@
     "build": "npx rsbuild build"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "A basic browser extension"
 }

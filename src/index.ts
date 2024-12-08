@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import type { BrowserTarget, ContentConfig, Manifest } from './manifest.js';
+import type { BrowserTarget, Manifest } from './manifest.js';
 import {
   copyIcons,
   copyLocales,
@@ -18,7 +18,7 @@ export type PluginWebExtOptions = {
   target?: BrowserTarget;
 };
 
-export type ContentScriptConfig = ContentConfig;
+export type { ContentConfig as ContentScriptConfig } from './manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
@@ -63,7 +63,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      if (!environments.webWorker || !environments.web) {
+      if (!environments.webWorker && !environments.web) {
         // should provide an entry at least.
         environments.web = {
           source: {

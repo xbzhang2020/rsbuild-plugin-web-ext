@@ -135,4 +135,4 @@ Check out the [example projects](./examples/) for more usage examples.
 
 ## 📄 License
 
-[MIT](./LICENSE)
+[MIT](./LICENSE).
