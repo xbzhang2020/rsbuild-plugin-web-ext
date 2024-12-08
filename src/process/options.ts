@@ -15,15 +15,13 @@ export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntr
 }
 
 export function getOptionsEntry(manifest: Manifest) {
-  const entry: RsbuildEntry = {};
   const options = manifest.options_ui?.page || manifest.options_page;
-  if (options) {
-    entry.options = {
-      import: options,
-      html: true,
-    };
-  }
-
+  if (!options) return null;
+  const entry: RsbuildEntry = {};
+  entry.options = {
+    import: options,
+    html: true,
+  };
   return entry;
 }
 

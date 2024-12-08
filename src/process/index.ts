@@ -1,20 +1,18 @@
 import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { EnvironmentContext, RsbuildEntry, Rspack, EnvironmentConfig, RsbuildConfig } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
-import { mergeIconsEntry } from './icons.js';
+import { mergeIconsEntry, copyIcons } from './icons.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import type { NormalizeManifestProps, WriteMainfestEntryProps } from './process.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
-
-export { copyIcons } from './icons.js';
-export { copyWebAccessibleResources } from './resources.js';
-export { copyLocales } from './locales.js';
+import { copyWebAccessibleResources } from './resources.js';
+import { copyLocales } from './locales.js';
 
 function getFileName(file: string) {
   return file.split('.')[0];
@@ -179,14 +177,14 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
   }
 }
 
-export function readManifestEntries(manifest: Manifest): RsbuildEntry {
+export function getManifestEntries(manifest: Manifest) {
   return {
-    ...getBackgroundEntry(manifest),
-    ...getContentsEntry(manifest),
-    ...getPopupEntry(manifest),
-    ...getOptionsEntry(manifest),
-    ...getDevtoolsEntry(manifest),
-    ...getSandboxEntry(manifest),
+    background: getBackgroundEntry(manifest),
+    content: getContentsEntry(manifest),
+    popup: getPopupEntry(manifest),
+    options: getOptionsEntry(manifest),
+    devtools: getDevtoolsEntry(manifest),
+    sandbox: getSandboxEntry(manifest),
   };
 }
 
@@ -240,4 +238,68 @@ export async function writeManifest(distPath: string, manifest: Manifest) {
   const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
   console.log('Built the extension successfully');
+}
+
+export type EnviromentKey = 'web' | 'webContent' | 'webWorker';
+
+export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig) {
+  const { background, content, ...others } = getManifestEntries(manifest);
+  const environments: {
+    [key in EnviromentKey]?: EnvironmentConfig;
+  } = {};
+
+  if (background) {
+    environments.webWorker = {
+      source: {
+        entry: background,
+      },
+      output: {
+        target: 'web-worker',
+      },
+    };
+  }
+
+  if (content) {
+    environments.webContent = {
+      source: {
+        entry: content,
+      },
+      output: {
+        target: 'web',
+      },
+      dev: {
+        assetPrefix: true,
+      },
+    };
+  }
+
+  const webEntry = Object.values(others).filter((entry) => !!entry);
+  if (webEntry.length) {
+    const entry = webEntry.reduce((res, cur) => {
+      for (const key in cur) {
+        res[key] = cur[key];
+      }
+      return res;
+    }, {});
+    environments.web = {
+      source: {
+        entry,
+      },
+      output: {
+        target: 'web',
+      },
+    };
+  }
+
+  const defaultEnvironment = environments.web || environments.webContent || environments.webWorker;
+  if (defaultEnvironment?.output) {
+    const imagePath = config.output?.distPath?.image || 'static/image';
+    defaultEnvironment.output.copy = [
+      ...copyIcons(manifest, imagePath),
+      ...copyWebAccessibleResources(manifest),
+      ...copyLocales(manifest),
+    ];
+  }
+
+  return environments;
 }

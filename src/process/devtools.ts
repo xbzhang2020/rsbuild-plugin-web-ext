@@ -9,14 +9,14 @@ export function mergeDevtoolsEntry({ manifest, entryPath }: NormalizeMainfestEnt
 }
 
 export function getDevtoolsEntry(manifest: Manifest) {
-  const entry: RsbuildEntry = {};
   const devtools = manifest.devtools_page;
-  if (devtools) {
-    entry.devtools = {
+  if (!devtools) return null;
+  const entry: RsbuildEntry = {
+    devtools: {
       import: devtools,
       html: true,
-    };
-  }
+    },
+  };
   return entry;
 }
 

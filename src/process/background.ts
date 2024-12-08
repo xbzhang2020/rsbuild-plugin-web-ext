@@ -48,13 +48,13 @@ export function getBackgroundEntry(manifest: Manifest) {
     }
   }
 
-  const entry: RsbuildEntry = {};
-  if (scripts.length) {
-    entry.background = {
+  if (!scripts.length) return null;
+  const entry: RsbuildEntry = {
+    background: {
       import: scripts,
       html: false,
-    };
-  }
+    },
+  };
   return entry;
 }
 

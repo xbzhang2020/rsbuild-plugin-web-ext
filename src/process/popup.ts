@@ -20,17 +20,16 @@ export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryP
 }
 
 export function getPopupEntry(manifest: Manifest) {
-  const entry: RsbuildEntry = {};
   const { manifest_version, action, browser_action } = manifest;
 
   const popup = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
-  if (popup) {
-    entry.popup = {
+  if (!popup) return null;
+  const entry: RsbuildEntry = {
+    popup: {
       import: popup,
       html: true,
-    };
-  }
-
+    },
+  };
   return entry;
 }
 

@@ -3,14 +3,11 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, Manifest } from './manifest.js';
 import {
-  copyIcons,
-  copyLocales,
-  copyWebAccessibleResources,
   getRsbuildEntryFile,
   normalizeManifest,
-  readManifestEntries,
   writeManifest,
   writeManifestEntries,
+  normalizeRsbuildEnviroments,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -38,47 +35,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         selfRootPath,
       });
 
-      const { background, ...webEntries } = readManifestEntries(manifest);
-      const environments: RsbuildConfig['environments'] = {};
-      if (background) {
-        environments.webWorker = {
-          source: {
-            entry: {
-              background,
-            },
-          },
-          output: {
-            target: 'web-worker',
-          },
-        };
-      }
-
-      if (Object.keys(webEntries).length) {
-        environments.web = {
-          source: {
-            entry: webEntries,
-          },
-          output: {
-            target: 'web',
-          },
-        };
-      }
-
-      const defaultEnvironment = environments.web || environments.webWorker;
-      if (defaultEnvironment.output) {
-        const imagePath = config.output?.distPath?.image || 'static/image';
-        defaultEnvironment.output.copy = [
-          ...copyIcons(manifest, imagePath),
-          ...copyWebAccessibleResources(manifest),
-          ...copyLocales(manifest),
-        ];
-      }
-
+      const environments = normalizeRsbuildEnviroments(manifest, config);
+      
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {
           writeToDisk: true,
-          // assetPrefix: true,
           client: {
             host: '127.0.0.1:<port>',
             port: '<port>',
@@ -93,12 +55,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onBeforeStartDevServer(async ({ environments }) => {
-      const environment = environments.web;
-      if (!environment) return;
-
-      const contentFiles = Object.keys(environment.entry)
+      const webContentEntry = environments.webContent?.entry || {};
+      const contentFiles = Object.keys(webContentEntry)
         .filter((key) => key.startsWith('content'))
-        .flatMap((key) => getRsbuildEntryFile(environment.entry, key))
+        .flatMap((key) => getRsbuildEntryFile(webContentEntry, key))
         .map((file) => resolve(rootPath, file));
 
       if (!contentFiles.length) return;
@@ -108,22 +68,25 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       // only transform in the first compile
       const transformedFiles: string[] = [];
-      api.transform({ environments: ['web'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ }, ({ code, resourcePath }) => {
-        if (!transformedFiles.includes(resourcePath)) {
-          transformedFiles.push(resourcePath);
+      api.transform(
+        { environments: ['web', 'webContent'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ },
+        ({ code, resourcePath }) => {
+          if (!transformedFiles.includes(resourcePath)) {
+            transformedFiles.push(resourcePath);
 
-          if (contentFiles.includes(resourcePath)) {
-            return `${code}\n${loadScript}`;
-          }
+            if (contentFiles.includes(resourcePath)) {
+              return `${code}\n${loadScript}`;
+            }
 
-          // volatile, the best choice is that rsbuild exposes an API.
-          if (resourcePath.endsWith('hmr.js') && liveReload) {
-            const reloadCode = 'window.location.reload();';
-            return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
+            // volatile, the best choice is that rsbuild exposes an API.
+            if (resourcePath.endsWith('hmr.js') && liveReload) {
+              const reloadCode = 'window.location.reload();';
+              return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
+            }
           }
-        }
-        return code;
-      });
+          return code;
+        },
+      );
     });
 
     api.onAfterEnvironmentCompile(async (params) => {
