@@ -5,9 +5,9 @@ import type { BrowserTarget, Manifest } from './manifest.js';
 import {
   getRsbuildEntryFile,
   normalizeManifest,
+  normalizeRsbuildEnviroments,
   writeManifest,
   writeManifestEntries,
-  normalizeRsbuildEnviroments,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -36,7 +36,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
 
       const environments = normalizeRsbuildEnviroments(manifest, config);
-      
+
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {

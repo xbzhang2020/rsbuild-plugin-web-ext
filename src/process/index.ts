@@ -1,18 +1,18 @@
 import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, RsbuildEntry, Rspack, EnvironmentConfig, RsbuildConfig } from '@rsbuild/core';
+import type { EnvironmentConfig, EnvironmentContext, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
-import { mergeIconsEntry, copyIcons } from './icons.js';
+import { copyIcons, mergeIconsEntry } from './icons.js';
+import { copyLocales } from './locales.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import type { NormalizeManifestProps, WriteMainfestEntryProps } from './process.js';
-import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 import { copyWebAccessibleResources } from './resources.js';
-import { copyLocales } from './locales.js';
+import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 function getFileName(file: string) {
   return file.split('.')[0];

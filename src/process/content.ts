@@ -26,7 +26,7 @@ export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEnt
 
 export function getContentsEntry(manifest: Manifest) {
   const { content_scripts = [] } = manifest;
-  if(!content_scripts.length) return null;
+  if (!content_scripts.length) return null;
 
   const entry: RsbuildEntry = {};
   content_scripts.forEach((contentScript, index) => {
