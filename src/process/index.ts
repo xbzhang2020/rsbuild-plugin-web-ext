@@ -1,4 +1,5 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
@@ -232,4 +233,11 @@ export async function writeManifestEntries(
       writeSandboxEntry(props);
     }
   }
+}
+
+export async function writeManifest(distPath: string, manifest: Manifest) {
+  if (!existsSync(distPath)) return;
+  const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
+  await writeFile(`${distPath}/manifest.json`, data);
+  console.log('Built the extension successfully');
 }

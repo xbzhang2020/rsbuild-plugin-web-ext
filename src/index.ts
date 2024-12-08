@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, Manifest } from './manifest.js';
@@ -10,6 +10,7 @@ import {
   normalizeManifest,
   readManifestEntries,
   writeManifestEntries,
+  writeManifest,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -63,20 +64,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         };
       }
 
-      if (!environments.webWorker && !environments.web) {
-        // should provide an entry at least.
-        environments.web = {
-          source: {
-            entry: {
-              empty: {
-                import: [],
-                html: false,
-              },
-            },
-          },
-        };
-      }
-
       const defaultEnvironment = environments.web || environments.webWorker;
       if (defaultEnvironment.output) {
         const imagePath = config.output?.distPath?.image || 'static/image';
@@ -91,7 +78,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         environments,
         dev: {
           writeToDisk: true,
-          assetPrefix: true,
+          // assetPrefix: true,
           client: {
             host: '127.0.0.1:<port>',
             port: '<port>',
@@ -148,14 +135,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onDevCompileDone(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest, null, 2));
-      console.log('Built the extension successfully');
+      await writeManifest(distPath, manifest);
     });
 
     api.onAfterBuild(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeFile(`${distPath}/manifest.json`, JSON.stringify(manifest));
-      console.log('Built the extension successfully');
+      await writeManifest(distPath, manifest);
     });
   },
 });

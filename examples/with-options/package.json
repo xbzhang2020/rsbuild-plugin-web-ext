@@ -1,5 +1,6 @@
 {
   "name": "with-options",
+  "displayName": "With Options",
   "version": "1.0.0",
   "private": "true",
   "main": "index.js",
@@ -10,5 +11,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "A basic browser extension"
 }
