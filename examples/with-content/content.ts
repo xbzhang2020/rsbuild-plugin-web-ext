@@ -1,6 +1,6 @@
 import './content.css';
 import type { ContentScriptConfig } from '../../src/index';
-import './env.d'
+import './env.d';
 
 console.log('content5');
 
@@ -10,6 +10,6 @@ export const config: ContentScriptConfig = {
 };
 
 // support hmr in dev mode
-if(module.hot) {
+if (module.hot) {
   module.hot.accept();
 }

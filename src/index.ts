@@ -3,12 +3,12 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, Manifest } from './manifest.js';
 import {
+  clearOutdatedHotUpdateFiles,
   getRsbuildEntryFile,
   normalizeManifest,
   normalizeRsbuildEnviroments,
-  writeManifestFile,
   writeManifestEntries,
-  clearOutdatedHotUpdateFiles,
+  writeManifestFile,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {

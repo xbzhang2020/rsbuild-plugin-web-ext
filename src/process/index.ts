@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile, readdir, writeFile, unlink } from 'node:fs/promises';
+import { readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, EnvironmentContext, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
