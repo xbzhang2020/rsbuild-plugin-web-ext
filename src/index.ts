@@ -9,8 +9,8 @@ import {
   getRsbuildEntryFile,
   normalizeManifest,
   readManifestEntries,
-  writeManifestEntries,
   writeManifest,
+  writeManifestEntries,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
