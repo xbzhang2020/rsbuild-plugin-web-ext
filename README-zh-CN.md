@@ -14,10 +14,10 @@
 
 ## ✨ 特性
 
-- **声明式开发** - 基于目录结构自动生成配置，无需复杂设置
+- **[声明式开发](#declarative-development)** - 基于目录结构自动生成配置，无需复杂设置
 - **无缝的开发体验** - 实时页面更新，支持 HMR 和 Live-Reloading
 - **TypeScript 支持** - 开箱即用的类型支持，无需额外配置
-- **浏览器兼容** - 统一的 API 和 polyfills，轻松实现多浏览器支持
+- **[浏览器兼容](#browser-compatibility)** - 统一的 API 和 polyfills，轻松实现多浏览器支持
 - **框架无关** - 可以自由使用任何前端框架和库
 - **极速性能** - 基于 Rsbuild 实现极速开发和构建
 
@@ -31,7 +31,7 @@ npm add rsbuild-plugin-web-ext -D
 
 ### 配置
 
-1. 创建 `manifest.json` 配置扩展入口（也可使用[声明式开发](#-声明式开发)自动生成）：
+1. 创建 `manifest.json` 配置扩展入口（也可使用[声明式开发](#declarative-development)自动生成）：
 
 ```json
 {
@@ -97,7 +97,7 @@ export default {
 - `firefox-mv2`
 - `safari-mv3`
 
-## 🗂️ 声明式开发
+<h2 id="declarative-development">🗂️ 声明式开发</h2>
 
 支持基于以下目录结构自动生成配置：
 
@@ -120,7 +120,7 @@ export default {
 
 可通过 `srcDir` 选项指定源码目录，如 `srcDir: 'src'`。
 
-## 🌐 浏览器兼容
+<h2 id="browser-compatibility">🌐 浏览器兼容</h2>
 
 默认构建目标为 Chrome MV3，可以通过 `target` 选项指定其他浏览器。
 

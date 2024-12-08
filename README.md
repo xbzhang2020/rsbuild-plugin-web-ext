@@ -14,10 +14,10 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
 
 ## ✨ Features
 
-- **Declarative Development** - Automatically generate configuration based on directory structure, no complex setup needed.
+- **[Declarative Development](#declarative-development)** - Automatically generate configuration based on directory structure, no complex setup needed.
 - **Seamless Development Experience** - Live page updates with HMR and Live-Reloading.
 - **First-Class TypeScript Support** - Out-of-the-box type support without additional configuration.
-- **Browser Compatibility** - Unified APIs and polyfills for easy multi-browser support.
+- **[Browser Compatibility](#browser-compatibility)** - Unified APIs and polyfills for easy multi-browser support.
 - **Framework Agnostic** - Freedom to use any frontend framework and libraries.
 - **Lightning Fast** - Blazing fast development and build powered by Rsbuild.
 
@@ -97,7 +97,7 @@ Target browser, supports:
 - `firefox-mv2`
 - `safari-mv3`
 
-## 🗂️ Declarative Development
+<h2 id="declarative-development">🗂️ Declarative Development</h2>
 
 Supports automatic configuration generation based on the following directory structure:
 
@@ -120,7 +120,7 @@ Supports automatic configuration generation based on the following directory str
 
 Source directory can be specified using the `srcDir` option, e.g., `srcDir: 'src'`.
 
-## 🌐 Browser Compatibility
+<h2 id="browser-compatibility">🌐 Browser Compatibility</h2>
 
 Default build target is Chrome MV3. Other browsers can be specified using the `target` option.
 
