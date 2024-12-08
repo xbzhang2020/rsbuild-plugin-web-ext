@@ -1,5 +1,7 @@
 # rsbuild-plugin-web-ext
 
+[English](./README.md) | 简体中文
+
 一个用于开发和构建浏览器扩展的 Rsbuild 插件，让浏览器扩展开发变得简单高效。
 
 <p>
@@ -10,16 +12,16 @@
   <a href="https://npmcharts.com/compare/rsbuild-plugin-web-ext?minimal=true"><img src="https://img.shields.io/npm/dm/rsbuild-plugin-web-ext.svg?style=flat-square&colorA=564341&colorB=EDED91" alt="downloads" /></a>
 </p>
 
-## 特性
+## ✨ 特性
 
-- **[声明式开发](#声明式开发)** - 基于目录结构自动生成配置，无需复杂设置
-- **无缝的开发体验** - 实时页面更新，支持 content scripts 的 HMR 和快速刷新
+- **声明式开发** - 基于目录结构自动生成配置，无需复杂设置
+- **无缝的开发体验** - 实时页面更新，支持 HMR 和 Live-Reloading
 - **TypeScript 支持** - 开箱即用的类型支持，无需额外配置
-- **[浏览器兼容](#浏览器兼容)** - 统一的 API 和 polyfills，轻松实现多浏览器支持
-- **框架无关** - 自由使用任何前端框架和库
+- **浏览器兼容** - 统一的 API 和 polyfills，轻松实现多浏览器支持
+- **框架无关** - 可以自由使用任何前端框架和库
 - **极速性能** - 基于 Rsbuild 实现极速开发和构建
 
-## 快速开始
+## 🚀 快速开始
 
 ### 安装
 
@@ -77,11 +79,11 @@ export default {
 - 在浏览器扩展页面开启开发者模式，加载 `dist` 目录
 - 运行 `npm run build` 构建生产版本
 
-## 配置项
+## 📖 选项
 
 ### manifest
 
-浏览器扩展的 manifest 配置。如不指定，将基于目录结构自动生成。
+浏览器扩展的 manifest 配置。如果未指定配置项，将基于目录结构自动生成。
 
 ### srcDir
 
@@ -95,7 +97,7 @@ export default {
 - `firefox-mv2`
 - `safari-mv3`
 
-## 声明式开发
+## 🗂️ 声明式开发
 
 支持基于以下目录结构自动生成配置：
 
@@ -118,7 +120,7 @@ export default {
 
 可通过 `srcDir` 选项指定源码目录，如 `srcDir: 'src'`。
 
-## 浏览器兼容
+## 🌐 浏览器兼容
 
 默认构建目标为 Chrome MV3，可以通过 `target` 选项指定其他浏览器。
 
@@ -127,10 +129,10 @@ export default {
 - [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) - 统一的浏览器扩展 API
 - [`@types/webextension-polyfill`](https://www.npmjs.com/package/@types/webextension-polyfill) - TypeScript 类型定义
 
-## 示例
+## 📝 示例
 
 查看[示例项目](./examples/)了解更多使用方式。
 
-## 许可证
+## 📄 许可证
 
 [MIT](./LICENSE)

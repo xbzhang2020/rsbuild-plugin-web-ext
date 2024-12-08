@@ -2,7 +2,7 @@
 
 English | [简体中文](./README-zh-CN.md)
 
-A plugin for developing and building browser extensions within Rsbuild.
+A Rsbuild plugin for developing and building browser extensions, making browser extension development simple and efficient.
 
 <p>
   <a href="https://npmjs.com/package/rsbuild-plugin-web-ext">
@@ -12,34 +12,46 @@ A plugin for developing and building browser extensions within Rsbuild.
   <a href="https://npmcharts.com/compare/rsbuild-plugin-web-ext?minimal=true"><img src="https://img.shields.io/npm/dm/rsbuild-plugin-web-ext.svg?style=flat-square&colorA=564341&colorB=EDED91" alt="downloads" /></a>
 </p>
 
-## Features
+## ✨ Features
 
-* **Declarative Development.** Generates `manifest.json` and builds modules automatically from your directory structure - no complex configuration needed.
+- **Declarative Development** - Automatically generate configuration based on directory structure, no complex setup needed.
+- **Seamless Development Experience** - Live page updates with HMR and Live-Reloading.
+- **First-Class TypeScript Support** - Out-of-the-box type support without additional configuration.
+- **Browser Compatibility** - Unified APIs and polyfills for easy multi-browser support.
+- **Framework Agnostic** - Freedom to use any frontend framework and libraries.
+- **Lightning Fast** - Blazing fast development and build powered by Rsbuild.
 
-* **Seamless Live Development.** Instant page updates and true Hot Module Replacement (HMR) for content scripts, with optimized extension-specific reloading that eliminates manual refresh.
+## 🚀 Quick Start
 
-* **First-Class TypeScript Support.** Built-in TypeScript support with no additional setup required.
-
-* **Cross-Browser Compatibility.** Unified APIs and polyfills for seamless development across Chrome, Firefox and Safari.
-
-* **Framework Agnostic.** Complete freedom to use any frontend framework or library you prefer.
-
-* **Blazing Fast Performance.** Leverages Rsbuild's optimized build system for lightning quick development and production builds.
-
-## Usage
-
-Install:
+### Installation
 
 ```bash
 npm add rsbuild-plugin-web-ext -D
 ```
 
-Add plugin to your `rsbuild.config.ts`:
+### Configuration
+
+1. Create `manifest.json` to configure extension entry points (or use [Declarative Development](#declarative-development) to generate automatically):
+
+```json
+{
+  "manifest_version": 3,
+  "name": "My Extension",
+  "version": "1.0",
+  "action": { "default_popup": "./popup.ts" },
+  "background": { "service_worker": "./background.ts" },
+  "content_scripts": [{ 
+    "matches": ["<all_urls>"], 
+    "js": ["./content.ts"] 
+  }]
+}
+```
+
+2. Add the plugin in `rsbuild.config.ts`:
 
 ```ts
-// rsbuild.config.ts
 import { pluginWebExt } from "rsbuild-plugin-web-ext";
-import manifest from "./manifest";
+import manifest from "./manifest.json";
 
 export default {
   plugins: [
@@ -50,24 +62,77 @@ export default {
 };
 ```
 
-There are lots of [exampes](./examples/) for you.
+3. Add npm scripts:
 
-## Options
+```json
+{
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build"
+  }
+}
+```
+
+### Development
+
+- Run `npm run dev` to start the development server.
+- Enable developer mode in browser extensions page and load the `dist` directory.
+- Run `npm run build` to build for production.
+
+## 📖 Options
 
 ### manifest
 
-An object related to `manifest.json`。
+The manifest configuration for the browser extension. If not specified, it will be automatically generated based on the directory structure.
 
-- Type: `chrome.runtime.ManifestV3`
-- Default: `undefined`
-- Example:
+### srcDir
 
-```js
-pluginWebExt({
-  manifest,
-});
-```
+Source directory path, defaults to project root.
 
-## License
+### target
 
-[MIT](./LICENSE).
+Target browser, supports:
+- `chrome-mv3` (default)
+- `firefox-mv3`
+- `firefox-mv2`
+- `safari-mv3`
+
+## 🗂️ Declarative Development
+
+Supports automatic configuration generation based on the following directory structure:
+
+| Manifest Field | File Path |
+|--------------|---------|
+| `name` | `displayName` or `name` in package.json |
+| `version` | `version` in package.json |
+| `description` | `description` in package.json |
+| `author` | `author` in package.json |
+| `homepage_url` | `homepage` in package.json |
+| `icons` | `assets/icon-[size].png` |
+| `action` | `popup.ts` |
+| `background` | `background.ts` |
+| `content_scripts` | `content.ts` or `contents/*.ts` |
+| `options_ui` | `options.ts` |
+| `devtools_page` | `devtools.ts` |
+| `sandbox` | `sandbox.ts` or `sandboxes/*.ts` |
+| `_locales` | `public/_locales/*` |
+| `web_accessible_resources` | `public/*` |
+
+Source directory can be specified using the `srcDir` option, e.g., `srcDir: 'src'`.
+
+## 🌐 Browser Compatibility
+
+Default build target is Chrome MV3. Other browsers can be specified using the `target` option.
+
+For cross-browser support, it's recommended to use:
+
+- [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) - Unified browser extension APIs.
+- [`@types/webextension-polyfill`](https://www.npmjs.com/package/@types/webextension-polyfill) - TypeScript type definitions.
+
+## 📝 Examples
+
+Check out the [example projects](./examples/) for more usage examples.
+
+## 📄 License
+
+[MIT](./LICENSE)
