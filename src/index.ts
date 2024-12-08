@@ -6,8 +6,9 @@ import {
   getRsbuildEntryFile,
   normalizeManifest,
   normalizeRsbuildEnviroments,
-  writeManifest,
+  writeManifestFile,
   writeManifestEntries,
+  clearOutdatedHotUpdateFiles,
 } from './process/index.js';
 
 export type PluginWebExtOptions = {
@@ -66,23 +67,17 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const reloadExtensionCode = await readFile(resolve(selfRootPath, './runtime/reload_extension_fn.js'), 'utf-8');
       const liveReload = api.getNormalizedConfig().dev.liveReload;
 
-      // only transform in the first compile
-      const transformedFiles: string[] = [];
       api.transform(
         { environments: ['web', 'webContent'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ },
         ({ code, resourcePath }) => {
-          if (!transformedFiles.includes(resourcePath)) {
-            transformedFiles.push(resourcePath);
+          if (contentFiles.includes(resourcePath)) {
+            return `${code}\n${loadScript}`;
+          }
 
-            if (contentFiles.includes(resourcePath)) {
-              return `${code}\n${loadScript}`;
-            }
-
-            // volatile, the best choice is that rsbuild exposes an API.
-            if (resourcePath.endsWith('hmr.js') && liveReload) {
-              const reloadCode = 'window.location.reload();';
-              return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
-            }
+          // volatile, the best choice is that rsbuild exposes an API.
+          if (resourcePath.endsWith('hmr.js') && liveReload) {
+            const reloadCode = 'window.location.reload();';
+            return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
           }
           return code;
         },
@@ -96,14 +91,18 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
-    api.onDevCompileDone(async () => {
+    api.onDevCompileDone(async ({ stats }) => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeManifest(distPath, manifest);
+      await writeManifestFile(distPath, manifest);
+
+      // clear outdated hmr files
+      const statsList = 'stats' in stats ? stats.stats : [stats];
+      clearOutdatedHotUpdateFiles(distPath, statsList);
     });
 
     api.onAfterBuild(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
-      await writeManifest(distPath, manifest);
+      await writeManifestFile(distPath, manifest);
     });
   },
 });

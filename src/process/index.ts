@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, EnvironmentContext, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
@@ -233,7 +233,7 @@ export async function writeManifestEntries(
   }
 }
 
-export async function writeManifest(distPath: string, manifest: Manifest) {
+export async function writeManifestFile(distPath: string, manifest: Manifest) {
   if (!existsSync(distPath)) return;
   const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
@@ -302,4 +302,42 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   }
 
   return environments;
+}
+
+export function getHotUpdateAssets(statsList: Rspack.Stats[]) {
+  const entrypointsList = statsList.map((item) => item?.toJson().entrypoints).filter((item) => !!item);
+  const res: string[] = [];
+
+  for (const entrypoints of entrypointsList) {
+    const data = Object.values(entrypoints).flatMap((entrypoint) => {
+      const assets = entrypoint.assets?.map((item) => item.name).filter((item) => item.includes('.hot-update.'));
+      return assets || [];
+    });
+    res.push(...data);
+  }
+  return res;
+}
+
+export async function clearOutdatedHotUpdateFiles(distPath: string, statsList: Rspack.Stats[]) {
+  if (!existsSync(distPath)) return;
+  const reservedFiles = getHotUpdateAssets(statsList);
+
+  const files = await readdir(distPath, {
+    withFileTypes: true,
+  });
+  const outdatedFiles: string[] = [];
+
+  for (const file of files) {
+    const { name } = file;
+    if (file.isFile() && name.includes('.hot-update.')) {
+      const item = reservedFiles.find((prefix) => name.includes(prefix));
+      if (!item) {
+        outdatedFiles.push(file.name);
+      }
+    }
+  }
+
+  for (const file of outdatedFiles) {
+    await unlink(resolve(distPath, file));
+  }
 }
