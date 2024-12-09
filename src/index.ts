@@ -3,7 +3,6 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, Manifest } from './manifest.js';
 import {
-  clearOutdatedHotUpdateFiles,
   normalizeManifest,
   normalizeRsbuildEnviroments,
   writeManifestEntries,
@@ -35,7 +34,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         selfRootPath,
       });
 
-      const environments = normalizeRsbuildEnviroments(manifest, config);
+      const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
 
       const extraConfig: RsbuildConfig = {
         environments,
@@ -92,13 +91,20 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
+    api.processAssets({ stage: 'optimize' }, ({ assets, compilation }) => {
+      const assetName = '_empty.js';
+      if (assets[assetName]) {
+        compilation.deleteAsset(assetName);
+      }
+    });
+
     api.onDevCompileDone(async ({ stats }) => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
       await writeManifestFile(distPath, manifest);
 
       // clear outdated hmr files
-      const statsList = 'stats' in stats ? stats.stats : [stats];
-      clearOutdatedHotUpdateFiles(distPath, statsList);
+      // const statsList = 'stats' in stats ? stats.stats : [stats];
+      // clearOutdatedHotUpdateFiles(distPath, statsList);
     });
 
     api.onAfterBuild(async () => {

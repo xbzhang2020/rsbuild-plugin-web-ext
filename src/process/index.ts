@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile, readdir, unlink, writeFile } from 'node:fs/promises';
+import { readdir, unlink, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, EnvironmentContext, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import type { BrowserTarget, Manifest, ManifestV3 } from '../manifest.js';
@@ -7,12 +7,11 @@ import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from '
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { copyIcons, mergeIconsEntry } from './icons.js';
-import { copyLocales } from './locales.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import type { NormalizeManifestProps, WriteMainfestEntryProps } from './process.js';
-import { copyWebAccessibleResources } from './resources.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import { isDev, getFileName, isJsFile, readPackageJson } from '../util.js';
 
 type EntryProcessor = {
   match: (key: string) => boolean;
@@ -28,25 +27,6 @@ const entryProcessors: EntryProcessor[] = [
   { match: (key) => key === 'devtools', merge: mergeDevtoolsEntry, write: writeDevtoolsEntry },
   { match: (key) => key.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
 ];
-
-async function readPackageJson(rootPath: string) {
-  try {
-    const filePath = resolve(rootPath, './package.json');
-    const content = await readFile(filePath, 'utf-8');
-    return JSON.parse(content);
-  } catch (err) {
-    console.warn('Failed to read package.json:', err instanceof Error ? err.message : err);
-    return {};
-  }
-}
-
-function getFileName(file: string) {
-  return file.split('.')[0];
-}
-
-function isEntryFile(file: string) {
-  return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
-}
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
@@ -66,7 +46,7 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
     ...((manifest || {}) as ManifestV3),
   };
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev()) {
     finalManifest.version_name ??= `${finalManifest.version} (development)`;
     finalManifest.permissions ??= [];
     finalManifest.host_permissions ??= [];
@@ -131,17 +111,17 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
         }
 
         if (name === 'contents') {
-          const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
+          const subFilePaths = subFiles.filter((item) => isJsFile(item)).map((item) => `${filePath}/${item}`);
           contentFiles.push(...subFilePaths);
         }
         if (name === 'sandboxes') {
-          const subFilePaths = subFiles.filter((item) => isEntryFile(item)).map((item) => `${filePath}/${item}`);
+          const subFilePaths = subFiles.filter((item) => isJsFile(item)).map((item) => `${filePath}/${item}`);
           sandboxFiles.push(...subFilePaths);
         }
         continue;
       }
 
-      if (isEntryFile(name)) {
+      if (isJsFile(name)) {
         switch (getFileName(name)) {
           case 'content': {
             contentFiles.unshift(filePath);
@@ -216,36 +196,34 @@ export async function writeManifestEntries(
   if (!entrypoints) return manifest;
 
   for (const [key, entrypoint] of Object.entries(entrypoints)) {
+    const processor = entryProcessors.find((item) => item.match(key));
+    if (!processor) continue;
+
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
     if (!assets) continue;
 
-    const processor = entryProcessors.find((item) => item.match(key));
-    if (processor) {
-      const props: WriteMainfestEntryProps = {
-        key,
-        assets,
-        manifest,
-        originManifest,
-        rootPath: environment.config.root,
-        entryPath: getRsbuildEntryFile(environment.entry, key),
-      };
-      await processor.write(props);
-    } else {
-      console.warn(`No processor found for entry: ${key}`);
-    }
+    const props: WriteMainfestEntryProps = {
+      key,
+      assets,
+      manifest,
+      originManifest,
+      rootPath: environment.config.root,
+      entryPath: getRsbuildEntryFile(environment.entry, key),
+    };
+    await processor.write(props);
   }
 }
 
 export async function writeManifestFile(distPath: string, manifest: Manifest) {
   if (!existsSync(distPath)) return;
-  const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
+  const data = isDev() ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
   console.log('Built the extension successfully');
 }
 
 export type EnviromentKey = 'web' | 'webContent' | 'webWorker';
 
-export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig) {
+export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig, selfRootPath: string) {
   const background = getBackgroundEntry(manifest);
   const content = getContentsEntry(manifest);
   const others = {
@@ -277,6 +255,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
       },
       output: {
         target: 'web',
+        injectStyles: isDev(),
       },
       dev: {
         assetPrefix: true,
@@ -302,14 +281,32 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
     };
   }
 
-  const defaultEnvironment = environments.web || environments.webContent || environments.webWorker;
+  let defaultEnvironment = environments.web || environments.webContent || environments.webWorker;
+  if (!defaultEnvironment) {
+    defaultEnvironment = environments.web = {
+      source: {
+        entry: {
+          _empty: {
+            import: resolve(selfRootPath, './assets/empty_entry.js'),
+            html: false,
+          },
+        },
+      },
+      output: {
+        target: 'web',
+        distPath: {
+          js: '',
+        },
+        filename: {
+          js: '[name].js',
+        },
+      },
+    };
+  }
+
   if (defaultEnvironment?.output) {
     const imagePath = config.output?.distPath?.image || 'static/image';
-    defaultEnvironment.output.copy = [
-      ...copyIcons(manifest, imagePath),
-      ...copyWebAccessibleResources(manifest),
-      ...copyLocales(manifest),
-    ];
+    defaultEnvironment.output.copy = [...copyIcons(manifest, imagePath)];
   }
 
   return environments;
