@@ -4,7 +4,6 @@ import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import type { BrowserTarget, Manifest } from './manifest.js';
 import {
   clearOutdatedHotUpdateFiles,
-  getRsbuildEntryFile,
   normalizeManifest,
   normalizeRsbuildEnviroments,
   writeManifestEntries,
@@ -17,7 +16,7 @@ export type PluginWebExtOptions = {
   target?: BrowserTarget;
 };
 
-export type { ContentConfig as ContentScriptConfig } from './manifest.js';
+export type { ContentScriptConfig } from './manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
@@ -56,32 +55,25 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onBeforeStartDevServer(async ({ environments }) => {
-      const webContentEntry = environments.webContent?.entry || {};
-      const contentFiles = Object.keys(webContentEntry)
-        .filter((key) => key.startsWith('content'))
-        .flatMap((key) => getRsbuildEntryFile(webContentEntry, key))
-        .map((file) => resolve(rootPath, file));
-
-      if (!contentFiles.length) return;
-      const loadScript = await readFile(resolve(selfRootPath, './runtime/load_script.js'), 'utf-8');
-      const reloadExtensionCode = await readFile(resolve(selfRootPath, './runtime/reload_extension_fn.js'), 'utf-8');
+      if (!environments.webContent) return;
+      const loadScript = await readFile(resolve(selfRootPath, './assets/load_script.js'), 'utf-8');
+      const reloadExtensionCode = await readFile(resolve(selfRootPath, './assets/reload_extension_fn.js'), 'utf-8');
       const liveReload = api.getNormalizedConfig().dev.liveReload;
 
-      api.transform(
-        { environments: ['web', 'webContent'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ },
-        ({ code, resourcePath }) => {
-          if (contentFiles.includes(resourcePath)) {
-            return `${code}\n${loadScript}`;
-          }
+      api.transform({ environments: ['webContent'], test: /\.(ts|js|tsx|jsx|mjs|cjs)/ }, ({ code, resourcePath }) => {
+        // change the origin load_script
+        if (code.includes('__webpack_require__.l')) {
+          return `${code}\n${loadScript}`;
+        }
 
-          // volatile, the best choice is that rsbuild exposes an API.
-          if (resourcePath.endsWith('hmr.js') && liveReload) {
-            const reloadCode = 'window.location.reload();';
-            return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
-          }
-          return code;
-        },
-      );
+        // volatile, the best choice is that rsbuild exposes an API.
+        if (resourcePath.endsWith('hmr.js') && liveReload) {
+          const reloadCode = 'window.location.reload();';
+          return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
+        }
+
+        return code;
+      });
     });
 
     api.onAfterEnvironmentCompile(async (params) => {

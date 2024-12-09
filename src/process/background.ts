@@ -16,7 +16,7 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target
   }
 
   if (process.env.NODE_ENV === 'development') {
-    const defaultBackground = resolve(selfRootPath, './runtime/background.js');
+    const defaultBackground = resolve(selfRootPath, './assets/background.js');
     scripts.push(defaultBackground);
   }
 

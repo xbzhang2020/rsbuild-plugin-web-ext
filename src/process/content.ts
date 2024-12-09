@@ -4,7 +4,7 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ContentConfig, Manifest } from '../manifest.js';
+import type { ContentScriptConfig, Manifest } from '../manifest.js';
 import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
@@ -92,14 +92,14 @@ function astToObject(node: t.Node): unknown {
   return null;
 }
 
-function getContentConfig(code: string): ContentConfig | null {
+function getContentConfig(code: string): ContentScriptConfig | null {
   const configName = 'config';
   const ast = parse(code, {
     sourceType: 'module',
     plugins: ['typescript', 'jsx'],
   });
 
-  let configValue: ContentConfig | null = null;
+  let configValue: ContentScriptConfig | null = null;
 
   traverse.default(ast, {
     ExportNamedDeclaration(path: NodePath<t.ExportNamedDeclaration>) {
@@ -111,7 +111,7 @@ function getContentConfig(code: string): ContentConfig | null {
           t.isIdentifier(declarator.id, { name: configName }) &&
           declarator.init
         ) {
-          configValue = astToObject(declarator.init) as ContentConfig;
+          configValue = astToObject(declarator.init) as ContentScriptConfig;
         }
       }
     },

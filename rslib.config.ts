@@ -14,8 +14,8 @@ export default defineConfig({
   output: {
     copy: [
       {
-        from: './src/runtime',
-        to: 'runtime',
+        from: './src/assets',
+        to: 'assets',
       },
     ],
   },

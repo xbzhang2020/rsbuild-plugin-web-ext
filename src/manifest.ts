@@ -4,7 +4,7 @@ export type ManifestV3 = chrome.runtime.ManifestV3;
 
 export type Manifest = ManifestV3 | ManifestV2;
 
-export type ContentConfig = {
+export type ContentScriptConfig = {
   matches?: string[] | undefined;
   exclude_matches?: string[] | undefined;
   css?: string[] | undefined;
