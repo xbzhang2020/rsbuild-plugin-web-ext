@@ -1,8 +1,8 @@
 {
   "name": "rsbuild-plugin-web-ext",
-  "version": "0.0.1-alpha.4",
-  "description": "A plugin for developing and building browser extensions within Rsbuild.",
-  "keywords": ["web extensions", "browser extensions", "rsbuild plugin"],
+  "version": "0.0.1-alpha.5",
+  "description": "A Rsbuild plugin for developing and building browser extensions, making browser extension development simple and efficient.",
+  "keywords": ["web extensions", "browser extensions", "rsbuild plugin", "web-ext"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git"
