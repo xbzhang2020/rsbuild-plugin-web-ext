@@ -3,14 +3,14 @@ import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } f
 
 export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const options = manifest.options_ui?.page || manifest.options_page;
-  if (options || !entryPath) return;
+  if (options || !entryPath.length) return;
 
   if (!manifest.options_ui) {
     manifest.options_ui = {
       open_in_tab: true,
     };
   }
-  manifest.options_ui.page = entryPath as string;
+  manifest.options_ui.page = entryPath[0];
 }
 
 export function getOptionsEntry(manifest: Manifest) {

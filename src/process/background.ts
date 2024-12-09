@@ -10,8 +10,8 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target
     scripts.push(background.service_worker);
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
-  } else if (entryPath) {
-    scripts.push(entryPath as string);
+  } else if (entryPath.length) {
+    scripts.push(...entryPath);
   }
 
   if (process.env.NODE_ENV === 'development') {

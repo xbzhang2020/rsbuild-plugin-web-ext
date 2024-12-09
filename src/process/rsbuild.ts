@@ -2,9 +2,9 @@ import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
-import { copyIcons, readManifestEntries } from './manifest/index.js';
-import type { Manifest } from './manifest/manifest.js';
-import { isDev } from './util.js';
+import { isDev } from '../util.js';
+import { copyIcons, readManifestEntries } from './index.js';
+import type { Manifest } from './manifest.js';
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];

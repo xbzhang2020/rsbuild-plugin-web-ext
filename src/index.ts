@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { BrowserTarget, Manifest } from './manifest/manifest.js';
-import { normalizeRsbuildEnviroments } from './rsbuild.js';
+import { normalizeManifest, writeManifestEntries, writeManifestFile } from './process/index.js';
+import type { BrowserTarget, Manifest } from './process/manifest.js';
+import { getRsbuildEntryFile, normalizeRsbuildEnviroments } from './process/rsbuild.js';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
@@ -11,7 +11,7 @@ export type PluginWebExtOptions = {
   target?: BrowserTarget;
 };
 
-export type { ContentScriptConfig } from './manifest/manifest.js';
+export type { ContentScriptConfig } from './process/manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
@@ -31,9 +31,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
-
       const extraConfig: RsbuildConfig = {
-        environments,
         dev: {
           writeToDisk: true,
           client: {
@@ -46,11 +44,17 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       };
 
       // extraConfig must be at the end, for dev.writeToDisk
-      return mergeRsbuildConfig(config, extraConfig);
+      return mergeRsbuildConfig({ environments }, config, extraConfig);
     });
 
     api.onBeforeStartDevServer(async ({ environments }) => {
-      if (!environments.webContent) return;
+      const { webContent } = environments;
+      if (!webContent) return;
+      const contentEntries = Object.keys(webContent.entry)
+        .flatMap((key) => getRsbuildEntryFile(webContent.entry, key))
+        .filter((item) => !!item)
+        .map((item) => resolve(rootPath, item));
+
       const loadScript = await readFile(resolve(selfRootPath, './assets/load_script.js'), 'utf-8');
       const reloadExtensionCode = await readFile(resolve(selfRootPath, './assets/reload_extension_fn.js'), 'utf-8');
       const liveReload = api.getNormalizedConfig().dev.liveReload;
@@ -58,14 +62,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       api.transform(
         {
           environments: ['webContent'],
-          test: (input) => {
-            if (input.endsWith('.d.ts')) return false;
-            return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(input);
-          },
+          test: /\.(ts|js|tsx|jsx|mjs|cjs)$/,
         },
         ({ code, resourcePath }) => {
           // change the origin load_script in source code
-          if (resourcePath.startsWith(rootPath)) {
+          if (contentEntries.includes(resourcePath)) {
             return `${code}\n${loadScript}`;
           }
 

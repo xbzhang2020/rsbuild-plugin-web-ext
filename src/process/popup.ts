@@ -2,20 +2,20 @@ import type { RsbuildEntry } from '@rsbuild/core';
 import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
-  if (!entryPath) return;
+  if (!entryPath.length) return;
   const { manifest_version } = manifest;
   if (manifest_version === 2) {
     if (!manifest.browser_action) {
       manifest.browser_action = {};
     }
-    manifest.browser_action.default_popup = manifest.browser_action.default_popup || (entryPath as string);
+    manifest.browser_action.default_popup = manifest.browser_action.default_popup || entryPath[0];
     return;
   }
 
   if (!manifest.action) {
     manifest.action = {};
   }
-  manifest.action.default_popup = manifest.action?.default_popup || (entryPath as string);
+  manifest.action.default_popup = manifest.action?.default_popup || entryPath[0];
 }
 
 export function getPopupEntry(manifest: Manifest) {

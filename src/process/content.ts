@@ -12,15 +12,14 @@ import type {
 } from './manifest.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
-  const filePaths = entryPath as string[];
   const { content_scripts } = manifest;
 
-  if (!content_scripts?.length && filePaths.length) {
+  if (!content_scripts?.length && entryPath.length) {
     if (!manifest.content_scripts) {
       manifest.content_scripts = [];
     }
 
-    for (const filePath of filePaths) {
+    for (const filePath of entryPath) {
       manifest.content_scripts.push({
         js: [filePath],
       });

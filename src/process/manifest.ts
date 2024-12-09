@@ -28,7 +28,7 @@ export interface NormalizeManifestProps {
 }
 
 export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {
-  entryPath?: string | string[];
+  entryPath: string[];
 }
 
 export interface WriteMainfestEntryProps {

@@ -3,13 +3,13 @@ import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } f
 
 export function mergeSandboxEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const sandboxPages = manifest.sandbox?.pages;
-  if (sandboxPages?.length || !entryPath) return;
+  if (sandboxPages?.length || !entryPath.length) return;
   if (!manifest.sandbox) {
     manifest.sandbox = {
       pages: [],
     };
   }
-  manifest.sandbox.pages = entryPath as string[];
+  manifest.sandbox.pages = entryPath;
 }
 
 export function getSandboxEntry(manifest: Manifest) {

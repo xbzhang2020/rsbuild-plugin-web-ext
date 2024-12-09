@@ -2,8 +2,8 @@ import type { RsbuildEntry } from '@rsbuild/core';
 import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergeDevtoolsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
-  if (!manifest.devtools_page && entryPath) {
-    manifest.devtools_page = entryPath as string;
+  if (!manifest.devtools_page && entryPath.length) {
+    manifest.devtools_page = entryPath[0];
   }
 }
 

@@ -2,7 +2,6 @@ import { existsSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, Rspack } from '@rsbuild/core';
-import { getRsbuildEntryFile } from '../rsbuild.js';
 import { getFileName, isDev, isJsFile, readPackageJson } from '../util.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
@@ -12,18 +11,20 @@ import type {
   BrowserTarget,
   Manifest,
   ManifestV3,
+  NormalizeMainfestEntryProps,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
 } from './manifest.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
+import { getRsbuildEntryFile } from './rsbuild.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
 
 type EntryProcessor = {
   match: (key: string) => boolean;
-  merge: (props: NormalizeManifestProps & { entryPath: string | string[] }) => void;
+  merge: (props: NormalizeMainfestEntryProps) => void;
   write: (props: WriteMainfestEntryProps) => void | Promise<void>;
 };
 
