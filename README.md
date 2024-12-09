@@ -12,7 +12,7 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
   <a href="https://npmcharts.com/compare/rsbuild-plugin-web-ext?minimal=true"><img src="https://img.shields.io/npm/dm/rsbuild-plugin-web-ext.svg?style=flat-square&colorA=564341&colorB=EDED91" alt="downloads" /></a>
 </p>
 
-## ✨ Features
+## Features
 
 - **[Declarative Development](#declarative-development)** - Automatically generate configuration based on directory structure, no complex setup needed.
 - **Seamless Development Experience** - Live page updates with HMR and Live-Reloading.
@@ -21,7 +21,7 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
 - **Framework Agnostic** - Freedom to use any frontend framework and libraries.
 - **Lightning Fast** - Blazing fast development and build powered by Rsbuild.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -40,10 +40,12 @@ npm add rsbuild-plugin-web-ext -D
   "version": "1.0",
   "action": { "default_popup": "./popup.ts" },
   "background": { "service_worker": "./background.ts" },
-  "content_scripts": [{ 
-    "matches": ["<all_urls>"], 
-    "js": ["./content.ts"] 
-  }]
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["./content.ts"]
+    }
+  ]
 }
 ```
 
@@ -79,7 +81,7 @@ export default {
 - Enable developer mode in browser extensions page and load the `dist` directory.
 - Run `npm run build` to build for production.
 
-## 📖 Options
+## Options
 
 ### manifest
 
@@ -92,35 +94,40 @@ Source directory path, defaults to project root.
 ### target
 
 Target browser, supports:
+
 - `chrome-mv3` (default)
 - `firefox-mv3`
 - `firefox-mv2`
 - `safari-mv3`
 
-<h2 id="declarative-development">🗂️ Declarative Development</h2>
+## Examples
+
+Check out the [example projects](./examples/) for more usage examples.
+
+<h2 id="declarative-development">Declarative Development</h2>
 
 Supports automatic configuration generation based on the following directory structure:
 
-| Manifest Field | File Path |
-|--------------|---------|
-| `name` | `displayName` or `name` in package.json |
-| `version` | `version` in package.json |
-| `description` | `description` in package.json |
-| `author` | `author` in package.json |
-| `homepage_url` | `homepage` in package.json |
-| `icons` | `assets/icon-[size].png` |
-| `action` | `popup.ts` |
-| `background` | `background.ts` |
-| `content_scripts` | `content.ts` or `contents/*.ts` |
-| `options_ui` | `options.ts` |
-| `devtools_page` | `devtools.ts` |
-| `sandbox` | `sandbox.ts` or `sandboxes/*.ts` |
-| `_locales` | `public/_locales/*` |
-| `web_accessible_resources` | `public/*` |
+| Manifest Field             | File Path                               |
+| -------------------------- | --------------------------------------- |
+| `name`                     | `displayName` or `name` in package.json |
+| `version`                  | `version` in package.json               |
+| `description`              | `description` in package.json           |
+| `author`                   | `author` in package.json                |
+| `homepage_url`             | `homepage` in package.json              |
+| `icons`                    | `assets/icon-[size].png`                |
+| `action`                   | `popup.ts`                              |
+| `background`               | `background.ts`                         |
+| `content_scripts`          | `content.ts` or `contents/*.ts`         |
+| `options_ui`               | `options.ts`                            |
+| `devtools_page`            | `devtools.ts`                           |
+| `sandbox`                  | `sandbox.ts` or `sandboxes/*.ts`        |
+| `_locales`                 | `public/_locales/*`                     |
+| `web_accessible_resources` | `public/*`                              |
 
 Source directory can be specified using the `srcDir` option, e.g., `srcDir: 'src'`.
 
-<h2 id="browser-compatibility">🌐 Browser Compatibility</h2>
+<h2 id="browser-compatibility">Browser Compatibility</h2>
 
 Default build target is Chrome MV3. Other browsers can be specified using the `target` option.
 
@@ -129,10 +136,6 @@ For cross-browser support, it's recommended to use:
 - [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) - Unified browser extension APIs.
 - [`@types/webextension-polyfill`](https://www.npmjs.com/package/@types/webextension-polyfill) - TypeScript type definitions.
 
-## 📝 Examples
-
-Check out the [example projects](./examples/) for more usage examples.
-
-## 📄 License
+## License
 
 [MIT](./LICENSE).

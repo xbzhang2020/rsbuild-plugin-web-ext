@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './process/index.js';
 import type { BrowserTarget, Manifest } from './process/manifest.js';
-import { getRsbuildEntryFile, normalizeRsbuildEnviroments, clearOutdatedHotUpdateFiles } from './process/rsbuild.js';
+import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './process/rsbuild.js';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
