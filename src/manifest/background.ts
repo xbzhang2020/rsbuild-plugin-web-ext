@@ -1,7 +1,6 @@
 import { resolve } from 'node:path';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest } from '../manifest.js';
-import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
+import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target }: NormalizeMainfestEntryProps) {
   const scripts: string[] = [];

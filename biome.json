@@ -31,5 +31,8 @@
         "noForEach": "off"
       }
     }
+  },
+  "files": {
+    "ignore": [".rslib"]
   }
 }

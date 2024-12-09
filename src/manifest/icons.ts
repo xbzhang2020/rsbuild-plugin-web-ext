@@ -1,5 +1,4 @@
-import type { Manifest } from '../manifest.js';
-import type { NormalizeMainfestEntryProps } from './process.js';
+import type { Manifest, NormalizeMainfestEntryProps } from './manifest.js';
 
 export function mergeIconsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   if (!entryPath) return;

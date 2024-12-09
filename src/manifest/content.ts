@@ -4,8 +4,12 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ContentScriptConfig, Manifest } from '../manifest.js';
-import type { NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './process.js';
+import type {
+  ContentScriptConfig,
+  Manifest,
+  NormalizeMainfestEntryProps,
+  WriteMainfestEntryProps,
+} from './manifest.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const filePaths = entryPath as string[];
