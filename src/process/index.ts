@@ -14,6 +14,32 @@ import type { NormalizeManifestProps, WriteMainfestEntryProps } from './process.
 import { copyWebAccessibleResources } from './resources.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
+type EntryProcessor = {
+  match: (key: string) => boolean;
+  merge: (props: NormalizeManifestProps & { entryPath: string | string[] }) => void;
+  write: (props: WriteMainfestEntryProps) => void | Promise<void>;
+};
+
+const entryProcessors: EntryProcessor[] = [
+  { match: (key) => key === 'background', merge: mergeBackgroundEntry, write: writeBackgroundEntry },
+  { match: (key) => key.startsWith('content'), merge: mergeContentsEntry, write: writeContentsEntry },
+  { match: (key) => key === 'popup', merge: mergePopupEntry, write: writePopupEntry },
+  { match: (key) => key === 'options', merge: mergeOptionsEntry, write: writeOptionsEntry },
+  { match: (key) => key === 'devtools', merge: mergeDevtoolsEntry, write: writeDevtoolsEntry },
+  { match: (key) => key.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
+];
+
+async function readPackageJson(rootPath: string) {
+  try {
+    const filePath = resolve(rootPath, './package.json');
+    const content = await readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+  } catch (err) {
+    console.warn('Failed to read package.json:', err instanceof Error ? err.message : err);
+    return {};
+  }
+}
+
 function getFileName(file: string) {
   return file.split('.')[0];
 }
@@ -62,24 +88,22 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
 }
 
 export async function getDefaultManifest(rootPath: string, target: BrowserTarget) {
-  const res = {
+  const manifest: Manifest = {
     manifest_version: target.includes('2') ? 2 : 3,
-  } as Manifest;
+    name: '',
+    version: '',
+  };
 
-  try {
-    const filePath = resolve(rootPath, './package.json');
-    const content = await readFile(filePath, 'utf-8');
-    const { name, displayName, version, description, author, homepage } = JSON.parse(content);
-    res.name = displayName || name;
-    res.version = version;
-    res.description = description;
-    res.author = author;
-    res.homepage_url = homepage;
-  } catch (e) {
-    console.log(e);
-  }
-
-  return res;
+  const pkg = await readPackageJson(rootPath);
+  const { name, displayName, version, description, author, homepage } = pkg;
+  return {
+    ...manifest,
+    ...(name && { name: displayName || name }),
+    ...(version && { version }),
+    ...(description && { description }),
+    ...(author && { author }),
+    ...(homepage && { homepage_url: homepage }),
+  };
 }
 
 export async function mergeManifestEntries(props: NormalizeManifestProps) {
@@ -177,17 +201,6 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
   }
 }
 
-export function getManifestEntries(manifest: Manifest) {
-  return {
-    background: getBackgroundEntry(manifest),
-    content: getContentsEntry(manifest),
-    popup: getPopupEntry(manifest),
-    options: getOptionsEntry(manifest),
-    devtools: getDevtoolsEntry(manifest),
-    sandbox: getSandboxEntry(manifest),
-  };
-}
-
 interface WriteManifestOptions {
   stats?: Rspack.Stats;
   environment: EnvironmentContext;
@@ -206,29 +219,19 @@ export async function writeManifestEntries(
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
     if (!assets) continue;
 
-    const props: WriteMainfestEntryProps = {
-      key,
-      assets,
-      manifest,
-      originManifest,
-      rootPath: environment.config.root,
-    };
-
-    if (key === 'background') {
-      writeBackgroundEntry(props);
-    } else if (key.startsWith('content')) {
-      const entryPath = getRsbuildEntryFile(environment.entry, key);
-      await writeContentsEntry({ ...props, entryPath });
-    } else if (key === 'popup') {
-      writePopupEntry(props);
-    } else if (key === 'options') {
-      writeOptionsEntry(props);
-      return;
-    } else if (key === 'devtools') {
-      writeDevtoolsEntry(props);
-      return;
-    } else if (key.startsWith('sandbox')) {
-      writeSandboxEntry(props);
+    const processor = entryProcessors.find((item) => item.match(key));
+    if (processor) {
+      const props: WriteMainfestEntryProps = {
+        key,
+        assets,
+        manifest,
+        originManifest,
+        rootPath: environment.config.root,
+        entryPath: getRsbuildEntryFile(environment.entry, key),
+      };
+      await processor.write(props);
+    } else {
+      console.warn(`No processor found for entry: ${key}`);
     }
   }
 }
@@ -243,7 +246,15 @@ export async function writeManifestFile(distPath: string, manifest: Manifest) {
 export type EnviromentKey = 'web' | 'webContent' | 'webWorker';
 
 export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig) {
-  const { background, content, ...others } = getManifestEntries(manifest);
+  const background = getBackgroundEntry(manifest);
+  const content = getContentsEntry(manifest);
+  const others = {
+    popup: getPopupEntry(manifest),
+    options: getOptionsEntry(manifest),
+    devtools: getDevtoolsEntry(manifest),
+    sandbox: getSandboxEntry(manifest),
+  };
+
   const environments: {
     [key in EnviromentKey]?: EnvironmentConfig;
   } = {};
