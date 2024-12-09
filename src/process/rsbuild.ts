@@ -98,7 +98,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   return environments;
 }
 
-export function getHotUpdateAssets(statsList: Rspack.Stats[]) {
+function getHotUpdateAssets(statsList: Rspack.Stats[]) {
   const entrypointsList = statsList.map((item) => item?.toJson().entrypoints).filter((item) => !!item);
   const res: string[] = [];
 

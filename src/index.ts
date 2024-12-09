@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './process/index.js';
 import type { BrowserTarget, Manifest } from './process/manifest.js';
-import { getRsbuildEntryFile, normalizeRsbuildEnviroments } from './process/rsbuild.js';
+import { getRsbuildEntryFile, normalizeRsbuildEnviroments, clearOutdatedHotUpdateFiles } from './process/rsbuild.js';
 
 export type PluginWebExtOptions = {
   manifest?: unknown;
@@ -32,6 +32,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
       const extraConfig: RsbuildConfig = {
+        environments,
         dev: {
           writeToDisk: true,
           client: {
@@ -44,7 +45,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       };
 
       // extraConfig must be at the end, for dev.writeToDisk
-      return mergeRsbuildConfig({ environments }, config, extraConfig);
+      return mergeRsbuildConfig(config, extraConfig);
     });
 
     api.onBeforeStartDevServer(async ({ environments }) => {
@@ -100,8 +101,8 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       await writeManifestFile(distPath, manifest);
 
       // clear outdated hmr files
-      // const statsList = 'stats' in stats ? stats.stats : [stats];
-      // clearOutdatedHotUpdateFiles(distPath, statsList);
+      const statsList = 'stats' in stats ? stats.stats : [stats];
+      clearOutdatedHotUpdateFiles(distPath, statsList);
     });
 
     api.onAfterBuild(async () => {
