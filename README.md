@@ -1,6 +1,6 @@
 # rsbuild-plugin-web-ext
 
-English | [简体中文](./README-zh-CN.md)
+English | [简体中文](./README.zh-CN.md)
 
 A Rsbuild plugin for developing and building browser extensions, making browser extension development simple and efficient.
 
