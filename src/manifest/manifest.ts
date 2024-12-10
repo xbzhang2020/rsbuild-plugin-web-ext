@@ -1,4 +1,4 @@
-import type { Manifest as _Manifest, BrowserTarget } from '../types.js';
+import type { BrowserTarget, Manifest as _Manifest } from '../types.js';
 
 export interface NormalizeManifestProps {
   manifest: _Manifest;

@@ -4,8 +4,8 @@ import { parse } from '@babel/parser';
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 import type { ContentScriptConfig } from '../types.js';
+import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const { content_scripts } = manifest;

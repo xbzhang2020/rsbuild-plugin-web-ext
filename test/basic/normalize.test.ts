@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { normalizeManifest } from '../../src/manifest/index.js';
+import type { Manifest, PluginWebExtOptions } from '../../src/types.js';
 import pkg from './package.json';
-import type { PluginWebExtOptions, Manifest } from '../../src/types.js';
 
 describe('normalizeManifest', () => {
   const rootPath = import.meta.dirname;

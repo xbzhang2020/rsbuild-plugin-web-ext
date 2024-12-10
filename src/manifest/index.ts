@@ -3,6 +3,7 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, Rspack } from '@rsbuild/core';
 import { getRsbuildEntryFile } from '../rsbuild.js';
+import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileName, isJsFile, readPackageJson } from '../util.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
@@ -12,7 +13,6 @@ import type { NormalizeMainfestEntryProps, NormalizeManifestProps, WriteMainfest
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
-import type { PluginWebExtOptions, BrowserTarget, Manifest } from '../types.js';
 
 export { copyIcons } from './icons.js';
 
