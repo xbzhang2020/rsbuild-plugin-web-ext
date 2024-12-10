@@ -1,10 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-export function isDev() {
-  return process.env.NODE_ENV === 'development';
-}
-
 export function getFileName(file: string) {
   return file.split('.')[0];
 }

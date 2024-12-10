@@ -2,16 +2,10 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { BrowserTarget, Manifest } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild.js';
+import type { PluginWebExtOptions, Manifest } from './types.js';
 
-export type PluginWebExtOptions = {
-  manifest?: unknown;
-  srcDir?: string;
-  target?: BrowserTarget;
-};
-
-export type { ContentScriptConfig } from './manifest/manifest.js';
+export type { ContentScriptConfig } from './types.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
@@ -22,13 +16,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     let manifest = {} as Manifest;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      manifest = await normalizeManifest({
-        manifest: (options.manifest || {}) as Manifest,
-        target: options.target || 'chrome-mv3',
-        srcPath: resolve(rootPath, options.srcDir || './'),
-        rootPath,
-        selfRootPath,
-      });
+      manifest = await normalizeManifest(options, rootPath, selfRootPath);
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
       const extraConfig: RsbuildConfig = {

@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { copyIcons, readManifestEntries } from './manifest/index.js';
 import type { Manifest } from './manifest/manifest.js';
-import { isDev } from './util.js';
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
@@ -41,7 +40,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
       },
       output: {
         target: 'web',
-        injectStyles: isDev(),
+        injectStyles: process.env.NODE_ENV === 'development',
       },
       dev: {
         assetPrefix: true,

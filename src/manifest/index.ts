@@ -3,22 +3,16 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentContext, Rspack } from '@rsbuild/core';
 import { getRsbuildEntryFile } from '../rsbuild.js';
-import { getFileName, isDev, isJsFile, readPackageJson } from '../util.js';
+import { getFileName, isJsFile, readPackageJson } from '../util.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
-import type {
-  BrowserTarget,
-  Manifest,
-  ManifestV3,
-  NormalizeMainfestEntryProps,
-  NormalizeManifestProps,
-  WriteMainfestEntryProps,
-} from './manifest.js';
+import type { NormalizeMainfestEntryProps, NormalizeManifestProps, WriteMainfestEntryProps } from './manifest.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import type { PluginWebExtOptions, BrowserTarget, Manifest } from '../types.js';
 
 export { copyIcons } from './icons.js';
 
@@ -37,17 +31,16 @@ const entryProcessors: EntryProcessor[] = [
   { match: (key) => key.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
 ];
 
-export async function normalizeManifest(props: NormalizeManifestProps) {
-  const { manifest, rootPath, target } = props;
-  let finalManifest = {} as ManifestV3;
-  const defaultManifest = (await getDefaultManifest(rootPath, target)) as ManifestV3;
+export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
+  const { manifest = {}, target = 'chrome-mv3', srcDir = '.' } = options || {};
 
-  finalManifest = {
+  const defaultManifest = await getDefaultManifest(rootPath, target);
+  const finalManifest = {
     ...defaultManifest,
-    ...((manifest || {}) as ManifestV3),
-  };
+    ...(manifest as Manifest),
+  } as Manifest;
 
-  if (isDev()) {
+  if (process.env.NODE_ENV === 'development') {
     finalManifest.version_name ??= `${finalManifest.version} (development)`;
     finalManifest.permissions ??= [];
     finalManifest.host_permissions ??= [];
@@ -62,30 +55,34 @@ export async function normalizeManifest(props: NormalizeManifestProps) {
   }
 
   await mergeManifestEntries({
-    ...props,
     manifest: finalManifest,
+    target,
+    srcPath: resolve(rootPath, srcDir),
+    rootPath,
+    selfRootPath,
   });
   return finalManifest;
 }
 
-export async function getDefaultManifest(rootPath: string, target: BrowserTarget) {
+export async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
   const manifest: Manifest = {
-    manifest_version: target.includes('2') ? 2 : 3,
+    manifest_version: target?.includes('2') ? 2 : 3,
     name: '',
     version: '',
   };
 
   const pkg = await readPackageJson(rootPath);
   const { name, displayName, version, description, author, homepage } = pkg;
-  const newVersion = version.match(/[\d\.]+/)?.[0];
+  const trimVersion = version.match(/[\d\.]+/)?.[0];
+
   return {
     ...manifest,
     ...(name && { name: displayName || name }),
-    ...(newVersion && { version: newVersion }),
+    ...(trimVersion && { version: trimVersion }),
     ...(description && { description }),
     ...(author && { author }),
     ...(homepage && { homepage_url: homepage }),
-  };
+  } as Manifest;
 }
 
 export async function mergeManifestEntries(props: NormalizeManifestProps) {
@@ -191,7 +188,7 @@ export async function writeManifestEntries(
 
 export async function writeManifestFile(distPath: string, manifest: Manifest) {
   if (!existsSync(distPath)) return;
-  const data = isDev() ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
+  const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
   console.log('Built the extension successfully');
 }
