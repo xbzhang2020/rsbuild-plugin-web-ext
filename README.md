@@ -14,12 +14,12 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
 
 ## Features
 
-- **[Declarative Development](#declarative-development)** - Automatically generate configuration based on directory structure, no complex setup needed.
-- **Seamless Development Experience** - Live page updates with HMR and Live-Reloading.
-- **First-Class TypeScript Support** - Out-of-the-box type support without additional configuration.
-- **[Browser Compatibility](#browser-compatibility)** - Unified APIs and polyfills for easy multi-browser support.
-- **Framework Agnostic** - Freedom to use any frontend framework and libraries.
-- **Lightning Fast** - Blazing fast development and build powered by Rsbuild.
+- **[Declarative Development](#declarative-development)**. Automatically generate configuration based on directory structure, no complex setup needed.
+- **Seamless Development Experience**. Live page updates with HMR and Live-Reloading.
+- **First-Class TypeScript Support**. Out-of-the-box type support without additional configuration.
+- **[Browser Compatibility](#browser-compatibility)**. Unified APIs and polyfills for easy multi-browser support.
+- **Framework Agnostic**. Freedom to use any frontend framework and libraries.
+- **Lightning Fast**. Blazing fast development and build powered by Rsbuild.
 
 ## Quick Start
 
