@@ -23,7 +23,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       manifest = await normalizeManifest({
-        manifest: options.manifest as Manifest,
+        manifest: (options.manifest || {}) as Manifest,
         target: options.target || 'chrome-mv3',
         srcPath: resolve(rootPath, options.srcDir || './'),
         rootPath,
