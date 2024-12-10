@@ -5,9 +5,9 @@
   "keywords": ["web extensions", "browser extensions", "rsbuild plugin", "web-ext"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git"
+    "url": "git+https://github.com/xbzhang2020/rsbuild-plugin-web-ext.git"
   },
-  "homepage": "https://github.com/xbzhang1024/rsbuild-plugin-web-ext.git",
+  "homepage": "https://github.com/xbzhang2020/rsbuild-plugin-web-ext.git",
   "license": "MIT",
   "type": "module",
   "exports": {
