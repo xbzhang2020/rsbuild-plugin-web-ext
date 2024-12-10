@@ -19,7 +19,7 @@ export type ContentScriptConfig = {
 
 export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
 
-export type PluginWebExtOptions<T = unknown> = {
+export type PluginWebExtOptions<T = object> = {
   manifest?: T;
   srcDir?: string;
   target?: BrowserTarget;
