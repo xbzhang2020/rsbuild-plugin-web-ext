@@ -28,6 +28,7 @@
     "lint:write": "biome check . --write",
     "prepare": "simple-git-hooks && npm run build",
     "test": "vitest",
+    "coverage": "vitest run --coverage",
     "bump": "npx bumpp"
   },
   "simple-git-hooks": {
@@ -64,6 +65,7 @@
     "@babel/parser": "^7.26.2",
     "@babel/traverse": "^7.25.9",
     "@babel/types": "^7.26.0",
-    "@types/chrome": "^0.0.287"
+    "@types/chrome": "^0.0.287",
+    "@vitest/coverage-v8": "^2.1.8"
   }
 }
