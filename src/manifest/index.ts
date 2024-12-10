@@ -17,7 +17,7 @@ import type {
 } from './manifest.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
-import { getRsbuildEntryFile } from './rsbuild.js';
+import { getRsbuildEntryFile } from '../rsbuild.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
@@ -77,10 +77,11 @@ export async function getDefaultManifest(rootPath: string, target: BrowserTarget
 
   const pkg = await readPackageJson(rootPath);
   const { name, displayName, version, description, author, homepage } = pkg;
+  const newVersion = version.match(/[\d\.]+/)?.[0];
   return {
     ...manifest,
     ...(name && { name: displayName || name }),
-    ...(version && { version }),
+    ...(newVersion && { version: newVersion }),
     ...(description && { description }),
     ...(author && { author }),
     ...(homepage && { homepage_url: homepage }),
