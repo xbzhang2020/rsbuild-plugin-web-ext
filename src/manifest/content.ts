@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { ContentScriptConfig } from '../types.js';
 import { parseExportObject } from '../parser/export.js';
+import type { ContentScriptConfig } from '../types.js';
 import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
@@ -57,7 +57,7 @@ export async function writeContentsEntry({
     const extraConfig = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],
     };
-    
+
     if (extraConfig) {
       content_scripts[index] = {
         ...content_scripts[index],
