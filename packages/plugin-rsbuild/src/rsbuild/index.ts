@@ -2,8 +2,9 @@ import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
-import { copyIcons, readManifestEntries } from './manifest/index.js';
-import type { Manifest } from './manifest/manifest.js';
+import { copyIcons, readManifestEntries } from '../manifest/index.js';
+import type { Manifest } from '../manifest/manifest.js';
+import type { EnviromentKey } from './rsbuild.js';
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
@@ -13,17 +14,16 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   return entry.import;
 }
 
-export type EnviromentKey = 'web' | 'webContent' | 'webWorker';
-
 export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig, selfRootPath: string) {
   const { background, content, ...others } = readManifestEntries(manifest);
 
   const environments: {
     [key in EnviromentKey]?: EnvironmentConfig;
   } = {};
+  let defaultEnvironment: EnvironmentConfig | null = null;
 
   if (background) {
-    environments.webWorker = {
+    defaultEnvironment = environments.background = {
       source: {
         entry: background,
       },
@@ -34,31 +34,29 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   }
 
   if (content) {
-    environments.webContent = {
+    defaultEnvironment = environments.content = {
       source: {
         entry: content,
       },
       output: {
         target: 'web',
+        // support hmr
         injectStyles: process.env.NODE_ENV === 'development',
       },
       dev: {
+        // support hmr
         assetPrefix: true,
       },
     };
   }
 
-  const webEntry = Object.values(others).filter((entry) => !!entry);
-  if (webEntry.length) {
-    const entry = webEntry.reduce((res, cur) => {
-      for (const key in cur) {
-        res[key] = cur[key];
-      }
-      return res;
-    }, {});
-    environments.web = {
+  const webEntry = Object.values(others)
+    .filter((entry) => !!entry)
+    .reduce((res, cur) => Object.assign(res, cur), {});
+  if (Object.values(webEntry).length) {
+    defaultEnvironment = environments.web = {
       source: {
-        entry,
+        entry: webEntry,
       },
       output: {
         target: 'web',
@@ -66,8 +64,8 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
     };
   }
 
-  let defaultEnvironment = environments.web || environments.webContent || environments.webWorker;
   if (!defaultEnvironment) {
+    // void the empty entry error
     defaultEnvironment = environments.web = {
       source: {
         entry: {

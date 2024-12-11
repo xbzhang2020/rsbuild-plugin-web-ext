@@ -1,34 +1,64 @@
 import { existsSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, Rspack } from '@rsbuild/core';
-import { getRsbuildEntryFile } from '../rsbuild.js';
+import type { EnvironmentContext, Rspack, RsbuildEntry } from '@rsbuild/core';
+import { getRsbuildEntryFile } from '../rsbuild/index.js';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
-import { getFileName, isJsFile, readPackageJson } from '../util.js';
+import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
 import { getContentEntry, mergeContentEntry, writeContentEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
-import type { NormalizeMainfestEntryProps, NormalizeManifestProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, NormalizeManifestProps, WriteMainfestEntryProps } from './manifest.js';
 import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
 import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
 import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
 
 export { copyIcons } from './icons.js';
 
-type EntryProcessor = {
-  match: (entryName: string) => boolean;
-  merge: (props: NormalizeMainfestEntryProps) => void;
-  write: (props: WriteMainfestEntryProps) => void | Promise<void>;
-};
-
-const entryProcessors: EntryProcessor[] = [
-  { match: (entryName) => entryName === 'background', merge: mergeBackgroundEntry, write: writeBackgroundEntry },
-  { match: (entryName) => entryName.startsWith('content'), merge: mergeContentEntry, write: writeContentEntry },
-  { match: (entryName) => entryName === 'popup', merge: mergePopupEntry, write: writePopupEntry },
-  { match: (entryName) => entryName === 'options', merge: mergeOptionsEntry, write: writeOptionsEntry },
-  { match: (entryName) => entryName === 'devtools', merge: mergeDevtoolsEntry, write: writeDevtoolsEntry },
-  { match: (entryName) => entryName.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
+const entryProcessors: ManifestEntryProcessor[] = [
+  {
+    key: 'background',
+    match: (entryName) => entryName === 'background',
+    merge: mergeBackgroundEntry,
+    get: getBackgroundEntry,
+    write: writeBackgroundEntry,
+  },
+  {
+    key: 'content',
+    match: (entryName) => entryName.startsWith('content'),
+    merge: mergeContentEntry,
+    get: getContentEntry,
+    write: writeContentEntry,
+  },
+  {
+    key: 'popup',
+    match: (entryName) => entryName === 'popup',
+    merge: mergePopupEntry,
+    get: getPopupEntry,
+    write: writePopupEntry,
+  },
+  {
+    key: 'options',
+    match: (entryName) => entryName === 'options',
+    merge: mergeOptionsEntry,
+    get: getOptionsEntry,
+    write: writeOptionsEntry,
+  },
+  {
+    key: 'devtools',
+    match: (entryName) => entryName === 'devtools',
+    merge: mergeDevtoolsEntry,
+    get: getDevtoolsEntry,
+    write: writeDevtoolsEntry,
+  },
+  {
+    key: 'sandbox',
+    match: (entryName) => entryName.startsWith('sandbox'),
+    merge: mergeSandboxEntry,
+    get: getSandboxEntry,
+    write: writeSandboxEntry,
+  },
 ];
 
 export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
@@ -64,7 +94,7 @@ export async function normalizeManifest(options: PluginWebExtOptions, rootPath: 
   return finalManifest;
 }
 
-export async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
+async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
   const manifest: Manifest = {
     manifest_version: target?.includes('2') ? 2 : 3,
     name: '',
@@ -85,57 +115,52 @@ export async function getDefaultManifest(rootPath: string, target?: BrowserTarge
   } as Manifest;
 }
 
-export async function mergeManifestEntries(props: NormalizeManifestProps) {
+async function mergeManifestEntries(props: NormalizeManifestProps) {
   const { srcPath } = props;
 
   try {
+    const entries = entryProcessors.reduce(
+      (res, cur) => {
+        res[cur.key] = [];
+        return res;
+      },
+      {} as Record<ManifestEntryProcessor['key'], string[]>,
+    );
+
     const files = await readdir(srcPath, {
       withFileTypes: true,
     });
 
-    const entries: Record<string, string[]> = {
-      background: [],
-      content: [],
-      popup: [],
-      options: [],
-      devtools: [],
-      sandbox: [],
-    };
-
     for (const file of files) {
-      const { name } = file;
-      const filePath = `./${name}`;
+      const filePath = `./${file.name}`;
 
-      if (isJsFile(name)) {
-        const entryName = getFileName(name);
-        if (entryName in entries) {
-          entries[entryName].unshift(filePath);
-        }
+      if (file.name === 'assets' && file.isDirectory()) {
+        const directoryPath = resolve(srcPath, filePath);
+        const subFiles = await readdir(directoryPath, { recursive: true });
+        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
+        mergeIconsEntry({ ...props, entryPath: subFilePaths });
         continue;
       }
 
-      if (file.isDirectory() && ['assets', 'contents', 'sandboxes'].includes(name)) {
+      const processor = entryProcessors.find((item) => item.match(getFileBaseName(file.name)));
+      if (!processor) continue;
+
+      if (isJsFile(file.name)) {
+        entries[processor.key].push(filePath);
+        continue;
+      }
+
+      if (file.isDirectory()) {
         const directoryPath = resolve(srcPath, filePath);
         const subFiles = await readdir(directoryPath, { recursive: true });
-        let subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
-
-        if (name === 'assets') {
-          mergeIconsEntry({ ...props, entryPath: subFilePaths });
-        } else if (name === 'contents') {
-          subFilePaths = subFilePaths.filter((item) => isJsFile(item));
-          entries.content.push(...subFilePaths);
-        } else if (name === 'sandboxes') {
-          subFilePaths = subFilePaths.filter((item) => isJsFile(item));
-          entries.sandbox.push(...subFilePaths);
-        }
+        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`).filter((item) => isJsFile(item));
+        entries[processor.key].push(...subFilePaths);
       }
     }
 
-    for (const [entryName, entryPath] of Object.entries(entries)) {
-      const processor = entryProcessors.find((item) => item.match(entryName));
-      if (processor) {
-        processor.merge({ ...props, entryPath });
-      }
+    for (const [key, entryPath] of Object.entries(entries)) {
+      const processor = entryProcessors.find((item) => item.key === key);
+      processor?.merge({ ...props, entryPath });
     }
   } catch (err) {
     console.error(err);
@@ -143,14 +168,13 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
 }
 
 export function readManifestEntries(manifest: Manifest) {
-  return {
-    background: getBackgroundEntry(manifest),
-    content: getContentEntry(manifest),
-    popup: getPopupEntry(manifest),
-    options: getOptionsEntry(manifest),
-    devtools: getDevtoolsEntry(manifest),
-    sandbox: getSandboxEntry(manifest),
-  };
+  return entryProcessors.reduce(
+    (res, processor) => {
+      res[processor.key] = processor.get(manifest);
+      return res;
+    },
+    {} as Record<ManifestEntryProcessor['key'], RsbuildEntry | null>,
+  );
 }
 
 interface WriteManifestOptions {

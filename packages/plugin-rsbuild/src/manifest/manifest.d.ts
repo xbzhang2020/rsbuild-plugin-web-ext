@@ -1,4 +1,5 @@
 import type { BrowserTarget, Manifest as _Manifest } from '../types.js';
+import type { RsbuildEntry } from '@rsbuild/core';
 
 export interface NormalizeManifestProps {
   manifest: _Manifest;
@@ -22,3 +23,13 @@ export interface WriteMainfestEntryProps {
 }
 
 export type Manifest = _Manifest;
+
+export type ManifestEntryKey = 'background' | 'content' | 'popup' | 'options' | 'devtools' | 'sandbox';
+
+export type ManifestEntryProcessor = {
+  key: ManifestEntryKey;
+  match: (entryName: string) => boolean;
+  merge: (props: NormalizeMainfestEntryProps) => void;
+  get: (manifest?: Manifest) => RsbuildEntry | null;
+  write: (props: WriteMainfestEntryProps) => void | Promise<void>;
+};

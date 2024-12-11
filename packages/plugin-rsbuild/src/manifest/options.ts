@@ -13,8 +13,8 @@ export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntr
   manifest.options_ui.page = entryPath[0];
 }
 
-export function getOptionsEntry(manifest: Manifest) {
-  const options = manifest.options_ui?.page || manifest.options_page;
+export function getOptionsEntry(manifest?: Manifest) {
+  const options = manifest?.options_ui?.page || manifest?.options_page;
   if (!options) return null;
   const entry: RsbuildEntry = {};
   entry.options = {

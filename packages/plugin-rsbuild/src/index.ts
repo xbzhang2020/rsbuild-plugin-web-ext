@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild.js';
+import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { Manifest, PluginWebExtOptions } from './types.js';
 
 export type { ContentScriptConfig } from './types.js';

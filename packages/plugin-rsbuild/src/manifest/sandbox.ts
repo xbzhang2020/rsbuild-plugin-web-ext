@@ -12,8 +12,8 @@ export function mergeSandboxEntry({ manifest, entryPath }: NormalizeMainfestEntr
   manifest.sandbox.pages = entryPath;
 }
 
-export function getSandboxEntry(manifest: Manifest) {
-  const sandboxPages = manifest.sandbox?.pages || [];
+export function getSandboxEntry(manifest?: Manifest) {
+  const sandboxPages = manifest?.sandbox?.pages || [];
   if (!sandboxPages.length) return null;
   const entry: RsbuildEntry = {};
   sandboxPages.forEach((page, index) => {

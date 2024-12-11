@@ -36,9 +36,9 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target
   }
 }
 
-export function getBackgroundEntry(manifest: Manifest) {
+export function getBackgroundEntry(manifest?: Manifest) {
   let scripts: string[] = [];
-  const { background } = manifest;
+  const { background } = manifest || {};
   if (background) {
     if ('service_worker' in background) {
       scripts = background.service_worker.split(',');

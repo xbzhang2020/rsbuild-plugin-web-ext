@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-export function getFileName(file: string) {
+export function getFileBaseName(file: string) {
   return file.split('.')[0];
 }
 

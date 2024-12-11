@@ -7,8 +7,8 @@ export function mergeDevtoolsEntry({ manifest, entryPath }: NormalizeMainfestEnt
   }
 }
 
-export function getDevtoolsEntry(manifest: Manifest) {
-  const devtools = manifest.devtools_page;
+export function getDevtoolsEntry(manifest?: Manifest) {
+  const devtools = manifest?.devtools_page;
   if (!devtools) return null;
   const entry: RsbuildEntry = {
     devtools: {
