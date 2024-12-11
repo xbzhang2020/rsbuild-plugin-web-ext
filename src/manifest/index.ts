@@ -156,12 +156,12 @@ export function readManifestEntries(manifest: Manifest) {
 interface WriteManifestOptions {
   stats?: Rspack.Stats;
   environment: EnvironmentContext;
-  originManifest?: Manifest;
+  optionManifest?: Manifest;
 }
 
 export async function writeManifestEntries(
   manifest: Manifest,
-  { stats, environment, originManifest }: WriteManifestOptions,
+  { stats, environment, optionManifest }: WriteManifestOptions,
 ) {
   // refer to https://rspack.dev/api/javascript-api/stats-json
   const entrypoints = stats?.toJson().entrypoints;
@@ -178,7 +178,7 @@ export async function writeManifestEntries(
       key,
       assets,
       manifest,
-      originManifest,
+      optionManifest,
       rootPath: environment.config.root,
       entryPath: getRsbuildEntryFile(environment.entry, key),
     };

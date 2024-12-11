@@ -30,6 +30,9 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
             reconnect: 20,
           },
         },
+        server: {
+          printUrls: false,
+        },
       };
 
       // extraConfig must be at the end, for dev.writeToDisk
@@ -73,7 +76,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onAfterEnvironmentCompile(async (params) => {
       await writeManifestEntries(manifest, {
         ...params,
-        originManifest: options.manifest as Manifest,
+        optionManifest: options.manifest as Manifest,
       });
     });
 
