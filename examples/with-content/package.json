@@ -12,5 +12,9 @@
   "keywords": [],
   "author": "xbzhang",
   "license": "ISC",
-  "description": "A basic browser extension"
+  "description": "A basic browser extension",
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.6",
+    "typescript": "^5.7.2"
+  }
 }
