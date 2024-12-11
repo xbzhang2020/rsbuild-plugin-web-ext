@@ -46,7 +46,7 @@ importers:
 
   examples/with-react: {}
 
-  packages/rsbuild-plugin:
+  packages/core:
     dependencies:
       '@babel/parser':
         specifier: ^7.26.2
