@@ -19,6 +19,6 @@ export function getDevtoolsEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writeDevtoolsEntry({ manifest, key }: WriteMainfestEntryProps) {
-  manifest.devtools_page = `${key}.html`;
+export function writeDevtoolsEntry({ manifest, entryName }: WriteMainfestEntryProps) {
+  manifest.devtools_page = `${entryName}.html`;
 }

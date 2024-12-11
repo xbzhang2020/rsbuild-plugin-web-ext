@@ -26,8 +26,8 @@ export function getSandboxEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writeSandboxEntry({ manifest, key }: WriteMainfestEntryProps) {
+export function writeSandboxEntry({ manifest, entryName }: WriteMainfestEntryProps) {
   if (!manifest.sandbox?.pages) return;
-  const index = Number(key.replace('content', '') || '0');
-  manifest.sandbox.pages[index] = `${key}.html`;
+  const index = Number(entryName.replace('sandbox', '') || '0');
+  manifest.sandbox.pages[index] = `${entryName}.html`;
 }

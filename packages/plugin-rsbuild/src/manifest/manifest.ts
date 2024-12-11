@@ -15,10 +15,10 @@ export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {
 export interface WriteMainfestEntryProps {
   manifest: _Manifest;
   optionManifest?: _Manifest; // defined by user
-  key: string; // entry name
-  assets: string[];
   rootPath: string;
+  entryName: string; // entry name
   entryPath?: string | string[];
+  assets: string[];
 }
 
 export type Manifest = _Manifest;

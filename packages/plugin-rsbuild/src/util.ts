@@ -19,3 +19,14 @@ export async function readPackageJson(rootPath: string) {
     return {};
   }
 }
+
+/**
+ * 
+ * @param rootPath absolute path
+ * @param filePath relative path or absolute path
+ * @returns 
+ */
+export async function readFileContent(rootPath: string, filePath: string) {
+  const code = await readFile(resolve(rootPath, filePath), 'utf-8');
+  return code;
+}

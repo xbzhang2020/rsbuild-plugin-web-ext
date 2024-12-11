@@ -1,5 +1,7 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import { readFileContent } from '../util.js';
+import { parseExportObject } from '../parser/export.js';
 
 export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   if (!entryPath.length) return;
@@ -18,9 +20,8 @@ export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryP
   manifest.action.default_popup = manifest.action?.default_popup || entryPath[0];
 }
 
-export function getPopupEntry(manifest: Manifest) {
-  const { manifest_version, action, browser_action } = manifest;
-
+export function getPopupEntry(manifest?: Manifest) {
+  const { manifest_version, action, browser_action } = manifest || {};
   const popup = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
   if (!popup) return null;
   const entry: RsbuildEntry = {
@@ -32,15 +33,37 @@ export function getPopupEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writePopupEntry({ manifest, key }: WriteMainfestEntryProps) {
+export async function writePopupEntry({
+  manifest,
+  optionManifest,
+  entryName,
+  entryPath,
+  rootPath,
+}: WriteMainfestEntryProps) {
   const { manifest_version, action, browser_action } = manifest;
-  const popup = `${key}.html`;
+
+  const declarative = !getPopupEntry(optionManifest) && !!entryPath;
+  let title: string | null = null;
+
+  if (declarative) {
+    const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+    const code = await readFileContent(rootPath, filePath);
+    title = parseExportObject<string>(code, 'title');
+  }
+
+  const popup = `${entryName}.html`;
   if (manifest_version === 2) {
     if (!browser_action) return;
     browser_action.default_popup = popup;
+    if (title) {
+      browser_action.default_title = title;
+    }
     return;
   }
 
   if (!action) return;
   action.default_popup = popup;
+  if (title) {
+    action.default_title = title;
+  }
 }

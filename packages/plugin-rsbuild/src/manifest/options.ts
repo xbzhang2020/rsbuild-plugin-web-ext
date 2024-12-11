@@ -24,8 +24,8 @@ export function getOptionsEntry(manifest: Manifest) {
   return entry;
 }
 
-export function writeOptionsEntry({ manifest, key }: WriteMainfestEntryProps) {
-  const filename = `${key}.html`;
+export function writeOptionsEntry({ manifest, entryName }: WriteMainfestEntryProps) {
+  const filename = `${entryName}.html`;
   if (manifest.options_page) {
     manifest.options_page = filename;
   }

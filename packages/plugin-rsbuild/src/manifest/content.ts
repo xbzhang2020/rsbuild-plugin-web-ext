@@ -1,11 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { RsbuildEntry } from '@rsbuild/core';
 import { parseExportObject } from '../parser/export.js';
 import type { ContentScriptConfig } from '../types.js';
 import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import { readFileContent } from '../util.js';
 
-export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+export function mergeContentEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const { content_scripts } = manifest;
 
   if (!content_scripts?.length && entryPath.length) {
@@ -21,8 +20,8 @@ export function mergeContentsEntry({ manifest, entryPath }: NormalizeMainfestEnt
   }
 }
 
-export function getContentsEntry(manifest: Manifest) {
-  const { content_scripts = [] } = manifest;
+export function getContentEntry(manifest?: Manifest) {
+  const { content_scripts = [] } = manifest || {};
   if (!content_scripts.length) return null;
 
   const entry: RsbuildEntry = {};
@@ -37,23 +36,23 @@ export function getContentsEntry(manifest: Manifest) {
   return entry;
 }
 
-export async function writeContentsEntry({
+export async function writeContentEntry({
   manifest,
   optionManifest,
   rootPath,
   entryPath,
-  key,
+  entryName,
   assets,
 }: WriteMainfestEntryProps) {
   const { content_scripts } = manifest;
   if (!content_scripts) return;
-  const index = Number(key.replace('content', '') || '0');
-  const declarative = !optionManifest?.content_scripts?.length && entryPath;
+  const index = Number(entryName.replace('content', '') || '0');
 
+  const declarative = !getContentEntry(optionManifest) && !!entryPath;
   if (declarative) {
     // declarative entry is a sinlge file
     const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
-    const code = await readFile(resolve(rootPath, filePath), 'utf-8');
+    const code = await readFileContent(rootPath, filePath);
     const extraConfig = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],
     };

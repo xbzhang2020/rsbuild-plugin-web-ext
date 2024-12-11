@@ -6,7 +6,7 @@ import { getRsbuildEntryFile } from '../rsbuild.js';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileName, isJsFile, readPackageJson } from '../util.js';
 import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
-import { getContentsEntry, mergeContentsEntry, writeContentsEntry } from './content.js';
+import { getContentEntry, mergeContentEntry, writeContentEntry } from './content.js';
 import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
 import type { NormalizeMainfestEntryProps, NormalizeManifestProps, WriteMainfestEntryProps } from './manifest.js';
@@ -17,18 +17,18 @@ import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox
 export { copyIcons } from './icons.js';
 
 type EntryProcessor = {
-  match: (key: string) => boolean;
+  match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void;
   write: (props: WriteMainfestEntryProps) => void | Promise<void>;
 };
 
 const entryProcessors: EntryProcessor[] = [
-  { match: (key) => key === 'background', merge: mergeBackgroundEntry, write: writeBackgroundEntry },
-  { match: (key) => key.startsWith('content'), merge: mergeContentsEntry, write: writeContentsEntry },
-  { match: (key) => key === 'popup', merge: mergePopupEntry, write: writePopupEntry },
-  { match: (key) => key === 'options', merge: mergeOptionsEntry, write: writeOptionsEntry },
-  { match: (key) => key === 'devtools', merge: mergeDevtoolsEntry, write: writeDevtoolsEntry },
-  { match: (key) => key.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
+  { match: (entryName) => entryName === 'background', merge: mergeBackgroundEntry, write: writeBackgroundEntry },
+  { match: (entryName) => entryName.startsWith('content'), merge: mergeContentEntry, write: writeContentEntry },
+  { match: (entryName) => entryName === 'popup', merge: mergePopupEntry, write: writePopupEntry },
+  { match: (entryName) => entryName === 'options', merge: mergeOptionsEntry, write: writeOptionsEntry },
+  { match: (entryName) => entryName === 'devtools', merge: mergeDevtoolsEntry, write: writeDevtoolsEntry },
+  { match: (entryName) => entryName.startsWith('sandbox'), merge: mergeSandboxEntry, write: writeSandboxEntry },
 ];
 
 export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
@@ -107,9 +107,9 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
       const filePath = `./${name}`;
 
       if (isJsFile(name)) {
-        const key = getFileName(name);
-        if (key in entries) {
-          entries[key].unshift(filePath);
+        const entryName = getFileName(name);
+        if (entryName in entries) {
+          entries[entryName].unshift(filePath);
         }
         continue;
       }
@@ -131,8 +131,8 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
       }
     }
 
-    for (const [key, entryPath] of Object.entries(entries)) {
-      const processor = entryProcessors.find((item) => item.match(key));
+    for (const [entryName, entryPath] of Object.entries(entries)) {
+      const processor = entryProcessors.find((item) => item.match(entryName));
       if (processor) {
         processor.merge({ ...props, entryPath });
       }
@@ -145,7 +145,7 @@ export async function mergeManifestEntries(props: NormalizeManifestProps) {
 export function readManifestEntries(manifest: Manifest) {
   return {
     background: getBackgroundEntry(manifest),
-    content: getContentsEntry(manifest),
+    content: getContentEntry(manifest),
     popup: getPopupEntry(manifest),
     options: getOptionsEntry(manifest),
     devtools: getDevtoolsEntry(manifest),
@@ -167,20 +167,20 @@ export async function writeManifestEntries(
   const entrypoints = stats?.toJson().entrypoints;
   if (!entrypoints) return manifest;
 
-  for (const [key, entrypoint] of Object.entries(entrypoints)) {
-    const processor = entryProcessors.find((item) => item.match(key));
+  for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
+    const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
 
     const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
     if (!assets) continue;
 
     const props: WriteMainfestEntryProps = {
-      key,
+      entryName,
       assets,
       manifest,
       optionManifest,
       rootPath: environment.config.root,
-      entryPath: getRsbuildEntryFile(environment.entry, key),
+      entryPath: getRsbuildEntryFile(environment.entry, entryName),
     };
     await processor.write(props);
   }

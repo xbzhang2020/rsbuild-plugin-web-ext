@@ -7,3 +7,5 @@ if (root) {
   </div>
   `;
 }
+
+export const title = 'with popup';
