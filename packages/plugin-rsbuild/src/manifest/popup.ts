@@ -1,7 +1,7 @@
 import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
-import { readFileContent } from '../util.js';
 import { parseExportObject } from '../parser/export.js';
+import { readFileContent } from '../util.js';
+import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   if (!entryPath.length) return;

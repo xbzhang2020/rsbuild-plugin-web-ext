@@ -1,8 +1,8 @@
 import type { RsbuildEntry } from '@rsbuild/core';
 import { parseExportObject } from '../parser/export.js';
 import type { ContentScriptConfig } from '../types.js';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 import { readFileContent } from '../util.js';
+import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
 
 export function mergeContentEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
   const { content_scripts } = manifest;
