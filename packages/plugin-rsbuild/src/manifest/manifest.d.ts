@@ -1,5 +1,5 @@
-import type { BrowserTarget, Manifest as _Manifest } from '../types.js';
 import type { RsbuildEntry } from '@rsbuild/core';
+import type { BrowserTarget, Manifest as _Manifest } from '../types.js';
 
 export interface NormalizeManifestProps {
   manifest: _Manifest;

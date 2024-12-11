@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, Rspack, RsbuildEntry } from '@rsbuild/core';
+import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { getRsbuildEntryFile } from '../rsbuild/index.js';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
