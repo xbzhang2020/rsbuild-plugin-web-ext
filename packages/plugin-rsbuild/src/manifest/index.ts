@@ -1,8 +1,6 @@
 import { existsSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, Rspack } from '@rsbuild/core';
-import { getRsbuildEntryFile } from '../rsbuild/index.js';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
@@ -12,6 +10,7 @@ import { mergeIconsEntry } from './icons.js';
 import type {
   ManifestEntry,
   ManifestEntryProcessor,
+  ManifestEntryPoints,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
 } from './manifest.js';
@@ -146,35 +145,27 @@ export function readManifestEntries(manifest: Manifest) {
   );
 }
 
-interface WriteManifestOptions {
-  stats?: Rspack.Stats;
-  environment: EnvironmentContext;
+export interface WriteManifestProps {
+  manifest: Manifest;
   optionManifest?: Manifest;
+  rootPath: string;
+  entrypoints: ManifestEntryPoints;
 }
 
-export async function writeManifestEntries(
-  manifest: Manifest,
-  { stats, environment, optionManifest }: WriteManifestOptions,
-) {
-  // refer to https://rspack.dev/api/javascript-api/stats-json
-  const entrypoints = stats?.toJson().entrypoints;
-  if (!entrypoints) return manifest;
-
-  for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
+export async function writeManifestEntries({ manifest, optionManifest, rootPath, entrypoints }: WriteManifestProps) {
+  for (const entryName in entrypoints) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
 
-    const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
-    if (!assets) continue;
-
     const props: WriteMainfestEntryProps = {
       entryName,
-      assets,
+      entryPath: entrypoints[entryName]?.import,
+      assets: entrypoints[entryName]?.assets,
       manifest,
       optionManifest,
-      rootPath: environment.config.root,
-      entryPath: getRsbuildEntryFile(environment.entry, entryName),
+      rootPath,
     };
+
     await processor.write(props);
   }
 }

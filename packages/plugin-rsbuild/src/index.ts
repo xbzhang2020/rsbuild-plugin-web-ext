@@ -4,6 +4,7 @@ import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { Manifest, PluginWebExtOptions } from './types.js';
+import type { ManifestEntryPoints } from './manifest/manifest.js';
 
 export type { ContentScriptConfig } from './types.js';
 
@@ -73,10 +74,22 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       );
     });
 
-    api.onAfterEnvironmentCompile(async (params) => {
-      await writeManifestEntries(manifest, {
-        ...params,
+    api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
+      // @see https://rspack.dev/api/javascript-api/stats-json
+      const entrypoints = stats?.toJson().entrypoints;
+      if (!entrypoints) return;
+
+      const manifestEntryPoints = Object.entries(entrypoints).reduce((res, [entryName, entrypoint]) => {
+        const entryPath = getRsbuildEntryFile(environment.entry, entryName);
+        const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
+        return Object.assign(res, { [entryName]: { assets, import: entryPath } } as ManifestEntryPoints);
+      }, {} as ManifestEntryPoints);
+
+      await writeManifestEntries({
+        manifest,
         optionManifest: options.manifest as Manifest,
+        rootPath,
+        entrypoints: manifestEntryPoints,
       });
     });
 

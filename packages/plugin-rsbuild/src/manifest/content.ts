@@ -44,7 +44,7 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({
   assets,
 }) => {
   const { content_scripts } = manifest;
-  if (!content_scripts) return;
+  if (!content_scripts || !assets?.length) return;
   const index = Number(entryName.replace('content', '') || '0');
 
   const declarative = !getContentEntry(optionManifest) && !!entryPath;
