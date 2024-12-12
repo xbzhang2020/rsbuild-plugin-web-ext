@@ -1,6 +1,6 @@
 import { parseExportObject } from '../parser/export.js';
 import { readFileContent } from '../util.js';
-import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergePopupEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   if (!entryPath.length) return;

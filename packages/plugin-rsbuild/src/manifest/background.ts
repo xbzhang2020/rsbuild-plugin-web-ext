@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath, selfRootPath, target }) => {
   const scripts: string[] = [];

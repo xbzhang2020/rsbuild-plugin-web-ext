@@ -1,4 +1,4 @@
-import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const sandboxPages = manifest.sandbox?.pages;

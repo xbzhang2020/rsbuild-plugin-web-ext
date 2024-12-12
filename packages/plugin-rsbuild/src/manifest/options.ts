@@ -1,4 +1,4 @@
-import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeOptionsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const options = manifest.options_ui?.page || manifest.options_page;

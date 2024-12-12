@@ -10,10 +10,10 @@ import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
 import type {
+  ManifestEntry,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
-  ManifestEntry,
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import popupProcessor from './popup.js';
