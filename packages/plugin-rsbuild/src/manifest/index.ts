@@ -9,8 +9,8 @@ import devtoolsProcessor from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
 import type {
   ManifestEntry,
-  ManifestEntryProcessor,
   ManifestEntryPoints,
+  ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
 } from './manifest.js';
