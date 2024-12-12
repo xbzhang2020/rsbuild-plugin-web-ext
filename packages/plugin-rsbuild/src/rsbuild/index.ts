@@ -25,7 +25,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   if (background) {
     defaultEnvironment = environments.background = {
       source: {
-        entry: background,
+        entry: background as RsbuildEntry,
       },
       output: {
         target: 'web-worker',
@@ -36,7 +36,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   if (content) {
     defaultEnvironment = environments.content = {
       source: {
-        entry: content,
+        entry: content as RsbuildEntry,
       },
       output: {
         target: 'web',
@@ -56,7 +56,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
   if (Object.values(webEntry).length) {
     defaultEnvironment = environments.web = {
       source: {
-        entry: webEntry,
+        entry: webEntry as RsbuildEntry,
       },
       output: {
         target: 'web',

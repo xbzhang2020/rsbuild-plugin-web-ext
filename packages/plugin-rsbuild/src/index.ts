@@ -10,7 +10,6 @@ export type { ContentScriptConfig } from './types.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
-
   setup: (api) => {
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
