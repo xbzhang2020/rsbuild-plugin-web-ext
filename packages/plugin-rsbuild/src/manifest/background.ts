@@ -1,8 +1,7 @@
 import { resolve } from 'node:path';
-import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target }: NormalizeMainfestEntryProps) {
+const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath, selfRootPath, target }) => {
   const scripts: string[] = [];
   const { background } = manifest;
 
@@ -34,9 +33,9 @@ export function mergeBackgroundEntry({ manifest, entryPath, selfRootPath, target
       };
     }
   }
-}
+};
 
-export function getBackgroundEntry(manifest?: Manifest) {
+const getBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   let scripts: string[] = [];
   const { background } = manifest || {};
   if (background) {
@@ -48,16 +47,16 @@ export function getBackgroundEntry(manifest?: Manifest) {
   }
 
   if (!scripts.length) return null;
-  const entry: RsbuildEntry = {
+  const entry: ManifestEntry = {
     background: {
       import: scripts,
       html: false,
     },
   };
   return entry;
-}
+};
 
-export function writeBackgroundEntry({ manifest, assets }: WriteMainfestEntryProps) {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
   const { background } = manifest;
   if (!background) return;
   if ('scripts' in background) {
@@ -67,4 +66,14 @@ export function writeBackgroundEntry({ manifest, assets }: WriteMainfestEntryPro
     // assests only have one element.
     background.service_worker = assets[0];
   }
-}
+};
+
+const backgroundProcessor: ManifestEntryProcessor = {
+  key: 'background',
+  match: (entryName) => entryName === 'background',
+  merge: mergeBackgroundEntry,
+  read: getBackgroundEntry,
+  write: writeBackgroundEntry,
+};
+
+export default backgroundProcessor;

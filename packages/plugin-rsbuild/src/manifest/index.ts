@@ -1,64 +1,33 @@
 import { existsSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { EnvironmentContext, RsbuildEntry, Rspack } from '@rsbuild/core';
+import type { EnvironmentContext, Rspack } from '@rsbuild/core';
 import { getRsbuildEntryFile } from '../rsbuild/index.js';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
-import { getBackgroundEntry, mergeBackgroundEntry, writeBackgroundEntry } from './background.js';
-import { getContentEntry, mergeContentEntry, writeContentEntry } from './content.js';
-import { getDevtoolsEntry, mergeDevtoolsEntry, writeDevtoolsEntry } from './devtools.js';
+import backgroundProcessor from './background.js';
+import contentProcessor from './content.js';
+import devtoolsProcessor from './devtools.js';
 import { mergeIconsEntry } from './icons.js';
-import type { ManifestEntryProcessor, NormalizeManifestProps, WriteMainfestEntryProps } from './manifest.js';
-import { getOptionsEntry, mergeOptionsEntry, writeOptionsEntry } from './options.js';
-import { getPopupEntry, mergePopupEntry, writePopupEntry } from './popup.js';
-import { getSandboxEntry, mergeSandboxEntry, writeSandboxEntry } from './sandbox.js';
+import type {
+  ManifestEntryProcessor,
+  NormalizeManifestProps,
+  WriteMainfestEntryProps,
+  ManifestEntry,
+} from './manifest.js';
+import optionsProcessor from './options.js';
+import popupProcessor from './popup.js';
+import sandboxProcessor from './sandbox.js';
 
 export { copyIcons } from './icons.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
-  {
-    key: 'background',
-    match: (entryName) => entryName === 'background',
-    merge: mergeBackgroundEntry,
-    get: getBackgroundEntry,
-    write: writeBackgroundEntry,
-  },
-  {
-    key: 'content',
-    match: (entryName) => entryName.startsWith('content'),
-    merge: mergeContentEntry,
-    get: getContentEntry,
-    write: writeContentEntry,
-  },
-  {
-    key: 'popup',
-    match: (entryName) => entryName === 'popup',
-    merge: mergePopupEntry,
-    get: getPopupEntry,
-    write: writePopupEntry,
-  },
-  {
-    key: 'options',
-    match: (entryName) => entryName === 'options',
-    merge: mergeOptionsEntry,
-    get: getOptionsEntry,
-    write: writeOptionsEntry,
-  },
-  {
-    key: 'devtools',
-    match: (entryName) => entryName === 'devtools',
-    merge: mergeDevtoolsEntry,
-    get: getDevtoolsEntry,
-    write: writeDevtoolsEntry,
-  },
-  {
-    key: 'sandbox',
-    match: (entryName) => entryName.startsWith('sandbox'),
-    merge: mergeSandboxEntry,
-    get: getSandboxEntry,
-    write: writeSandboxEntry,
-  },
+  backgroundProcessor,
+  contentProcessor,
+  popupProcessor,
+  optionsProcessor,
+  devtoolsProcessor,
+  sandboxProcessor,
 ];
 
 export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
@@ -170,10 +139,10 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
 export function readManifestEntries(manifest: Manifest) {
   return entryProcessors.reduce(
     (res, processor) => {
-      res[processor.key] = processor.get(manifest);
+      res[processor.key] = processor.read(manifest);
       return res;
     },
-    {} as Record<ManifestEntryProcessor['key'], RsbuildEntry | null>,
+    {} as Record<ManifestEntryProcessor['key'], ManifestEntry | null>,
   );
 }
 

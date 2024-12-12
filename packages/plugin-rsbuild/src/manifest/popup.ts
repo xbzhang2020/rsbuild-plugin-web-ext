@@ -1,9 +1,8 @@
-import type { RsbuildEntry } from '@rsbuild/core';
 import { parseExportObject } from '../parser/export.js';
 import { readFileContent } from '../util.js';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+const mergePopupEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   if (!entryPath.length) return;
   const { manifest_version } = manifest;
   if (manifest_version === 2) {
@@ -18,28 +17,28 @@ export function mergePopupEntry({ manifest, entryPath }: NormalizeMainfestEntryP
     manifest.action = {};
   }
   manifest.action.default_popup = manifest.action?.default_popup || entryPath[0];
-}
+};
 
-export function getPopupEntry(manifest?: Manifest) {
+const getPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { manifest_version, action, browser_action } = manifest || {};
   const popup = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
   if (!popup) return null;
-  const entry: RsbuildEntry = {
+  const entry: ManifestEntry = {
     popup: {
       import: popup,
       html: true,
     },
   };
   return entry;
-}
+};
 
-export async function writePopupEntry({
+const writePopupEntry: ManifestEntryProcessor['write'] = async ({
   manifest,
   optionManifest,
   entryName,
   entryPath,
   rootPath,
-}: WriteMainfestEntryProps) {
+}) => {
   const { manifest_version, action, browser_action } = manifest;
 
   const declarative = !getPopupEntry(optionManifest) && !!entryPath;
@@ -66,4 +65,14 @@ export async function writePopupEntry({
   if (title) {
     action.default_title = title;
   }
-}
+};
+
+const popupProcessor: ManifestEntryProcessor = {
+  key: 'popup',
+  match: (entryName) => entryName === 'popup',
+  merge: mergePopupEntry,
+  read: getPopupEntry,
+  write: writePopupEntry,
+};
+
+export default popupProcessor;

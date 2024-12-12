@@ -26,10 +26,12 @@ export type Manifest = _Manifest;
 
 export type ManifestEntryKey = 'background' | 'content' | 'popup' | 'options' | 'devtools' | 'sandbox';
 
+export type ManifestEntry = RsbuildEntry;
+
 export type ManifestEntryProcessor = {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void;
-  get: (manifest?: Manifest) => RsbuildEntry | null;
+  read: (manifest?: Manifest) => ManifestEntry | null;
   write: (props: WriteMainfestEntryProps) => void | Promise<void>;
 };

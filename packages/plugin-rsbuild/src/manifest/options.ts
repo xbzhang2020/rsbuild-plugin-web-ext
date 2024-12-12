@@ -1,7 +1,6 @@
-import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+const mergeOptionsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const options = manifest.options_ui?.page || manifest.options_page;
   if (options || !entryPath.length) return;
 
@@ -11,20 +10,20 @@ export function mergeOptionsEntry({ manifest, entryPath }: NormalizeMainfestEntr
     };
   }
   manifest.options_ui.page = entryPath[0];
-}
+};
 
-export function getOptionsEntry(manifest?: Manifest) {
+const getOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const options = manifest?.options_ui?.page || manifest?.options_page;
   if (!options) return null;
-  const entry: RsbuildEntry = {};
+  const entry: ManifestEntry = {};
   entry.options = {
     import: options,
     html: true,
   };
   return entry;
-}
+};
 
-export function writeOptionsEntry({ manifest, entryName }: WriteMainfestEntryProps) {
+const writeOptionsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
   const filename = `${entryName}.html`;
   if (manifest.options_page) {
     manifest.options_page = filename;
@@ -32,4 +31,14 @@ export function writeOptionsEntry({ manifest, entryName }: WriteMainfestEntryPro
   if (manifest.options_ui) {
     manifest.options_ui.page = filename;
   }
-}
+};
+
+const optionsProcessor: ManifestEntryProcessor = {
+  key: 'options',
+  match: (entryName) => entryName === 'options',
+  merge: mergeOptionsEntry,
+  read: getOptionsEntry,
+  write: writeOptionsEntry,
+};
+
+export default optionsProcessor;

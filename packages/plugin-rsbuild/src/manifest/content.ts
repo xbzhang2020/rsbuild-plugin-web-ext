@@ -1,10 +1,9 @@
-import type { RsbuildEntry } from '@rsbuild/core';
 import { parseExportObject } from '../parser/export.js';
 import type { ContentScriptConfig } from '../types.js';
 import { readFileContent } from '../util.js';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergeContentEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+const mergeContentEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const { content_scripts } = manifest;
 
   if (!content_scripts?.length && entryPath.length) {
@@ -18,13 +17,13 @@ export function mergeContentEntry({ manifest, entryPath }: NormalizeMainfestEntr
       });
     }
   }
-}
+};
 
-export function getContentEntry(manifest?: Manifest) {
+const getContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { content_scripts = [] } = manifest || {};
   if (!content_scripts.length) return null;
 
-  const entry: RsbuildEntry = {};
+  const entry: ManifestEntry = {};
   content_scripts.forEach((contentScript, index) => {
     const name = `content${content_scripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
@@ -34,16 +33,16 @@ export function getContentEntry(manifest?: Manifest) {
     };
   });
   return entry;
-}
+};
 
-export async function writeContentEntry({
+const writeContentEntry: ManifestEntryProcessor['write'] = async ({
   manifest,
   optionManifest,
   rootPath,
   entryPath,
   entryName,
   assets,
-}: WriteMainfestEntryProps) {
+}) => {
   const { content_scripts } = manifest;
   if (!content_scripts) return;
   const index = Number(entryName.replace('content', '') || '0');
@@ -68,4 +67,14 @@ export async function writeContentEntry({
   const item = content_scripts[index];
   item.js = assets.filter((item) => item.endsWith('.js'));
   item.css = assets.filter((item) => item.endsWith('.css'));
-}
+};
+
+const contentProcessor: ManifestEntryProcessor = {
+  key: 'content',
+  match: (entryName) => entryName.startsWith('content'),
+  merge: mergeContentEntry,
+  read: getContentEntry,
+  write: writeContentEntry,
+};
+
+export default contentProcessor;

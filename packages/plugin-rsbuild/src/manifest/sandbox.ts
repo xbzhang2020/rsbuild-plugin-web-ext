@@ -1,7 +1,6 @@
-import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergeSandboxEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const sandboxPages = manifest.sandbox?.pages;
   if (sandboxPages?.length || !entryPath.length) return;
   if (!manifest.sandbox) {
@@ -10,12 +9,12 @@ export function mergeSandboxEntry({ manifest, entryPath }: NormalizeMainfestEntr
     };
   }
   manifest.sandbox.pages = entryPath;
-}
+};
 
-export function getSandboxEntry(manifest?: Manifest) {
+const getSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const sandboxPages = manifest?.sandbox?.pages || [];
   if (!sandboxPages.length) return null;
-  const entry: RsbuildEntry = {};
+  const entry: ManifestEntry = {};
   sandboxPages.forEach((page, index) => {
     const name = `sandbox${sandboxPages.length === 1 ? '' : index}`;
     entry[name] = {
@@ -24,10 +23,20 @@ export function getSandboxEntry(manifest?: Manifest) {
     };
   });
   return entry;
-}
+};
 
-export function writeSandboxEntry({ manifest, entryName }: WriteMainfestEntryProps) {
+const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
   if (!manifest.sandbox?.pages) return;
   const index = Number(entryName.replace('sandbox', '') || '0');
   manifest.sandbox.pages[index] = `${entryName}.html`;
-}
+};
+
+const sandboxProcessor: ManifestEntryProcessor = {
+  key: 'sandbox',
+  match: (entryName) => entryName.startsWith('sandbox'),
+  merge: mergeSandboxEntry,
+  read: getSandboxEntry,
+  write: writeSandboxEntry,
+};
+
+export default sandboxProcessor;

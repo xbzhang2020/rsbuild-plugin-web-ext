@@ -1,24 +1,33 @@
-import type { RsbuildEntry } from '@rsbuild/core';
-import type { Manifest, NormalizeMainfestEntryProps, WriteMainfestEntryProps } from './manifest.js';
+import type { ManifestEntryProcessor, ManifestEntry } from './manifest.js';
 
-export function mergeDevtoolsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   if (!manifest.devtools_page && entryPath.length) {
     manifest.devtools_page = entryPath[0];
   }
-}
+};
 
-export function getDevtoolsEntry(manifest?: Manifest) {
+const getDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const devtools = manifest?.devtools_page;
   if (!devtools) return null;
-  const entry: RsbuildEntry = {
+  const entry: ManifestEntry = {
     devtools: {
       import: devtools,
       html: true,
     },
   };
   return entry;
-}
+};
 
-export function writeDevtoolsEntry({ manifest, entryName }: WriteMainfestEntryProps) {
+const writeDevtoolsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
   manifest.devtools_page = `${entryName}.html`;
-}
+};
+
+const devtoolsProcessor: ManifestEntryProcessor = {
+  key: 'devtools',
+  match: (entryName) => entryName === 'devtools',
+  merge: mergeDevtoolsEntry,
+  read: getDevtoolsEntry,
+  write: writeDevtoolsEntry,
+};
+
+export default devtoolsProcessor;
