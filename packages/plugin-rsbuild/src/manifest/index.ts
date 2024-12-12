@@ -88,10 +88,7 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
 
   try {
     const entries = entryProcessors.reduce(
-      (res, cur) => {
-        res[cur.key] = [];
-        return res;
-      },
+      (res, cur) => Object.assign(res, { [cur.key]: [] }),
       {} as Record<ManifestEntryProcessor['key'], string[]>,
     );
 
@@ -137,10 +134,7 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
 
 export function readManifestEntries(manifest: Manifest) {
   return entryProcessors.reduce(
-    (res, processor) => {
-      res[processor.key] = processor.read(manifest);
-      return res;
-    },
+    (res, processor) => Object.assign(res, { [processor.key]: processor.read(manifest) }),
     {} as Record<ManifestEntryProcessor['key'], ManifestEntry | null>,
   );
 }
