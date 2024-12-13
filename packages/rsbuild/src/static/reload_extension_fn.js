@@ -3,5 +3,5 @@ if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
 }
 
 if (typeof browser !== 'undefined' && browser.runtime) {
-  browser.runtime.sendMessage({ type: 'web-ext-reload' });
+  browser.runtime.sendMessage({ type: '_reload' });
 }

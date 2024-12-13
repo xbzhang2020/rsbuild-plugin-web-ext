@@ -47,8 +47,8 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         .filter((item) => !!item)
         .map((item) => resolve(rootPath, item));
 
-      const loadScript = await readFile(resolve(selfRootPath, './assets/load_script.js'), 'utf-8');
-      const reloadExtensionCode = await readFile(resolve(selfRootPath, './assets/reload_extension_fn.js'), 'utf-8');
+      const loadScript = await readFile(resolve(selfRootPath, './static/load_script.js'), 'utf-8');
+      const reloadExtensionCode = await readFile(resolve(selfRootPath, './static/reload_extension_fn.js'), 'utf-8');
       const liveReload = api.getNormalizedConfig().dev.liveReload;
 
       api.transform(
@@ -92,11 +92,18 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
-    api.processAssets({ stage: 'optimize' }, ({ assets, compilation }) => {
+    api.processAssets({ stage: 'optimize', environments: ['icons'] }, ({ assets, compilation }) => {
+      // TODO: 待完善
       const assetName = '_empty.js';
       if (assets[assetName]) {
         compilation.deleteAsset(assetName);
       }
+
+      // for (const name in assets) {
+      //   if (name.endsWith('.js')) {
+      //     compilation.deleteAsset(name);
+      //   }
+      // }
     });
 
     api.onDevCompileDone(async ({ stats }) => {

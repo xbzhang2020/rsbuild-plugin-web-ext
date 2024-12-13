@@ -1,7 +1,8 @@
-import type { Manifest, NormalizeMainfestEntryProps } from './manifest.js';
+import type { Manifest, ManifestEntryProcessor } from './manifest.js';
 
-export function mergeIconsEntry({ manifest, entryPath }: NormalizeMainfestEntryProps) {
+export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   if (!entryPath) return;
+
   const assetsIcons: Manifest['icons'] = {};
   const filePaths = entryPath as string[];
 
@@ -38,29 +39,23 @@ export function mergeIconsEntry({ manifest, entryPath }: NormalizeMainfestEntryP
       ...(actionPointer.default_icon || {}),
     };
   }
-}
+};
 
-export function copyIcons(manifest: Manifest, distImagePath: string) {
-  const paths: { from: string; to: string }[] = [];
+export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
+  const paths: string[] = [];
 
   function helper(icons?: Record<number, string> | string) {
     if (!icons) return;
     const noramlIcons = typeof icons === 'string' ? { 16: icons } : icons;
 
     for (const key in noramlIcons) {
-      const from = icons[key];
-      const filename = from.split('/').at(-1);
-      if (filename) {
-        noramlIcons[key] = `${distImagePath}/${filename}`;
-      }
-      paths.push({
-        from,
-        to: distImagePath,
-      });
+      const from = `${icons[key]}`;
+      // const filename = from.split('/').at(-1);
+      paths.push(from);
     }
   }
 
-  const { icons, action, browser_action, manifest_version } = manifest;
+  const { icons, action, browser_action, manifest_version } = manifest || {};
   if (icons) {
     helper(icons);
   }
@@ -71,5 +66,28 @@ export function copyIcons(manifest: Manifest, distImagePath: string) {
     helper(action?.default_icon);
   }
 
-  return paths;
-}
+  if (!paths.length) return null;
+
+  return {
+    icons: {
+      import: paths,
+      html: false,
+    },
+  };
+};
+
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
+  // TODO: 待完善
+  // manifest.icons = `${entryName}.png`;
+  console.log(manifest, entryName);
+};
+
+const iconsProcessor: ManifestEntryProcessor = {
+  key: 'icons',
+  match: (entryName) => entryName === 'assets' || entryName.startsWith('icons'),
+  merge: mergeIconsEntry,
+  read: getIconsEntry,
+  write: writeIconsEntry,
+};
+
+export default iconsProcessor;

@@ -14,7 +14,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entry
   }
 
   if (process.env.NODE_ENV === 'development') {
-    const defaultBackground = resolve(selfRootPath, './assets/background.js');
+    const defaultBackground = resolve(selfRootPath, './static/background.js');
     scripts.push(defaultBackground);
   }
 

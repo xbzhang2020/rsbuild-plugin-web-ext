@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
-import { copyIcons, readManifestEntries } from '../manifest/index.js';
+import { readManifestEntries } from '../manifest/index.js';
 import type { Manifest } from '../manifest/manifest.js';
 import type { EnviromentKey } from './rsbuild.js';
 
@@ -15,12 +15,25 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
 }
 
 export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig, selfRootPath: string) {
-  const { background, content, ...others } = readManifestEntries(manifest);
+  const { icons, background, content, ...others } = readManifestEntries(manifest);
 
   const environments: {
     [key in EnviromentKey]?: EnvironmentConfig;
   } = {};
   let defaultEnvironment: EnvironmentConfig | null = null;
+
+  if (icons) {
+    defaultEnvironment = environments.icons = {
+      source: {
+        entry: icons as RsbuildEntry,
+      },
+      output: {
+        target: 'web',
+        dataUriLimit: 0,
+        filenameHash: false,
+      },
+    };
+  }
 
   if (background) {
     defaultEnvironment = environments.background = {
@@ -66,30 +79,19 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
 
   if (!defaultEnvironment) {
     // void the empty entry error
-    defaultEnvironment = environments.web = {
+    defaultEnvironment = environments.icons = {
       source: {
         entry: {
           _empty: {
-            import: resolve(selfRootPath, './assets/empty_entry.js'),
+            import: resolve(selfRootPath, './static/empty_entry.js'),
             html: false,
           },
         },
       },
       output: {
         target: 'web',
-        distPath: {
-          js: '',
-        },
-        filename: {
-          js: '[name].js',
-        },
       },
     };
-  }
-
-  if (defaultEnvironment?.output) {
-    const imagePath = config.output?.distPath?.image || 'static/image';
-    defaultEnvironment.output.copy = [...copyIcons(manifest, imagePath)];
   }
 
   return environments;

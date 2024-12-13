@@ -6,7 +6,6 @@ import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
-import { mergeIconsEntry } from './icons.js';
 import type {
   ManifestEntry,
   ManifestEntryPoints,
@@ -17,8 +16,7 @@ import type {
 import optionsProcessor from './options.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
-
-export { copyIcons } from './icons.js';
+import iconsProcessor from './icons.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -27,6 +25,7 @@ const entryProcessors: ManifestEntryProcessor[] = [
   optionsProcessor,
   devtoolsProcessor,
   sandboxProcessor,
+  iconsProcessor,
 ];
 
 export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
@@ -98,15 +97,6 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
 
     for (const file of files) {
       const filePath = `./${file.name}`;
-
-      if (file.name === 'assets' && file.isDirectory()) {
-        const directoryPath = resolve(srcPath, filePath);
-        const subFiles = await readdir(directoryPath, { recursive: true });
-        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
-        mergeIconsEntry({ ...props, entryPath: subFilePaths });
-        continue;
-      }
-
       const processor = entryProcessors.find((item) => item.match(getFileBaseName(file.name)));
       if (!processor) continue;
 
@@ -116,9 +106,11 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
       }
 
       if (file.isDirectory()) {
-        const directoryPath = resolve(srcPath, filePath);
-        const subFiles = await readdir(directoryPath, { recursive: true });
-        const subFilePaths = subFiles.map((item) => `${filePath}/${item}`).filter((item) => isJsFile(item));
+        const subFiles = await readdir(resolve(srcPath, filePath), { recursive: true });
+        let subFilePaths = subFiles.map((item) => `${filePath}/${item}`);
+        if (processor.key !== 'icons') {
+          subFilePaths = subFilePaths.filter((item) => isJsFile(item));
+        }
         entries[processor.key].push(...subFilePaths);
       }
     }

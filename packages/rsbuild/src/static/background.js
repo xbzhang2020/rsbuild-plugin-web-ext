@@ -6,13 +6,13 @@ if (typeof browser !== 'undefined' && browser.runtime) {
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (typeof message !== 'object') return;
 
-    if (message.type === 'web-ext-reload') {
+    if (message.type === '_reload') {
       browser.runtime.reload();
       sendResponse({ type: 'ok' });
       return;
     }
 
-    if (message.type === 'web-ext-execute-script') {
+    if (message.type === '_executeScript') {
       const tabId = sender.tab?.id;
       const file = message.url?.split('/').at(-1);
       if (tabId && file) {
