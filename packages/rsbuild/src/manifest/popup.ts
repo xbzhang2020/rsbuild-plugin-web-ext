@@ -36,17 +36,16 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({
   manifest,
   optionManifest,
   entryName,
-  entrypoint,
+  entryPath,
   rootPath,
 }) => {
   const { manifest_version, action, browser_action } = manifest;
-  const { input } = entrypoint;
 
-  const declarative = !getPopupEntry(optionManifest) && !!input;
+  const declarative = !getPopupEntry(optionManifest) && !!entryPath;
   let title: string | null = null;
 
   if (declarative) {
-    const filePath = Array.isArray(input) ? input[0] : input;
+    const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
     const code = await readFileContent(rootPath, filePath);
     title = parseExportObject<string>(code, 'title');
   }

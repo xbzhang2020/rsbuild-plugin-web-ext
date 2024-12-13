@@ -1,11 +1,12 @@
 import type { Manifest, ManifestEntryProcessor } from './manifest.js';
 
-export const iconSizeList = [16, 32, 48, 64, 128];
+export const iconSizeList = [16, 32, 48, 64, 128, 512];
+export const derivedImage = 'icon.png';
 
 export const getIconSize = (filePath: string) => {
   const res = filePath.match(/icon-?(\d+)\.png$/);
   if (res?.[1]) return Number(res[1]);
-  // if (filePath.endsWith('icon.png')) return 512;
+  if (filePath.endsWith(derivedImage)) return -1; // derived
   return null;
 };
 
@@ -79,8 +80,8 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   };
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entrypoint }) => {
-  const iconAssets = entrypoint.auxiliaryAssets?.filter((item) => item.endsWith('.png')) || [];
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
+  const iconAssets = assets?.filter((item) => item.endsWith('.png')) || [];
   const iconAssetsMap = iconAssets.reduce(
     (res, cur) => {
       const size = getIconSize(cur);
@@ -92,21 +93,15 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entrypoint
     {} as Record<string, string>,
   );
 
-  function helper(icons?: Record<number, string | undefined>) {
-    if (!icons || typeof icons !== 'object') return;
-    for (const key in icons) {
-      icons[key] = iconAssetsMap[key] || undefined;
-    }
-  }
-
-  const { icons, action, browser_action, manifest_version } = manifest || {};
+  const { icons, action, browser_action } = manifest || {};
   if (icons) {
-    helper(icons);
+    manifest.icons = { ...iconAssetsMap };
   }
-  if (manifest_version === 2) {
-    helper(browser_action?.default_icon);
-  } else {
-    helper(action?.default_icon);
+  if (browser_action) {
+    manifest.browser_action.default_icon = { ...iconAssetsMap };
+  }
+  if (action) {
+    manifest.action.default_icon = { ...iconAssetsMap };
   }
 };
 

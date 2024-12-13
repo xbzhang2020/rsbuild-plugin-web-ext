@@ -56,9 +56,9 @@ const getBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, entrypoint }) => {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets: _assets }) => {
   const { background } = manifest;
-  const { assets } = entrypoint;
+  const assets = _assets?.filter((item) => item.endsWith('.js'));
   if (!background || !assets?.length) return;
 
   if ('scripts' in background) {

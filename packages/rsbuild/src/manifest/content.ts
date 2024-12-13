@@ -39,19 +39,18 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({
   manifest,
   optionManifest,
   rootPath,
-  entrypoint,
+  entryPath,
+  assets,
   entryName,
 }) => {
   const { content_scripts } = manifest;
-  const { assets, input } = entrypoint;
-
   if (!content_scripts || !assets?.length) return;
   const index = Number(entryName.replace('content', '') || '0');
 
-  const declarative = !getContentEntry(optionManifest) && !!input;
+  const declarative = !getContentEntry(optionManifest) && !!entryPath;
   if (declarative) {
     // declarative entry is a sinlge file
-    const filePath = Array.isArray(input) ? input[0] : input;
+    const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
     const code = await readFileContent(rootPath, filePath);
     const extraConfig = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],

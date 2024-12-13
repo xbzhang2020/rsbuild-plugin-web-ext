@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
+import sharp from 'sharp';
+import { getIconSize, iconSizeList } from './manifest/icons.js';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
 import type { ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
@@ -14,6 +16,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
     let manifest = {} as Manifest;
+    let emitIcons: string[] = [];
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       manifest = await normalizeManifest(options, rootPath, selfRootPath);
@@ -73,6 +76,39 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       );
     });
 
+    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation, sources }) => {
+      let derivedImagePath = '';
+      const existImageSizeList: number[] = [];
+      for (const name in assets) {
+        if (name.endsWith('.js')) {
+          compilation.deleteAsset(name);
+          continue;
+        }
+        if (name.endsWith('png')) {
+          const size = getIconSize(name);
+          if (size === -1) {
+            derivedImagePath = name;
+          } else if (size) {
+            existImageSizeList.push(size);
+          }
+        }
+      }
+
+      const needDerivedImages = iconSizeList.filter((item) => !existImageSizeList.includes(item));
+      emitIcons = [];
+      if (derivedImagePath && needDerivedImages) {
+        for (const size of needDerivedImages) {
+          const content = assets[derivedImagePath].buffer();
+          const newContent = await sharp(content).resize(size, size).png().toBuffer();
+          const newSource = new sources.RawSource(newContent);
+          const iconName = derivedImagePath.replace('icon.png', `icon-${size}.png`);
+          compilation.emitAsset(iconName, newSource);
+          emitIcons.push(iconName);
+        }
+        compilation.deleteAsset(derivedImagePath);
+      }
+    });
+
     api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
       // @see https://rspack.dev/api/javascript-api/stats-json
       const entrypoints = stats?.toJson().entrypoints;
@@ -85,8 +121,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         const auxiliaryAssets =
           entrypoint.auxiliaryAssets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
 
+        if (entryName === 'icons' && emitIcons.length) {
+          auxiliaryAssets.push(...emitIcons);
+        }
+
         return Object.assign(res, {
-          [entryName]: { assets, auxiliaryAssets, input: entryPath },
+          [entryName]: { assets: [...assets, ...auxiliaryAssets], input: entryPath },
         } as ManifestEntryPoints);
       }, {} as ManifestEntryPoints);
 
@@ -96,14 +136,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         rootPath,
         entrypoints: manifestEntryPoints,
       });
-    });
-
-    api.processAssets({ stage: 'optimize', environments: ['icons'] }, async ({ assets, compilation, sources }) => {
-      for (const name in assets) {
-        if (name.endsWith('.js')) {
-          compilation.deleteAsset(name);
-        }
-      }
     });
 
     api.onDevCompileDone(async ({ stats }) => {
