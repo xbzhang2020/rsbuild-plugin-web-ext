@@ -6,6 +6,7 @@ import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
+import iconsProcessor from './icons.js';
 import type {
   ManifestEntry,
   ManifestEntryPoints,
@@ -16,7 +17,6 @@ import type {
 import optionsProcessor from './options.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
-import iconsProcessor from './icons.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
