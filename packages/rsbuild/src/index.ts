@@ -80,8 +80,14 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       const manifestEntryPoints = Object.entries(entrypoints).reduce((res, [entryName, entrypoint]) => {
         const entryPath = getRsbuildEntryFile(environment.entry, entryName);
-        const assets = entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.'));
-        return Object.assign(res, { [entryName]: { assets, import: entryPath } } as ManifestEntryPoints);
+        const assets =
+          entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
+        const auxiliaryAssets =
+          entrypoint.auxiliaryAssets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
+
+        return Object.assign(res, {
+          [entryName]: { assets, auxiliaryAssets, import: entryPath },
+        } as ManifestEntryPoints);
       }, {} as ManifestEntryPoints);
 
       await writeManifestEntries({
@@ -99,11 +105,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         compilation.deleteAsset(assetName);
       }
 
-      // for (const name in assets) {
-      //   if (name.endsWith('.js')) {
-      //     compilation.deleteAsset(name);
-      //   }
-      // }
+      for (const name in assets) {
+        if (name.endsWith('.js')) {
+          compilation.deleteAsset(name);
+        }
+      }
     });
 
     api.onDevCompileDone(async ({ stats }) => {

@@ -1,1 +1,1 @@
-export { pluginWebExt, type ContentScriptConfig } from '../packages/plugin-rsbuild/src/index';
+export { pluginWebExt, type ContentScriptConfig } from '../packages/rsbuild/src/index';

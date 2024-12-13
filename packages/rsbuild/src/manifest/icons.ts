@@ -1,20 +1,23 @@
 import type { Manifest, ManifestEntryProcessor } from './manifest.js';
 
+export const iconSizeList = [16, 32, 48, 64, 128];
+
+export const getIconSize = (filePath: string) => {
+  const res = filePath.match(/icon-?(\d+)\.png$/);
+  if (res?.[1]) return Number(res[1]);
+  return null;
+};
+
 export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
-  if (!entryPath) return;
-
   const assetsIcons: Manifest['icons'] = {};
-  const filePaths = entryPath as string[];
 
-  for (const filePath of filePaths) {
-    const res = filePath.match(/icon-?(\d+)\.png$/);
-    if (res?.[1]) {
-      const size = Number(res[1]);
+  for (const filePath of entryPath) {
+    const size = getIconSize(filePath);
+    if (size) {
       assetsIcons[size] = filePath;
     }
   }
 
-  if (!Object.keys(assetsIcons).length) return;
   manifest.icons = {
     ...assetsIcons,
     ...(manifest.icons || {}),
@@ -32,13 +35,18 @@ export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, ent
   }
 
   const actionPointer = manifest_version === 2 ? browser_action : action;
-  if (actionPointer) {
-    if (typeof actionPointer.default_icon === 'string') return;
+  if (!actionPointer) return;
+
+  if (typeof actionPointer.default_icon === 'string') {
     actionPointer.default_icon = {
-      ...assetsIcons,
-      ...(actionPointer.default_icon || {}),
+      16: actionPointer.default_icon,
     };
   }
+
+  actionPointer.default_icon = {
+    ...assetsIcons,
+    ...(actionPointer.default_icon || {}),
+  };
 };
 
 export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
@@ -76,10 +84,37 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   };
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
-  // TODO: 待完善
-  // manifest.icons = `${entryName}.png`;
-  console.log(manifest, entryName);
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName, assets, auxiliaryAssets }) => {
+  const iconAssets = auxiliaryAssets?.filter((item) => item.endsWith('.png')) || [];
+  const iconAssetsMap = iconAssets.reduce(
+    (res, cur) => {
+      const size = getIconSize(cur);
+      if (size) {
+        res[size] = cur;
+      }
+      return res;
+    },
+    {} as Record<string, string>,
+  );
+
+  function helper(icons?: Record<number, string | undefined>) {
+    if (!icons || typeof icons !== 'object') return;
+
+    for (const key in icons) {
+      icons[key] = iconAssetsMap[key] || undefined;
+    }
+  }
+
+  const { icons, action, browser_action, manifest_version } = manifest || {};
+  if (icons) {
+    helper(icons);
+  }
+
+  if (manifest_version === 2) {
+    helper(browser_action?.default_icon);
+  } else {
+    helper(action?.default_icon);
+  }
 };
 
 const iconsProcessor: ManifestEntryProcessor = {
