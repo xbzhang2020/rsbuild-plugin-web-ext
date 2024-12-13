@@ -11,7 +11,8 @@ export const getIconSize = (filePath: string) => {
 export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const assetsIcons: Manifest['icons'] = {};
 
-  for (const filePath of entryPath) {
+  const iconsPath = entryPath?.filter((item) => item.endsWith('png')) || [];
+  for (const filePath of iconsPath) {
     const size = getIconSize(filePath);
     if (size) {
       assetsIcons[size] = filePath;
@@ -52,13 +53,10 @@ export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, ent
 export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const paths: string[] = [];
 
-  function helper(icons?: Record<number, string> | string) {
-    if (!icons) return;
-    const noramlIcons = typeof icons === 'string' ? { 16: icons } : icons;
-
-    for (const key in noramlIcons) {
+  function helper(icons?: Record<number, string>) {
+    if (!icons || typeof icons !== 'object') return;
+    for (const key in icons) {
       const from = `${icons[key]}`;
-      // const filename = from.split('/').at(-1);
       paths.push(from);
     }
   }
@@ -67,7 +65,6 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   if (icons) {
     helper(icons);
   }
-
   if (manifest_version === 2) {
     helper(browser_action?.default_icon);
   } else {
@@ -99,7 +96,6 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName,
 
   function helper(icons?: Record<number, string | undefined>) {
     if (!icons || typeof icons !== 'object') return;
-
     for (const key in icons) {
       icons[key] = iconAssetsMap[key] || undefined;
     }
