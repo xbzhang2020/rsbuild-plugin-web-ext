@@ -5,14 +5,14 @@ export const iconSizeList = [16, 32, 48, 64, 128];
 export const getIconSize = (filePath: string) => {
   const res = filePath.match(/icon-?(\d+)\.png$/);
   if (res?.[1]) return Number(res[1]);
+  // if (filePath.endsWith('icon.png')) return 512;
   return null;
 };
 
 export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const assetsIcons: Manifest['icons'] = {};
 
-  const iconsPath = entryPath?.filter((item) => item.endsWith('png')) || [];
-  for (const filePath of iconsPath) {
+  for (const filePath of entryPath) {
     const size = getIconSize(filePath);
     if (size) {
       assetsIcons[size] = filePath;
@@ -25,18 +25,18 @@ export const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, ent
   };
 
   const { manifest_version, action, browser_action } = manifest;
+  let actionPointer: Manifest['action'] | undefined = undefined;
   if (manifest_version === 2) {
     if (!browser_action) {
       manifest.browser_action = {};
     }
+    actionPointer = manifest.browser_action;
   } else {
     if (!action) {
       manifest.action = {};
     }
+    actionPointer = manifest.action;
   }
-
-  const actionPointer = manifest_version === 2 ? browser_action : action;
-  if (!actionPointer) return;
 
   if (typeof actionPointer.default_icon === 'string') {
     actionPointer.default_icon = {
@@ -56,8 +56,7 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   function helper(icons?: Record<number, string>) {
     if (!icons || typeof icons !== 'object') return;
     for (const key in icons) {
-      const from = `${icons[key]}`;
-      paths.push(from);
+      paths.push(icons[key]);
     }
   }
 
@@ -72,7 +71,6 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   }
 
   if (!paths.length) return null;
-
   return {
     icons: {
       import: paths,
@@ -81,8 +79,8 @@ export const getIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   };
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName, assets, auxiliaryAssets }) => {
-  const iconAssets = auxiliaryAssets?.filter((item) => item.endsWith('.png')) || [];
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entrypoint }) => {
+  const iconAssets = entrypoint.auxiliaryAssets?.filter((item) => item.endsWith('.png')) || [];
   const iconAssetsMap = iconAssets.reduce(
     (res, cur) => {
       const size = getIconSize(cur);
@@ -105,7 +103,6 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName,
   if (icons) {
     helper(icons);
   }
-
   if (manifest_version === 2) {
     helper(browser_action?.default_icon);
   } else {
@@ -115,7 +112,7 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName,
 
 const iconsProcessor: ManifestEntryProcessor = {
   key: 'icons',
-  match: (entryName) => entryName === 'assets' || entryName.startsWith('icons'),
+  match: (entryName) => entryName === 'assets' || entryName === 'icons',
   merge: mergeIconsEntry,
   read: getIconsEntry,
   write: writeIconsEntry,

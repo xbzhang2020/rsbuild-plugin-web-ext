@@ -86,7 +86,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
           entrypoint.auxiliaryAssets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
 
         return Object.assign(res, {
-          [entryName]: { assets, auxiliaryAssets, import: entryPath },
+          [entryName]: { assets, auxiliaryAssets, input: entryPath },
         } as ManifestEntryPoints);
       }, {} as ManifestEntryPoints);
 
@@ -98,13 +98,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
-    api.processAssets({ stage: 'optimize', environments: ['icons'] }, ({ assets, compilation }) => {
-      // TODO: 待完善
-      const assetName = '_empty.js';
-      if (assets[assetName]) {
-        compilation.deleteAsset(assetName);
-      }
-
+    api.processAssets({ stage: 'optimize', environments: ['icons'] }, async ({ assets, compilation, sources }) => {
       for (const name in assets) {
         if (name.endsWith('.js')) {
           compilation.deleteAsset(name);

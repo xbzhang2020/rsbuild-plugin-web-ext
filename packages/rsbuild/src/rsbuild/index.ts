@@ -82,7 +82,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
     defaultEnvironment = environments.icons = {
       source: {
         entry: {
-          _empty: {
+          empty: {
             import: resolve(selfRootPath, './static/empty_entry.js'),
             html: false,
           },

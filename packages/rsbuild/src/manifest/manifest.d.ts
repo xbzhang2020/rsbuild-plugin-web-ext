@@ -13,9 +13,9 @@ export type ManifestEntry = Record<
 >;
 
 export type ManifestEntryPoint = {
-  import?: string | string[];
-  assets?: string[];
-  auxiliaryAssets?: string[];
+  input?: string | string[];
+  assets?: string[]; // js, css...
+  auxiliaryAssets?: string[]; // images, map...
 };
 
 export type ManifestEntryPoints = Record<string, ManifestEntryPoint>;
@@ -45,7 +45,5 @@ export interface WriteMainfestEntryProps {
   optionManifest?: _Manifest; // defined by user
   rootPath: string;
   entryName: string; // entry name
-  entryPath: ManifestEntryPoint['import'];
-  assets: ManifestEntryPoint['assets'];
-  auxiliaryAssets?: ManifestEntryPoint['auxiliaryAssets'];
+  entrypoint: ManifestEntryPoint;
 }

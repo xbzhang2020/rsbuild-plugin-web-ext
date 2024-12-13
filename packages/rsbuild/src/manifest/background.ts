@@ -56,8 +56,9 @@ const getBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, entrypoint }) => {
   const { background } = manifest;
+  const { assets } = entrypoint;
   if (!background || !assets?.length) return;
 
   if ('scripts' in background) {
