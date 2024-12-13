@@ -115,18 +115,18 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       if (!entrypoints) return;
 
       const manifestEntryPoints = Object.entries(entrypoints).reduce((res, [entryName, entrypoint]) => {
-        const entryPath = getRsbuildEntryFile(environment.entry, entryName);
-        const assets =
-          entrypoint.assets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
-        const auxiliaryAssets =
-          entrypoint.auxiliaryAssets?.map((item) => item.name).filter((item) => !item.includes('.hot-update.')) || [];
+        const { assets = [], auxiliaryAssets = [] } = entrypoint;
+        const entryAssets = [...assets, ...auxiliaryAssets]
+          .map((item) => item.name)
+          .filter((item) => !item.includes('.hot-update.'));
 
         if (entryName === 'icons' && emitIcons.length) {
-          auxiliaryAssets.push(...emitIcons);
+          entryAssets.push(...emitIcons);
         }
 
+        const entryPath = getRsbuildEntryFile(environment.entry, entryName);
         return Object.assign(res, {
-          [entryName]: { assets: [...assets, ...auxiliaryAssets], input: entryPath },
+          [entryName]: { assets: entryAssets, entryPath },
         } as ManifestEntryPoints);
       }, {} as ManifestEntryPoints);
 

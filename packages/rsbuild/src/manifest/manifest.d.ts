@@ -13,7 +13,7 @@ export type ManifestEntry = Record<
 >;
 
 export type ManifestEntryPoint = {
-  input?: string | string[];
+  entryPath?: string | string[];
   assets?: string[]; // js, css...
 };
 

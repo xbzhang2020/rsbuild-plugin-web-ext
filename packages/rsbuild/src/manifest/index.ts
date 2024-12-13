@@ -145,7 +145,7 @@ export async function writeManifestEntries({ manifest, optionManifest, rootPath,
 
     const props: WriteMainfestEntryProps = {
       entryName,
-      entryPath: entrypoints[entryName].input,
+      entryPath: entrypoints[entryName].entryPath,
       assets: entrypoints[entryName].assets,
       manifest,
       optionManifest,
