@@ -148,12 +148,11 @@ export function readManifestEntries(manifest: Manifest) {
 
 export interface WriteManifestProps {
   manifest: Manifest;
-  optionManifest?: Manifest;
   rootPath: string;
   entrypoints: ManifestEntryPoints;
 }
 
-export async function writeManifestEntries({ manifest, optionManifest, rootPath, entrypoints }: WriteManifestProps) {
+export async function writeManifestEntries({ manifest, rootPath, entrypoints }: WriteManifestProps) {
   for (const entryName in entrypoints) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
@@ -163,7 +162,6 @@ export async function writeManifestEntries({ manifest, optionManifest, rootPath,
       entryPath: entrypoints[entryName].entryPath,
       assets: entrypoints[entryName].assets,
       manifest,
-      optionManifest,
       rootPath,
     };
 

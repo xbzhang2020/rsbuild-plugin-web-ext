@@ -1,20 +1,23 @@
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeOptionsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
-  const options = manifest.options_ui?.page || manifest.options_page;
-  if (options || !entryPath.length) return;
+  const { options_ui, options_page } = manifest;
+  if (options_ui?.page || options_page || !entryPath.length) return;
 
   manifest.options_ui ??= {};
   manifest.options_ui.page = entryPath[0];
 };
 
-const getOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  const input = manifest?.options_ui?.page || manifest?.options_page;
+const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
+  const { options_ui, options_page } = manifest || {};
+  const input = options_ui?.page || options_page;
   if (!input) return null;
-  const entry: ManifestEntry = {};
-  entry.options = {
-    import: input,
-    html: true,
+
+  const entry: ManifestEntry = {
+    options: {
+      import: input,
+      html: true,
+    },
   };
   return entry;
 };
@@ -33,7 +36,7 @@ const optionsProcessor: ManifestEntryProcessor = {
   key: 'options',
   match: (entryName) => entryName === 'options',
   merge: mergeOptionsEntry,
-  read: getOptionsEntry,
+  read: readOptionsEntry,
   write: writeOptionsEntry,
 };
 

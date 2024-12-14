@@ -2,22 +2,25 @@ import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './ma
 
 const createMergeEntry = (key: PageToOverride): ManifestEntryProcessor['merge'] => {
   return ({ manifest, entryPath }) => {
-    const item = manifest.chrome_url_overrides?.[key];
-    if (item || !entryPath.length) return;
+    const { chrome_url_overrides } = manifest;
+    if (chrome_url_overrides?.[key] || !entryPath.length) return;
 
     manifest.chrome_url_overrides ??= {};
     manifest.chrome_url_overrides[key] = entryPath[0];
   };
 };
 
-const createGetEntry = (key: PageToOverride): ManifestEntryProcessor['read'] => {
+const createReadEntry = (key: PageToOverride): ManifestEntryProcessor['read'] => {
   return (manifest) => {
-    const input = manifest?.chrome_url_overrides?.[key];
+    const { chrome_url_overrides } = manifest || {};
+    const input = chrome_url_overrides?.[key];
     if (!input) return null;
-    const entry: ManifestEntry = {};
-    entry[key] = {
-      import: input,
-      html: true,
+
+    const entry: ManifestEntry = {
+      [key]: {
+        import: input,
+        html: true,
+      },
     };
     return entry;
   };
@@ -38,7 +41,7 @@ const overrideProcessors: ManifestEntryProcessor[] = overrides.map((key) => ({
   key,
   match: (entryName) => entryName === key,
   merge: createMergeEntry(key),
-  read: createGetEntry(key),
+  read: createReadEntry(key),
   write: createWriteEntry(key),
 }));
 

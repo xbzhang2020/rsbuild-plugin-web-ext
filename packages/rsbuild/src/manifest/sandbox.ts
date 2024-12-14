@@ -1,8 +1,8 @@
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
-  const sandboxPages = manifest.sandbox?.pages;
-  if (sandboxPages?.length || !entryPath.length) return;
+  const pages = manifest.sandbox?.pages;
+  if (pages?.length || !entryPath.length) return;
 
   manifest.sandbox ??= {
     pages: [],
@@ -10,12 +10,13 @@ const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPat
   manifest.sandbox.pages = entryPath;
 };
 
-const getSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  const sandboxPages = manifest?.sandbox?.pages || [];
-  if (!sandboxPages.length) return null;
+const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
+  const pages = manifest?.sandbox?.pages || [];
+  if (!pages.length) return null;
+  
   const entry: ManifestEntry = {};
-  sandboxPages.forEach((page, index) => {
-    const name = `sandbox${sandboxPages.length === 1 ? '' : index}`;
+  pages.forEach((page, index) => {
+    const name = `sandbox${pages.length === 1 ? '' : index}`;
     entry[name] = {
       import: page,
       html: true,
@@ -25,16 +26,17 @@ const getSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
 };
 
 const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
-  if (!manifest.sandbox?.pages) return;
+  const pages = manifest?.sandbox?.pages || [];
+  if (!pages.length) return;
   const index = Number(entryName.replace('sandbox', '') || '0');
-  manifest.sandbox.pages[index] = `${entryName}.html`;
+  pages[index] = `${entryName}.html`;
 };
 
 const sandboxProcessor: ManifestEntryProcessor = {
   key: 'sandbox',
   match: (entryName) => entryName.startsWith('sandbox'),
   merge: mergeSandboxEntry,
-  read: getSandboxEntry,
+  read: readSandboxEntry,
   write: writeSandboxEntry,
 };
 

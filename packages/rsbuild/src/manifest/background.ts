@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
-import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor, ManifestV2, ManifestV3 } from './manifest.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath, selfRootPath, target }) => {
-  const scripts: string[] = [];
   const { background } = manifest;
+  const scripts: string[] = [];
 
   if (background && 'service_worker' in background) {
     scripts.push(background.service_worker);
@@ -18,55 +18,46 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entry
     scripts.push(defaultBackground);
   }
 
-  if (scripts.length) {
-    // Firefox only supports background.scripts
-    const isFirefox = target.includes('firefox');
-    if (isFirefox) {
-      manifest.background = {
-        ...(manifest.background || {}),
-        scripts,
-      };
-    } else {
-      manifest.background = {
-        ...(manifest.background || {}),
-        service_worker: scripts.join(','),
-      };
-    }
+  if (!scripts.length) return;
+  manifest.background ??= {};
+  // Firefox only supports background.scripts
+  if (target.includes('firefox')) {
+    (manifest.background as ManifestV2).scripts = scripts;
+  } else {
+    (manifest.background as ManifestV3).service_worker = scripts.join(',');
   }
 };
 
-const getBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  let scripts: string[] = [];
+const readBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { background } = manifest || {};
-  if (background) {
-    if ('service_worker' in background) {
-      scripts = background.service_worker.split(',');
-    } else if ('scripts' in background) {
-      scripts = background.scripts || [];
-    }
+  if (!background) return null;
+
+  let input: string[] = [];
+  if ('service_worker' in background) {
+    input = background.service_worker.split(',');
+  } else if ('scripts' in background) {
+    input = background.scripts || [];
   }
 
-  if (!scripts.length) return null;
+  if (!input.length) return null;
   const entry: ManifestEntry = {
     background: {
-      import: scripts,
+      import: input,
       html: false,
     },
   };
   return entry;
 };
 
-const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets: _assets }) => {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
   const { background } = manifest;
-  const assets = _assets?.filter((item) => item.endsWith('.js'));
-  if (!background || !assets?.length) return;
-
+  const output = assets?.filter((item) => item.endsWith('.js')) || [];
+  if (!background || !output.length) return;
   if ('scripts' in background) {
-    background.scripts = assets;
+    background.scripts = output;
   }
   if ('service_worker' in background) {
-    // assests only have one element.
-    background.service_worker = assets[0];
+    background.service_worker = output[0];
   }
 };
 
@@ -74,7 +65,7 @@ const backgroundProcessor: ManifestEntryProcessor = {
   key: 'background',
   match: (entryName) => entryName === 'background',
   merge: mergeBackgroundEntry,
-  read: getBackgroundEntry,
+  read: readBackgroundEntry,
   write: writeBackgroundEntry,
 };
 

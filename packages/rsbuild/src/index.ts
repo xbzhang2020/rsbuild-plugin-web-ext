@@ -101,7 +101,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       await writeManifestEntries({
         manifest,
-        optionManifest: options.manifest as Manifest,
         rootPath,
         entrypoints: manifestEntryPoints,
       });
@@ -116,7 +115,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
       clearOutdatedHotUpdateFiles(distPath, statsList);
-
+      
       console.log('Built the extension successfully');
     });
 

@@ -1,17 +1,17 @@
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
-  if (!manifest.devtools_page && entryPath.length) {
-    manifest.devtools_page = entryPath[0];
-  }
+  const { devtools_page } = manifest;
+  if (devtools_page || !entryPath.length) return;
+  manifest.devtools_page = entryPath[0];
 };
 
-const getDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  const input = manifest?.devtools_page;
-  if (!input) return null;
+const readDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
+  const { devtools_page } = manifest || {};
+  if (!devtools_page) return null;
   const entry: ManifestEntry = {
     devtools: {
-      import: input,
+      import: devtools_page,
       html: true,
     },
   };
@@ -26,7 +26,7 @@ const devtoolsProcessor: ManifestEntryProcessor = {
   key: 'devtools',
   match: (entryName) => entryName === 'devtools',
   merge: mergeDevtoolsEntry,
-  read: getDevtoolsEntry,
+  read: readDevtoolsEntry,
   write: writeDevtoolsEntry,
 };
 

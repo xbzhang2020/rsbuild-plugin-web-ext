@@ -4,23 +4,24 @@ import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergePopupEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   if (!entryPath.length) return;
+
   const { manifest_version } = manifest;
   if (manifest_version === 2) {
-    if (!manifest.browser_action) {
-      manifest.browser_action = {};
-    }
-    manifest.browser_action.default_popup = manifest.browser_action.default_popup || entryPath[0];
+    manifest.browser_action ??= {};
+    manifest.browser_action.default_popup ??= entryPath[0];
     return;
   }
 
   manifest.action ??= {};
-  manifest.action.default_popup = manifest.action?.default_popup || entryPath[0];
+  manifest.action.default_popup ??= entryPath[0];
 };
 
-const getPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
+const readPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { manifest_version, action, browser_action } = manifest || {};
-  const input = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
+  const pointer = manifest_version === 2 ? browser_action : action;
+  const input = pointer?.default_popup;
   if (!input) return null;
+
   const entry: ManifestEntry = {
     popup: {
       import: input,
@@ -30,46 +31,30 @@ const getPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writePopupEntry: ManifestEntryProcessor['write'] = async ({
-  manifest,
-  optionManifest,
-  entryName,
-  entryPath,
-  rootPath,
-}) => {
+const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entryName, entryPath, rootPath }) => {
   const { manifest_version, action, browser_action } = manifest;
+  const pointer = manifest_version === 2 ? browser_action : action;
+  if (!pointer) return;
 
-  const declarative = !getPopupEntry(optionManifest) && !!entryPath;
-  let title: string | null = null;
-
-  if (declarative) {
-    const filePath = Array.isArray(entryPath) ? entryPath[0] : entryPath;
-    const code = await readFileContent(rootPath, filePath);
-    title = parseExportObject<string>(code, 'title');
+  const { default_title } = pointer;
+  if (!default_title) {
+    const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+    const code = await readFileContent(rootPath, input);
+    const title = parseExportObject<string>(code, 'title');
+    if (title) {
+      pointer.default_title = title;
+    }
   }
 
   const popup = `${entryName}.html`;
-  if (manifest_version === 2) {
-    if (!browser_action) return;
-    browser_action.default_popup = popup;
-    if (title) {
-      browser_action.default_title = title;
-    }
-    return;
-  }
-
-  if (!action) return;
-  action.default_popup = popup;
-  if (title) {
-    action.default_title = title;
-  }
+  pointer.default_popup = popup;
 };
 
 const popupProcessor: ManifestEntryProcessor = {
   key: 'popup',
   match: (entryName) => entryName === 'popup',
   merge: mergePopupEntry,
-  read: getPopupEntry,
+  read: readPopupEntry,
   write: writePopupEntry,
 };
 

@@ -71,7 +71,7 @@ export type ManifestEntryProcessor = {
 };
 
 export interface NormalizeManifestProps {
-  manifest: _Manifest;
+  manifest: Manifest;
   target: BrowserTarget;
   rootPath: string;
   srcPath: string;
@@ -83,8 +83,7 @@ export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {
 }
 
 export interface WriteMainfestEntryProps {
-  manifest: _Manifest;
-  optionManifest?: _Manifest; // defined by user
+  manifest: Manifest;
   rootPath: string;
   entryName: string;
   entryPath: ManifestEntryPoint['input'];

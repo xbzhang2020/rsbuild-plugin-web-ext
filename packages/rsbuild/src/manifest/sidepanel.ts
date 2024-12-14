@@ -16,11 +16,11 @@ const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryP
   manifest.side_panel.default_path = entryPath[0];
 };
 
-const getSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {
+const readSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { side_panel, sidebar_action } = manifest || {};
   const input = side_panel?.default_path || sidebar_action?.default_panel;
-
   if (!input) return null;
+  
   const entry: ManifestEntry = {
     sidepanel: {
       import: input,
@@ -45,7 +45,7 @@ const sidepanelProcessor: ManifestEntryProcessor = {
   key: 'sidepanel',
   match: (entryName) => entryName === 'sidepanel',
   merge: mergeSidepanelEntry,
-  read: getSidepanelEntry,
+  read: readSidepanelEntry,
   write: writeSidepanelEntry,
 };
 
