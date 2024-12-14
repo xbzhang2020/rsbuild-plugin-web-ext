@@ -3,11 +3,10 @@ import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const sandboxPages = manifest.sandbox?.pages;
   if (sandboxPages?.length || !entryPath.length) return;
-  if (!manifest.sandbox) {
-    manifest.sandbox = {
-      pages: [],
-    };
-  }
+
+  manifest.sandbox ??= {
+    pages: [],
+  };
   manifest.sandbox.pages = entryPath;
 };
 

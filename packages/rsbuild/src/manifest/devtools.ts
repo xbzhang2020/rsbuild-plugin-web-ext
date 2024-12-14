@@ -7,11 +7,11 @@ const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPa
 };
 
 const getDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  const devtools = manifest?.devtools_page;
-  if (!devtools) return null;
+  const input = manifest?.devtools_page;
+  if (!input) return null;
   const entry: ManifestEntry = {
     devtools: {
-      import: devtools,
+      import: input,
       html: true,
     },
   };

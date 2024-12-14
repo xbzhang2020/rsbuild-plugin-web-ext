@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { cp, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
+import type { PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -13,6 +13,8 @@ import type {
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
+  BrowserTarget,
+  Manifest,
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessors from './overrides.js';

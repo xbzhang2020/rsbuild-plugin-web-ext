@@ -12,11 +12,11 @@ const createMergeEntry = (key: PageToOverride): ManifestEntryProcessor['merge'] 
 
 const createGetEntry = (key: PageToOverride): ManifestEntryProcessor['read'] => {
   return (manifest) => {
-    const item = manifest?.chrome_url_overrides?.[key];
-    if (!item) return null;
+    const input = manifest?.chrome_url_overrides?.[key];
+    if (!input) return null;
     const entry: ManifestEntry = {};
     entry[key] = {
-      import: item,
+      import: input,
       html: true,
     };
     return entry;
@@ -25,10 +25,10 @@ const createGetEntry = (key: PageToOverride): ManifestEntryProcessor['read'] => 
 
 const createWriteEntry = (key: PageToOverride): ManifestEntryProcessor['write'] => {
   return ({ manifest, entryName }) => {
-    const filename = `${entryName}.html`;
+    const output = `${entryName}.html`;
     const { chrome_url_overrides } = manifest;
     if (chrome_url_overrides) {
-      chrome_url_overrides[key] = filename;
+      chrome_url_overrides[key] = output;
     }
   };
 };

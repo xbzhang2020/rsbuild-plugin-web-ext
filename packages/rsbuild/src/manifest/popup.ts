@@ -13,19 +13,17 @@ const mergePopupEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath 
     return;
   }
 
-  if (!manifest.action) {
-    manifest.action = {};
-  }
+  manifest.action ??= {};
   manifest.action.default_popup = manifest.action?.default_popup || entryPath[0];
 };
 
 const getPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { manifest_version, action, browser_action } = manifest || {};
-  const popup = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
-  if (!popup) return null;
+  const input = manifest_version === 2 ? browser_action?.default_popup : action?.default_popup;
+  if (!input) return null;
   const entry: ManifestEntry = {
     popup: {
-      import: popup,
+      import: input,
       html: true,
     },
   };

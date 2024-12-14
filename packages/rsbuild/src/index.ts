@@ -2,12 +2,12 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { ManifestEntryPoints } from './manifest/manifest.js';
+import type { ManifestEntryPoints, Manifest } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
-import type { Manifest, PluginWebExtOptions } from './types.js';
+import type { PluginWebExtOptions } from './types.js';
 
-export type { ContentScriptConfig } from './types.js';
+export type { ContentScriptConfig } from './manifest/manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',
