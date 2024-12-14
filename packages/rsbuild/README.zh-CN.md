@@ -29,35 +29,25 @@
 npm add rsbuild-plugin-web-ext -D
 ```
 
-### 配置
+### 项目设置
 
-1. 创建 `manifest.json` 配置扩展入口（也可使用[声明式开发](#declarative-development)自动生成）：
+1. 为你的浏览器扩展创建入口文件：（参考[声明式开发](#declarative-development)了解更多）
 
-```json
-{
-  "manifest_version": 3,
-  "name": "My Extension",
-  "version": "1.0",
-  "action": { "default_popup": "./popup.ts" },
-  "background": { "service_worker": "./background.ts" },
-  "content_scripts": [{ 
-    "matches": ["<all_urls>"], 
-    "js": ["./content.ts"] 
-  }]
-}
+```
+.
+├── popup.ts      # Extension popup
+├── background.ts # Background service worker
+└── content.ts    # Content script
 ```
 
 2. 在 `rsbuild.config.ts` 中添加插件：
 
 ```ts
 import { pluginWebExt } from "rsbuild-plugin-web-ext";
-import manifest from "./manifest.json";
 
 export default {
   plugins: [
-    pluginWebExt({
-      manifest,
-    }),
+    pluginWebExt(),
   ],
 };
 ```
@@ -92,36 +82,35 @@ export default {
 ### target
 
 目标浏览器，支持：
+
 - `chrome-mv3`（默认）
-- `firefox-mv3` 
+- `firefox-mv3`
 - `firefox-mv2`
 - `safari-mv3`
-
-## 示例
-
-查看[示例项目](./examples/)了解更多使用方式。
-
 
 <h2 id="declarative-development">声明式开发</h2>
 
 支持基于以下目录结构自动生成配置：
 
-| Manifest 字段 | 文件路径 |
-|--------------|---------|
-| `name` | package.json 的 `displayName` 或 `name` |
-| `version` | package.json 的 `version` |
-| `description` | package.json 的 `description` |
-| `author` | package.json 的 `author` |
-| `homepage_url` | package.json 的 `homepage` |
-| `icons` | `assets/icon-[size].png` |
-| `action` | `popup.ts` |
-| `background` | `background.ts` |
-| `content_scripts` | `content.ts` 或 `contents/*.ts` |
-| `options_ui` | `options.ts` |
-| `devtools_page` | `devtools.ts` |
-| `sandbox` | `sandbox.ts` 或 `sandboxes/*.ts` |
-| `_locales` | `public/_locales/*` |
-| `web_accessible_resources` | `public/*` |
+| Manifest 字段              | 文件路径                                |
+| -------------------------- | --------------------------------------- |
+| `name`                     | package.json 的 `displayName` 或 `name` |
+| `version`                  | package.json 的 `version`               |
+| `description`              | package.json 的 `description`           |
+| `author`                   | package.json 的 `author`                |
+| `homepage_url`             | package.json 的 `homepage`              |
+| `icons`                    | `assets/icon-[size].png`                |
+| `action`                   | `popup.ts`                              |
+| `background`               | `background.ts`                         |
+| `content_scripts`          | `content.ts` 或 `contents/*.ts`         |
+| `options_ui`               | `options.ts`                            |
+| `devtools_page`            | `devtools.ts`                           |
+| `sandbox`                  | `sandbox.ts` 或 `sandboxes/*.ts`        |
+| `newtab`                   | `newtab.ts`                             |
+| `bookmarks`                | `bookmarks.ts`                          |
+| `history`                  | `history.ts`                            |
+| `_locales`                 | `public/_locales/*`                     |
+| `web_accessible_resources` | `public/*`                              |
 
 可通过 `srcDir` 选项指定源码目录，如 `srcDir: 'src'`。
 
@@ -133,6 +122,10 @@ export default {
 
 - [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) - 统一的浏览器扩展 API
 - [`@types/webextension-polyfill`](https://www.npmjs.com/package/@types/webextension-polyfill) - TypeScript 类型定义
+
+## 示例
+
+查看[示例项目](./examples/)了解更多使用方式。
 
 ## 许可证
 

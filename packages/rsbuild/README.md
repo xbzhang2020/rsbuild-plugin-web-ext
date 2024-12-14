@@ -15,8 +15,8 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
 ## Features
 
 - **[Declarative Development](#declarative-development)**. Automatically generate configuration based on directory structure, no complex setup needed.
-- **Seamless Development Experience**. Live page updates with HMR and Live-Reloading.
-- **First-Class TypeScript Support**. Out-of-the-box type support without additional configuration.
+- **HMR + Live-Reloading**. Live page updates with HMR and Live-Reloading.
+- **TypeScript Support**. Out-of-the-box type support without additional configuration.
 - **[Browser Compatibility](#browser-compatibility)**. Unified APIs and polyfills for easy multi-browser support.
 - **Framework Agnostic**. Freedom to use any frontend framework and libraries.
 - **Lightning Fast**. Blazing fast development and build powered by Rsbuild.
@@ -29,38 +29,24 @@ A Rsbuild plugin for developing and building browser extensions, making browser 
 npm add rsbuild-plugin-web-ext -D
 ```
 
-### Configuration
+### Project Setup
 
-1. Create `manifest.json` to configure extension entry points (or use [Declarative Development](#declarative-development) to generate automatically):
+1. Create your extension entry files: (refer to [Declarative Development](#declarative-development) for more details)
 
-```json
-{
-  "manifest_version": 3,
-  "name": "My Extension",
-  "version": "1.0",
-  "action": { "default_popup": "./popup.ts" },
-  "background": { "service_worker": "./background.ts" },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["./content.ts"]
-    }
-  ]
-}
+```
+.
+├── popup.ts      # Extension popup
+├── background.ts # Background service worker
+└── content.ts    # Content script
 ```
 
 2. Add the plugin in `rsbuild.config.ts`:
 
 ```ts
 import { pluginWebExt } from "rsbuild-plugin-web-ext";
-import manifest from "./manifest.json";
 
 export default {
-  plugins: [
-    pluginWebExt({
-      manifest,
-    }),
-  ],
+  plugins: [pluginWebExt()],
 };
 ```
 
@@ -100,10 +86,6 @@ Target browser, supports:
 - `firefox-mv2`
 - `safari-mv3`
 
-## Examples
-
-Check out the [example projects](./examples/) for more usage examples.
-
 <h2 id="declarative-development">Declarative Development</h2>
 
 Supports automatic configuration generation based on the following directory structure:
@@ -122,6 +104,9 @@ Supports automatic configuration generation based on the following directory str
 | `options_ui`               | `options.ts`                            |
 | `devtools_page`            | `devtools.ts`                           |
 | `sandbox`                  | `sandbox.ts` or `sandboxes/*.ts`        |
+| `newtab`                   | `newtab.ts`                             |
+| `bookmarks`                | `bookmarks.ts`                          |
+| `history`                  | `history.ts`                            |
 | `_locales`                 | `public/_locales/*`                     |
 | `web_accessible_resources` | `public/*`                              |
 
@@ -136,6 +121,11 @@ For cross-browser support, it's recommended to use:
 - [`webextension-polyfill`](https://www.npmjs.com/package/webextension-polyfill) - Unified browser extension APIs.
 - [`@types/webextension-polyfill`](https://www.npmjs.com/package/@types/webextension-polyfill) - TypeScript type definitions.
 
+## Examples
+
+There are lots of [examples](./examples) for you to refer to.
+
+
 ## License
 
-[MIT](./LICENSE).
+[MIT](./LICENSE)
