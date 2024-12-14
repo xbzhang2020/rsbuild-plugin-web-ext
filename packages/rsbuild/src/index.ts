@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import sharp from 'sharp';
-import { getIconSize, iconSizeList } from './manifest/icons.js';
+import { derivedImage, getIconSize, iconSizeList } from './manifest/icons.js';
 import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
 import type { ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
@@ -101,7 +101,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
           const content = assets[derivedImagePath].buffer();
           const newContent = await sharp(content).resize(size, size).png().toBuffer();
           const newSource = new sources.RawSource(newContent);
-          const iconName = derivedImagePath.replace('icon.png', `icon-${size}.png`);
+          const iconName = derivedImagePath.replace(derivedImage, `icon-${size}.png`);
           compilation.emitAsset(iconName, newSource);
           emitIcons.push(iconName);
         }
