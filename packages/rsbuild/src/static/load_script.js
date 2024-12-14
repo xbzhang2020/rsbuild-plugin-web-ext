@@ -24,7 +24,7 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
       };
       timeout = setTimeout(onScriptComplete, CHUNK_LOAD_TIMEOUT);
 
-      browser.runtime.sendMessage({ type: '_executeScript', url }).then(onScriptComplete).catch(onScriptComplete);
+      browser.runtime.sendMessage({ type: 'web-ext-execute-script', url }).then(onScriptComplete).catch(onScriptComplete);
     };
   }
 }

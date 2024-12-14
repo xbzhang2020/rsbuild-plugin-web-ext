@@ -51,6 +51,17 @@ export async function normalizeManifest(options: PluginWebExtOptions, rootPath: 
     if (!finalManifest.host_permissions.includes('*://*/*')) {
       finalManifest.host_permissions.push('*://*/*');
     }
+
+    finalManifest.commands = {
+      'web-ext-reload-extension': {
+        suggested_key: {
+          default: 'Alt+R',
+          mac: 'Alt+R',
+        },
+        description: 'Reload the extension',
+      },
+      ...(finalManifest.commands || {}),
+    };
   }
 
   await mergeManifestEntries({

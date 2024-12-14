@@ -5,6 +5,7 @@ import { normalizeManifest, writeManifestEntries, writeManifestFile } from './ma
 import type { ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { Manifest, PluginWebExtOptions } from './types.js';
+import type { EnviromentKey } from './rsbuild/rsbuild.js';
 
 export type { ContentScriptConfig } from './types.js';
 
@@ -40,10 +41,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onBeforeStartDevServer(async ({ environments }) => {
-      const { webContent } = environments;
-      if (!webContent) return;
-      const contentEntries = Object.keys(webContent.entry)
-        .flatMap((key) => getRsbuildEntryFile(webContent.entry, key))
+      const enviromentKey: EnviromentKey = 'content';
+      const content = environments[enviromentKey];
+      if (!content) return;
+      const contentEntries = Object.keys(content.entry)
+        .flatMap((key) => getRsbuildEntryFile(content.entry, key))
         .filter((item) => !!item)
         .map((item) => resolve(rootPath, item));
 
@@ -53,7 +55,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       api.transform(
         {
-          environments: ['webContent'],
+          environments: [enviromentKey],
           test: /\.(ts|js|tsx|jsx|mjs|cjs)$/,
         },
         ({ code, resourcePath }) => {
@@ -64,8 +66,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
           // volatile, the best choice is that rsbuild exposes an API.
           if (resourcePath.endsWith('hmr.js') && liveReload) {
-            const reloadCode = 'window.location.reload();';
-            return code.replace(reloadCode, `{\n${reloadExtensionCode}\n${reloadCode}\n}`);
+            return code.replace(/(window\.)?location\.reload\(\);?/g, `{\n${reloadExtensionCode}\n$&\n}`);
           }
 
           return code;
@@ -73,7 +74,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       );
     });
 
-    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation, sources }) => {
+    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation }) => {
       for (const name in assets) {
         if (name.endsWith('.js')) {
           compilation.deleteAsset(name);

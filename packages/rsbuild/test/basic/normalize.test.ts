@@ -30,7 +30,6 @@ describe('normalizeManifest', () => {
 
     const manifest = await normalizeManifest({ manifest: defaultManifest }, rootPath, selfRootPath);
 
-    console.log(manifest);
     expect(manifest.manifest_version).toBe(3);
     expect(manifest.name).toBe(defaultManifest.name);
     expect(manifest.version).toBe(defaultManifest.version);
