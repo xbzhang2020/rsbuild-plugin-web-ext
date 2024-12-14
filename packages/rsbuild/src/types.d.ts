@@ -3,4 +3,3 @@ export type PluginWebExtOptions<T = object> = {
   srcDir?: string;
   target?: BrowserTarget;
 };
-

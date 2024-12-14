@@ -8,13 +8,13 @@ import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
 import iconsProcessor from './icons.js';
 import type {
+  BrowserTarget,
+  Manifest,
   ManifestEntry,
   ManifestEntryPoints,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
-  BrowserTarget,
-  Manifest,
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessors from './overrides.js';

@@ -1,6 +1,6 @@
 import { parseExportObject } from '../parser/export.js';
 import { readFileContent } from '../util.js';
-import type { ManifestEntry, ManifestEntryProcessor, ContentScriptConfig } from './manifest.js';
+import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
   const { content_scripts } = manifest;
