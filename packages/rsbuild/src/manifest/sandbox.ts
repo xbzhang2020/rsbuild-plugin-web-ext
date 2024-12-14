@@ -13,7 +13,7 @@ const mergeSandboxEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPat
 const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const pages = manifest?.sandbox?.pages || [];
   if (!pages.length) return null;
-  
+
   const entry: ManifestEntry = {};
   pages.forEach((page, index) => {
     const name = `sandbox${pages.length === 1 ? '' : index}`;
