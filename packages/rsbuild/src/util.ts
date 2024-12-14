@@ -1,6 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+export function getFileName(path: string) {
+  const res = path.split('/');
+  return res.pop();
+}
+
 export function getFileBaseName(file: string) {
   return file.split('.')[0];
 }
