@@ -15,6 +15,7 @@ import type {
   WriteMainfestEntryProps,
 } from './manifest.js';
 import optionsProcessor from './options.js';
+import overrideProcessors from './overrides.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
 
@@ -26,6 +27,7 @@ const entryProcessors: ManifestEntryProcessor[] = [
   devtoolsProcessor,
   sandboxProcessor,
   iconsProcessor,
+  ...overrideProcessors,
 ];
 
 export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {

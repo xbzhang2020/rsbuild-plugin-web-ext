@@ -1,5 +1,5 @@
-import type { Manifest, ManifestEntryProcessor } from './manifest.js';
 import { getFileName } from '../util.js';
+import type { Manifest, ManifestEntryProcessor } from './manifest.js';
 
 export const iconSizeList = [16, 32, 48, 64, 128];
 export const derivedImage = 'icon.png';

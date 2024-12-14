@@ -2,7 +2,18 @@ import type { BrowserTarget, Manifest as _Manifest } from '../types.js';
 
 export type Manifest = _Manifest;
 
-export type ManifestEntryKey = 'background' | 'content' | 'popup' | 'options' | 'devtools' | 'sandbox' | 'icons';
+export type PageToOverride = 'newtab' | 'history' | 'bookmarks';
+
+export type ManifestEntryKey =
+  | 'background'
+  | 'content'
+  | 'popup'
+  | 'options'
+  | 'devtools'
+  | 'sandbox'
+  | 'icons'
+  | PageToOverride
+  | 'sidepanel';
 
 export type ManifestEntry = Record<
   string,
