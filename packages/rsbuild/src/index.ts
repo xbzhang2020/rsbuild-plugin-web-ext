@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import { normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
+import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
 import type { ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
@@ -109,16 +109,22 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onDevCompileDone(async ({ stats }) => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
+
+      await copyPublicFiles(rootPath, distPath);
       await writeManifestFile(distPath, manifest);
 
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
       clearOutdatedHotUpdateFiles(distPath, statsList);
+
+      console.log('Built the extension successfully');
     });
 
     api.onAfterBuild(async () => {
       const distPath = api.getNormalizedConfig().output.distPath.root;
       await writeManifestFile(distPath, manifest);
+
+      console.log('Built the extension successfully');
     });
   },
 });

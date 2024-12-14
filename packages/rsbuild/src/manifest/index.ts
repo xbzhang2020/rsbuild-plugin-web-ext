@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readdir, writeFile } from 'node:fs/promises';
+import { cp, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BrowserTarget, Manifest, PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
@@ -173,5 +173,10 @@ export async function writeManifestFile(distPath: string, manifest: Manifest) {
   if (!existsSync(distPath)) return;
   const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
-  console.log('Built the extension successfully');
+}
+
+export async function copyPublicFiles(rootPath: string, distPath: string) {
+  const publicPath = resolve(rootPath, 'public');
+  if (!existsSync(publicPath) || !existsSync(distPath)) return;
+  await cp(publicPath, distPath, { recursive: true, dereference: true });
 }
