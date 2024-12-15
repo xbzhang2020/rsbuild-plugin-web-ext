@@ -1,5 +1,5 @@
-import { createRoot } from './src/index';
 import type { ContentScriptConfig } from '../lib';
+import { createRoot } from './src/index';
 
 const root = document.createElement('div');
 root.style.position = 'fixed';

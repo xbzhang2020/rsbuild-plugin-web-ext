@@ -1,6 +1,6 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
 export function createRoot(rootEl: HTMLElement) {
   if (rootEl) {
@@ -8,7 +8,7 @@ export function createRoot(rootEl: HTMLElement) {
     root.render(
       <React.StrictMode>
         <App />
-      </React.StrictMode>
+      </React.StrictMode>,
     );
   }
 }
