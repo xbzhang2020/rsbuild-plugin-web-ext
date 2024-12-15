@@ -107,6 +107,7 @@ Supports automatic configuration generation based on the following directory str
 | `newtab`                   | `newtab.ts`                             |
 | `bookmarks`                | `bookmarks.ts`                          |
 | `history`                  | `history.ts`                            |
+| `side_panel`               | `sidepanel.ts`                          |
 | `_locales`                 | `public/_locales/*`                     |
 | `web_accessible_resources` | `public/*`                              |
 
