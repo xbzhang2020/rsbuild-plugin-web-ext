@@ -46,9 +46,7 @@ npm add rsbuild-plugin-web-ext -D
 import { pluginWebExt } from "rsbuild-plugin-web-ext";
 
 export default {
-  plugins: [
-    pluginWebExt(),
-  ],
+  plugins: [pluginWebExt()],
 };
 ```
 
@@ -92,26 +90,26 @@ export default {
 
 支持基于以下目录结构自动生成配置：
 
-| Manifest 字段              | 文件路径                                |
-| -------------------------- | --------------------------------------- |
-| `name`                     | package.json 的 `displayName` 或 `name` |
-| `version`                  | package.json 的 `version`               |
-| `description`              | package.json 的 `description`           |
-| `author`                   | package.json 的 `author`                |
-| `homepage_url`             | package.json 的 `homepage`              |
-| `icons`                    | `assets/icon-[size].png`                |
-| `action`                   | `popup.ts`                              |
-| `background`               | `background.ts`                         |
-| `content_scripts`          | `content.ts` 或 `contents/*.ts`         |
-| `options_ui`               | `options.ts`                            |
-| `devtools_page`            | `devtools.ts`                           |
-| `sandbox`                  | `sandbox.ts` 或 `sandboxes/*.ts`        |
-| `newtab`                   | `newtab.ts`                             |
-| `bookmarks`                | `bookmarks.ts`                          |
-| `history`                  | `history.ts`                            |
-| `side_panel`               | `sidepanel.ts`                          |
-| `_locales`                 | `public/_locales/*`                     |
-| `web_accessible_resources` | `public/*`                              |
+| Manifest Field             | File Path                                |
+| -------------------------- | ---------------------------------------- |
+| `name`                     | `displayName` or `name` in package.json  |
+| `version`                  | `version` in package.json                |
+| `description`              | `description` in package.json            |
+| `author`                   | `author` in package.json                 |
+| `homepage_url`             | `homepage` in package.json               |
+| `icons`                    | `assets/icon-[size].png`                 |
+| `action`                   | `popup.ts` or `popup/index.ts`           |
+| `background`               | `background.ts` or `background/index.ts` |
+| `content_scripts`          | `content.ts` or `contents/*.ts`          |
+| `options_ui`               | `options.ts` or `options/index.ts`       |
+| `devtools_page`            | `devtools.ts` or `devtools/index.ts`     |
+| `sandbox`                  | `sandbox.ts` or `sandboxes/*.ts`         |
+| `newtab`                   | `newtab.ts` or `newtab/index.ts`         |
+| `bookmarks`                | `bookmarks.ts` or `bookmarks/index.ts`   |
+| `history`                  | `history.ts` or `history/index.ts`       |
+| `side_panel`               | `sidepanel.ts` or `sidepanel/index.ts`   |
+| `_locales`                 | `public/_locales/*`                      |
+| `web_accessible_resources` | `public/*`                               |
 
 可通过 `srcDir` 选项指定源码目录，如 `srcDir: 'src'`。
 

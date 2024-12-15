@@ -90,26 +90,26 @@ Target browser, supports:
 
 Supports automatic configuration generation based on the following directory structure:
 
-| Manifest Field             | File Path                               |
-| -------------------------- | --------------------------------------- |
-| `name`                     | `displayName` or `name` in package.json |
-| `version`                  | `version` in package.json               |
-| `description`              | `description` in package.json           |
-| `author`                   | `author` in package.json                |
-| `homepage_url`             | `homepage` in package.json              |
-| `icons`                    | `assets/icon-[size].png`                |
-| `action`                   | `popup.ts`                              |
-| `background`               | `background.ts`                         |
-| `content_scripts`          | `content.ts` or `contents/*.ts`         |
-| `options_ui`               | `options.ts`                            |
-| `devtools_page`            | `devtools.ts`                           |
-| `sandbox`                  | `sandbox.ts` or `sandboxes/*.ts`        |
-| `newtab`                   | `newtab.ts`                             |
-| `bookmarks`                | `bookmarks.ts`                          |
-| `history`                  | `history.ts`                            |
-| `side_panel`               | `sidepanel.ts`                          |
-| `_locales`                 | `public/_locales/*`                     |
-| `web_accessible_resources` | `public/*`                              |
+| Manifest Field             | File Path                                |
+| -------------------------- | ---------------------------------------- |
+| `name`                     | `displayName` or `name` in package.json  |
+| `version`                  | `version` in package.json                |
+| `description`              | `description` in package.json            |
+| `author`                   | `author` in package.json                 |
+| `homepage_url`             | `homepage` in package.json               |
+| `icons`                    | `assets/icon-[size].png`                 |
+| `action`                   | `popup.ts` or `popup/index.ts`           |
+| `background`               | `background.ts` or `background/index.ts` |
+| `content_scripts`          | `content.ts` or `contents/*.ts`          |
+| `options_ui`               | `options.ts` or `options/index.ts`       |
+| `devtools_page`            | `devtools.ts` or `devtools/index.ts`     |
+| `sandbox`                  | `sandbox.ts` or `sandboxes/*.ts`         |
+| `newtab`                   | `newtab.ts` or `newtab/index.ts`         |
+| `bookmarks`                | `bookmarks.ts` or `bookmarks/index.ts`   |
+| `history`                  | `history.ts` or `history/index.ts`       |
+| `side_panel`               | `sidepanel.ts` or `sidepanel/index.ts`   |
+| `_locales`                 | `public/_locales/*`                      |
+| `web_accessible_resources` | `public/*`                               |
 
 Source directory can be specified using the `srcDir` option, e.g., `srcDir: 'src'`.
 
@@ -125,7 +125,6 @@ For cross-browser support, it's recommended to use:
 ## Examples
 
 There are lots of [examples](./examples) for you to refer to.
-
 
 ## License
 

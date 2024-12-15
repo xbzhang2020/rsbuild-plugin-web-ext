@@ -1,9 +1,13 @@
 import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
+import { getSingleEntryFilePath } from '../util.js';
 
 const createMergeEntry = (key: PageToOverride): ManifestEntryProcessor['merge'] => {
-  return ({ manifest, entryPath }) => {
+  return async ({ manifest, srcPath, files }) => {
     const { chrome_url_overrides } = manifest;
-    if (chrome_url_overrides?.[key] || !entryPath.length) return;
+    if (chrome_url_overrides?.[key]) return;
+
+    const entryPath = await getSingleEntryFilePath(srcPath, files, key);
+    if (!entryPath.length) return;
 
     manifest.chrome_url_overrides ??= {};
     manifest.chrome_url_overrides[key] = entryPath[0];

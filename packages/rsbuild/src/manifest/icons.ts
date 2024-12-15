@@ -1,6 +1,6 @@
 import type { Rspack } from '@rsbuild/core';
 import sharp from 'sharp';
-import { getFileName } from '../util.js';
+import { getFileName, getAssetPaths } from '../util.js';
 import type { Manifest, ManifestEntry, ManifestEntryProcessor, ManifestV3 } from './manifest.js';
 
 const ICON_SIZES = [16, 32, 48, 64, 128, 512];
@@ -24,7 +24,10 @@ const getDeclarativeIcons = (entryPath: string[]) => {
   return !Object.keys(declarativeIcons).length ? null : declarativeIcons;
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath }) => {
+const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
+  const entryPath = await getAssetPaths(srcPath, files, (asset) => asset.endsWith('.png'));
+  if (!entryPath.length) return;
+
   const declarativeIcons = getDeclarativeIcons(entryPath);
   if (!declarativeIcons) return;
 
@@ -158,7 +161,7 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = () => {};
 
 const iconsProcessor: ManifestEntryProcessor = {
   key: 'icons',
-  match: (entryName) => entryName === 'assets' || entryName === 'icons',
+  match: (entryName) => entryName === 'icons',
   merge: mergeIconsEntry,
   read: readIconsEntry,
   write: writeIconsEntry,

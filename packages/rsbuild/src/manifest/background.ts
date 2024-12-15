@@ -1,7 +1,14 @@
 import { resolve } from 'node:path';
 import type { ManifestEntry, ManifestEntryProcessor, ManifestV2, ManifestV3 } from './manifest.js';
+import { getSingleEntryFilePath } from '../util.js';
 
-const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entryPath, selfRootPath, target }) => {
+const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
+  manifest,
+  srcPath,
+  files,
+  selfRootPath,
+  target,
+}) => {
   const { background } = manifest;
   const scripts: string[] = [];
 
@@ -9,7 +16,8 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = ({ manifest, entry
     scripts.push(background.service_worker);
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
-  } else if (entryPath.length) {
+  } else {
+    const entryPath = await getSingleEntryFilePath(srcPath, files, 'background');
     scripts.push(...entryPath);
   }
 

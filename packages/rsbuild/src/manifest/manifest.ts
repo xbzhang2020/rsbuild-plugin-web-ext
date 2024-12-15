@@ -1,3 +1,5 @@
+import type { Dirent } from 'node:fs';
+
 export type ManifestV2 = chrome.runtime.ManifestV2;
 
 export type ManifestV3 = chrome.runtime.ManifestV3;
@@ -65,7 +67,7 @@ export type ManifestEntryPoints = Record<string, ManifestEntryPoint>;
 export type ManifestEntryProcessor = {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
-  merge: (props: NormalizeMainfestEntryProps) => void;
+  merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
   read: (manifest?: Manifest) => ManifestEntry | null;
   write: (props: WriteMainfestEntryProps) => void | Promise<void>;
 };
@@ -79,7 +81,7 @@ export interface NormalizeManifestProps {
 }
 
 export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {
-  entryPath: string[];
+  files: Dirent[];
 }
 
 export interface WriteMainfestEntryProps {
@@ -89,3 +91,4 @@ export interface WriteMainfestEntryProps {
   entryPath: ManifestEntryPoint['entryPath'];
   assets: ManifestEntryPoint['assets'];
 }
+
