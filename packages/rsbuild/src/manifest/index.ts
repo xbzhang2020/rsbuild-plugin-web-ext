@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs';
 import { cp, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { PluginWebExtOptions } from '../types.js';
 import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -32,8 +31,14 @@ const entryProcessors: ManifestEntryProcessor[] = [
   ...overrideProcessors,
 ];
 
-export async function normalizeManifest(options: PluginWebExtOptions, rootPath: string, selfRootPath: string) {
-  const { manifest = {}, target = 'chrome-mv3', srcDir = '.' } = options || {};
+export async function normalizeManifest(options: {
+  srcDir?: string;
+  manifest?: unknown;
+  target?: BrowserTarget;
+  rootPath: string;
+  selfRootPath: string;
+}) {
+  const { manifest = {}, target = 'chrome-mv3', srcDir = '.', rootPath, selfRootPath } = options || {};
 
   const defaultManifest = await getDefaultManifest(rootPath, target);
   const finalManifest = {

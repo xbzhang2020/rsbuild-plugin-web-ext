@@ -42,8 +42,9 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({
 
   const index = Number(entryName.replace('content', '') || '0');
   const { matches } = content_scripts[index];
-  if (!matches?.length) {
-    const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+  const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+
+  if (!matches?.length && input) {
     const code = await readFileContent(rootPath, input);
     const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],

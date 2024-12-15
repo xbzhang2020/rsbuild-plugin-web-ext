@@ -86,6 +86,6 @@ export interface WriteMainfestEntryProps {
   manifest: Manifest;
   rootPath: string;
   entryName: string;
-  entryPath: ManifestEntryPoint['input'];
+  entryPath: ManifestEntryPoint['entryPath'];
   assets: ManifestEntryPoint['assets'];
 }

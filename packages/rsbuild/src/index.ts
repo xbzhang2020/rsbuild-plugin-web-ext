@@ -3,10 +3,16 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { processIcons } from './manifest/icons.js';
 import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { Manifest, ManifestEntryPoints } from './manifest/manifest.js';
+import type { Manifest, ManifestEntryPoints, BrowserTarget } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
-import type { PluginWebExtOptions } from './types.js';
+
+export type PluginWebExtOptions<T = unknown> = {
+  manifest?: T;
+  srcDir?: string;
+  target?: BrowserTarget;
+};
+
 export type { ContentScriptConfig } from './manifest/manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
@@ -17,7 +23,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     let manifest = {} as Manifest;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      manifest = await normalizeManifest(options, rootPath, selfRootPath);
+      manifest = await normalizeManifest({
+        rootPath,
+        selfRootPath,
+        manifest: options.manifest,
+        srcDir: options.srcDir,
+        target: options.target,
+      });
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
       const extraConfig: RsbuildConfig = {

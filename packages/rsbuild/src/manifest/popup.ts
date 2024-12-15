@@ -37,8 +37,8 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entr
   if (!pointer) return;
 
   const { default_title } = pointer;
-  if (!default_title) {
-    const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+  const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+  if (!default_title && input) {
     const code = await readFileContent(rootPath, input);
     const title = parseExportObject<string>(code, 'title');
     if (title) {
