@@ -34,7 +34,7 @@ npm add rsbuild-plugin-web-ext -D
 1. 为你的浏览器扩展创建入口文件：（参考[声明式开发](#declarative-development)了解更多）
 
 ```
-.
+src/
 ├── popup.ts      # Extension popup
 ├── background.ts # Background service worker
 └── content.ts    # Content script
@@ -75,7 +75,7 @@ export default {
 
 ### srcDir
 
-源码目录路径，默认为项目根目录。
+源码目录路径，默认为 `./src`，如果 `./src` 不存在，则默认为项目根目录。
 
 ### target
 
@@ -111,7 +111,7 @@ export default {
 | `_locales`                 | `public/_locales/*`                      |
 | `web_accessible_resources` | `public/*`                               |
 
-可通过 `srcDir` 选项指定源码目录，如 `srcDir: 'src'`。
+**注意**：入口文件位于 `srcDir` 目录下（默认为 `./src`），而 `public` 目录位于项目根目录。
 
 <h2 id="browser-compatibility">浏览器兼容</h2>
 

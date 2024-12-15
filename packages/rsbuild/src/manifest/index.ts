@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { cp, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { getFileBaseName, isJsFile, readPackageJson } from '../util.js';
+import { readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
@@ -31,6 +31,14 @@ const entryProcessors: ManifestEntryProcessor[] = [
   ...overrideProcessors,
 ];
 
+const getDefaultSrcDir = (rootPath: string) => {
+  const srcPath = resolve(rootPath, './src/');
+  if (existsSync(srcPath)) {
+    return srcPath;
+  }
+  return './';
+};
+
 export async function normalizeManifest(options: {
   srcDir?: string;
   manifest?: unknown;
@@ -38,7 +46,13 @@ export async function normalizeManifest(options: {
   rootPath: string;
   selfRootPath: string;
 }) {
-  const { manifest = {}, target = 'chrome-mv3', srcDir = '.', rootPath, selfRootPath } = options || {};
+  const {
+    manifest = {},
+    target = 'chrome-mv3',
+    rootPath,
+    selfRootPath,
+    srcDir = getDefaultSrcDir(rootPath),
+  } = options || {};
 
   const defaultManifest = await getDefaultManifest(rootPath, target);
   const finalManifest = {
@@ -106,49 +120,12 @@ async function mergeManifestEntries(props: NormalizeManifestProps) {
   const { srcPath } = props;
 
   try {
-    // const entries = entryProcessors.reduce(
-    //   (res, cur) => Object.assign(res, { [cur.key]: [] }),
-    //   {} as Record<ManifestEntryProcessor['key'], string[]>,
-    // );
-
     const files = await readdir(srcPath, {
       withFileTypes: true,
     });
-
     for (const processor of entryProcessors) {
       await processor.merge({ ...props, files });
     }
-
-    // for (const file of files) {
-    //   const filePath = `./${file.name}`;
-    //   const processor = entryProcessors.find((item) => item.match(getFileBaseName(file.name)));
-    //   if (!processor) continue;
-
-    //   if (file.isFile() && isJsFile(file.name)) {
-    //     entries[processor.key].push(filePath);
-    //     continue;
-    //   }
-
-    //   if (file.isDirectory()) {
-    //     const subFiles = await readdir(resolve(srcPath, filePath), { withFileTypes: true });
-    //     // 首先获取入口文件
-    //     const entryFile = subFiles.find((item) => item.isFile() && isJsFile(item.name, 'index'));
-    //     if (entryFile) {
-    //       entries[processor.key].push(filePath);
-    //     }
-
-    //     let subFilePaths = subFiles.map((item) => `${filePath}/${item.name}`);
-    //     if (processor.key !== 'icons') {
-    //       subFilePaths = subFilePaths.filter((item) => isJsFile(item));
-    //     }
-    //     entries[processor.key].push(...subFilePaths);
-    //   }
-    // }
-
-    // for (const [key, entryPath] of Object.entries(entries)) {
-    //   const processor = entryProcessors.find((item) => item.key === key);
-    //   processor?.merge({ ...props, entryPath });
-    // }
   } catch (err) {
     console.error(err);
   }

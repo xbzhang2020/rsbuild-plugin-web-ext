@@ -99,7 +99,8 @@ export const processIcons = async (manifest: Manifest, assets: Record<string, Rs
   const { icons = {}, action, browser_action, manifest_version } = manifest;
   const assetsNames = Object.keys(assets);
 
-  const deriverImage = getIconAsset(assetsNames, icons[-1] || '', -1) || '';
+  const deriverImage = icons[-1] ? getIconAsset(assetsNames, icons[-1], -1) || '' : '';
+
   let deleteDeriverImage = true;
   const needDerivedIcons = new Map<number, string>();
 
@@ -147,10 +148,12 @@ export const processIcons = async (manifest: Manifest, assets: Record<string, Rs
   });
 
   const emitAssets: Array<{ name: string; buffer: Buffer }> = [];
-  for (const [size, name] of needDerivedIcons) {
-    const input = assets[deriverImage].buffer();
-    const buffer = await sharp(input).resize(size, size).toBuffer();
-    emitAssets.push({ name, buffer });
+  if (deriverImage) {
+    for (const [size, name] of needDerivedIcons) {
+      const input = assets[deriverImage].buffer();
+      const buffer = await sharp(input).resize(size, size).toBuffer();
+      emitAssets.push({ name, buffer });
+    }
   }
 
   return { emitAssets, deleteAssets };

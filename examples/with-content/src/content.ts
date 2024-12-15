@@ -1,6 +1,6 @@
 import './content.css';
-import type { ContentScriptConfig } from '../lib';
-import './env.d';
+import type { ContentScriptConfig } from '../../lib';
+import './env.d.ts';
 
 console.log('content');
 

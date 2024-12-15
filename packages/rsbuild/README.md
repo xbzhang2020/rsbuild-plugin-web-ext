@@ -34,7 +34,8 @@ npm add rsbuild-plugin-web-ext -D
 1. Create your extension entry files: (refer to [Declarative Development](#declarative-development) for more details)
 
 ```
-.
+src/
+├── assets/       # Icon Assets
 ├── popup.ts      # Extension popup
 ├── background.ts # Background service worker
 └── content.ts    # Content script
@@ -75,7 +76,7 @@ The manifest configuration for the browser extension. If not specified, it will 
 
 ### srcDir
 
-Source directory path, defaults to project root.
+Source directory path. Defaults to `./src`, falling back to project root (`./`) if `src` directory doesn't exist.
 
 ### target
 
@@ -111,7 +112,7 @@ Supports automatic configuration generation based on the following directory str
 | `_locales`                 | `public/_locales/*`                      |
 | `web_accessible_resources` | `public/*`                               |
 
-Source directory can be specified using the `srcDir` option, e.g., `srcDir: 'src'`.
+**Note**: Entry files are located in `srcDir` (defaults to `./src`), except for `public` directory which is located in the project root.
 
 <h2 id="browser-compatibility">Browser Compatibility</h2>
 

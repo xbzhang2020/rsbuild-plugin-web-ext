@@ -23,12 +23,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     let manifest = {} as Manifest;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
+      const { manifest: optionsManifest, srcDir, target } = options;
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
-        manifest: options.manifest,
-        srcDir: options.srcDir,
-        target: options.target,
+        manifest: optionsManifest,
+        srcDir,
+        target,
       });
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);

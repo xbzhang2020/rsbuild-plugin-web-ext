@@ -19,13 +19,13 @@ export function isJsFile(file: string, baseName = '') {
 
 export const getSingleEntryFilePath = async (srcPath: string, files: Dirent[], key: string) => {
   const entryFile = files.find((item) => item.isFile() && isJsFile(item.name, key));
-  if (entryFile) return [`./${entryFile.name}`];
+  if (entryFile) return [resolve(srcPath, `./${entryFile.name}`)];
 
   const entryDir = files.find((item) => item.isDirectory() && item.name === key);
   if (entryDir) {
     const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
     const entryFile = subFiles.find((item) => item.isFile() && isJsFile(item.name, 'index'));
-    if (entryFile) return [`./${entryDir.name}/${entryFile.name}`];
+    if (entryFile) return [resolve(srcPath, `./${entryDir.name}/${entryFile.name}`)];
   }
   return [];
 };
@@ -38,14 +38,14 @@ export const getMultipleEntryFilePath = async (srcPath: string, files: Dirent[],
   const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
   for (const item of subFiles) {
     if (item.isFile() && isJsFile(item.name)) {
-      entryPath.push(`./${entryDir.name}/${item.name}`);
+      entryPath.push(resolve(srcPath, `./${entryDir.name}/${item.name}`));
     } else if (item.isDirectory()) {
       const grandChildFiles = await readdir(resolve(srcPath, entryDir.name, item.name), {
         withFileTypes: true,
       });
       const indexFile = grandChildFiles.find((item) => item.isFile() && isJsFile(item.name, 'index'));
       if (indexFile) {
-        entryPath.push(`./${entryDir.name}/${item.name}/${indexFile.name}`);
+        entryPath.push(resolve(srcPath, `./${entryDir.name}/${item.name}/${indexFile.name}`));
       }
     }
   }
@@ -57,7 +57,7 @@ export const getAssetPaths = async (srcPath: string, files: Dirent[], filter = (
   const assets = files.find((item) => item.isDirectory() && item.name === 'assets');
   if (!assets) return [];
   const subFiles = await readdir(resolve(srcPath, assets.name), { recursive: true });
-  return subFiles.filter(filter).map((item) => `./${assets.name}/${item}`);
+  return subFiles.filter(filter).map((item) => resolve(srcPath, `./${assets.name}/${item}`));
 };
 
 export async function readPackageJson(rootPath: string) {
