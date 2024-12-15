@@ -6,7 +6,7 @@ import type { Manifest, ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
 import type { PluginWebExtOptions } from './types.js';
-
+import { processIcons } from './manifest/icons.js';
 export type { ContentScriptConfig } from './manifest/manifest.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
@@ -74,11 +74,14 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       );
     });
 
-    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation }) => {
-      for (const name in assets) {
-        if (name.endsWith('.js')) {
-          compilation.deleteAsset(name);
-        }
+    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation, sources }) => {
+      const res = await processIcons(manifest, assets);
+      if (!res) return;
+      for (const { name, buffer } of res.emitAssets) {
+        compilation.emitAsset(name, new sources.RawSource(buffer));
+      }
+      for (const name of res.deleteAssets) {
+        compilation.deleteAsset(name);
       }
     });
 
