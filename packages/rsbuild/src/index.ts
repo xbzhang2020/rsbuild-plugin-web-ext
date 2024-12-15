@@ -40,7 +40,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
             host: '127.0.0.1:<port>',
             port: '<port>',
             protocol: 'ws',
-            reconnect: 20,
           },
         },
         server: {
