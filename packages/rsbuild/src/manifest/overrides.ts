@@ -1,5 +1,5 @@
-import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
 import { getSingleEntryFilePath } from '../util.js';
+import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
 
 const createMergeEntry = (key: PageToOverride): ManifestEntryProcessor['merge'] => {
   return async ({ manifest, srcPath, files }) => {

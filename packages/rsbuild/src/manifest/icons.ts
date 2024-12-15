@@ -1,6 +1,6 @@
 import type { Rspack } from '@rsbuild/core';
 import sharp from 'sharp';
-import { getFileName, getAssetPaths } from '../util.js';
+import { getAssetPaths, getFileName } from '../util.js';
 import type { Manifest, ManifestEntry, ManifestEntryProcessor, ManifestV3 } from './manifest.js';
 
 const ICON_SIZES = [16, 32, 48, 64, 128, 512];

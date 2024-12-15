@@ -1,5 +1,5 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 import { getSingleEntryFilePath } from '../util.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { devtools_page } = manifest;

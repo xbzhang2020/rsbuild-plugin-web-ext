@@ -1,7 +1,7 @@
 import { parseExportObject } from '../parser/export.js';
 import { readFileContent } from '../util.js';
+import { getMultipleEntryFilePath, getSingleEntryFilePath } from '../util.js';
 import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './manifest.js';
-import { getSingleEntryFilePath, getMultipleEntryFilePath } from '../util.js';
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { content_scripts } = manifest;

@@ -1,5 +1,5 @@
+import { getMultipleEntryFilePath, getSingleEntryFilePath } from '../util.js';
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
-import { getSingleEntryFilePath, getMultipleEntryFilePath } from '../util.js';
 
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const pages = manifest.sandbox?.pages;
