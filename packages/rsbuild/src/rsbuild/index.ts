@@ -30,9 +30,10 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
       output: {
         target: 'web',
         dataUriLimit: 0,
-        filename: {
-          image: '[name].[ext]',
-        },
+        filenameHash: false,
+        // filename: {
+        //   image: '[name].[ext]',
+        // }
       },
     };
   }
