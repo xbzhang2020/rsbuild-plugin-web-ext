@@ -56,14 +56,13 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const enviromentKey: EnviromentKey = 'content';
       const content = environments[enviromentKey];
       if (!content) return;
+
       const contentEntries = Object.keys(content.entry)
         .flatMap((key) => getRsbuildEntryFile(content.entry, key))
         .filter((item) => !!item)
         .map((item) => resolve(rootPath, item));
 
-      const loadScript = await readFile(resolve(selfRootPath, './static/load_script.js'), 'utf-8');
-      const reloadExtensionCode = await readFile(resolve(selfRootPath, './static/reload_extension_fn.js'), 'utf-8');
-      const liveReload = api.getNormalizedConfig().dev.liveReload;
+      const contentHmr = await readFile(resolve(selfRootPath, './static/content_hmr.js'), 'utf-8');
 
       api.transform(
         {
@@ -73,12 +72,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         ({ code, resourcePath }) => {
           // change the origin load_script in source code
           if (contentEntries.includes(resourcePath)) {
-            return `${code}\n${loadScript}`;
-          }
-
-          // volatile, the best choice is that rsbuild exposes an API.
-          if (resourcePath.endsWith('hmr.js') && liveReload) {
-            return code.replace(/(window\.)?location\.reload\(\);?/g, `{\n${reloadExtensionCode}\n$&\n}`);
+            return `${code}\n${contentHmr}`;
           }
 
           return code;

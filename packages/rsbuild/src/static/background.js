@@ -3,22 +3,16 @@ if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
 }
 
 if (typeof browser !== 'undefined') {
-  browser.commands.onCommand.addListener((command) => {
-    if (command === 'web-ext-reload-extension') {
-      browser.runtime.reload();
-    }
-  });
-
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (typeof message !== 'object') return;
 
-    if (message.type === 'web-ext-reload-extension') {
+    if (message.type === 'web-extend-reload-extension') {
       browser.runtime.reload();
       sendResponse({ type: 'ok' });
       return;
     }
 
-    if (message.type === 'web-ext-execute-script') {
+    if (message.type === 'web-extend-execute-script') {
       const tabId = sender.tab?.id;
       const file = message.url?.split('/').at(-1);
       if (tabId && file) {
