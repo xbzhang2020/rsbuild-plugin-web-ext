@@ -1,12 +1,14 @@
 {
-  "name": "basic",
-  "version": "1.0.0-alpha.1",
+  "name": "empty",
+  "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "basic demo"
+  "description": "An empty project",
+  "homepage": "https://www.github.com"
 }

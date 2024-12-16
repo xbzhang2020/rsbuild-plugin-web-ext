@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { cp, readdir, writeFile } from 'node:fs/promises';
+import { cp, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
@@ -85,24 +85,25 @@ export async function normalizeManifest(options: {
 }
 
 async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
-  const manifest: Manifest = {
+  const manifest: Partial<Manifest> = {
     manifest_version: target?.includes('2') ? 2 : 3,
-    name: '',
-    version: '',
   };
 
   const pkg = await readPackageJson(rootPath);
   const { name, displayName, version, description, author, homepage } = pkg;
   const trimVersion = version.match(/[\d\.]+/)?.[0];
 
-  return {
-    ...manifest,
-    ...(name && { name: displayName || name }),
-    ...(trimVersion && { version: trimVersion }),
-    ...(description && { description }),
-    ...(author && { author }),
-    ...(homepage && { homepage_url: homepage }),
-  } as Manifest;
+  manifest.name ??= displayName || name;
+  manifest.version ??= trimVersion;
+  manifest.description ??= description;
+  manifest.author ??= author;
+  manifest.homepage_url ??= homepage;
+
+  if (!manifest.name || !manifest.version) {
+    throw new Error('manifest.name and manifest.version are required fields.');
+  }
+
+  return manifest;
 }
 
 async function mergeManifestEntries(props: NormalizeManifestProps) {
@@ -151,7 +152,9 @@ export async function writeManifestEntries({ manifest, rootPath, entrypoints }: 
 }
 
 export async function writeManifestFile(distPath: string, manifest: Manifest) {
-  if (!existsSync(distPath)) return;
+  if (!existsSync(distPath)) {
+    await mkdir(distPath, { recursive: true });
+  }
   const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
 }

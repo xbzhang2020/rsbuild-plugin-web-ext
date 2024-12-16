@@ -1,6 +1,8 @@
 import { parse } from '@babel/parser';
-import traverse, { type NodePath } from '@babel/traverse';
+import _traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+
+const traverse = typeof _traverse === 'function' ? _traverse : _traverse.default;
 
 function astToObject(node: t.Node): unknown {
   if (t.isObjectExpression(node)) {
@@ -30,7 +32,7 @@ export function parseExportObject<T = unknown>(code: string, name: string): T | 
 
   let configValue = null;
 
-  traverse.default(ast, {
+  traverse(ast, {
     ExportNamedDeclaration(path: NodePath<t.ExportNamedDeclaration>) {
       const declaration = path.node.declaration;
       if (t.isVariableDeclaration(declaration)) {

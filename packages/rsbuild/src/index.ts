@@ -116,8 +116,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onDevCompileDone(async ({ stats }) => {
-      const distPath = api.getNormalizedConfig().output.distPath.root;
-
+      const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
       await writeManifestFile(distPath, manifest);
 
@@ -129,7 +128,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterBuild(async () => {
-      const distPath = api.getNormalizedConfig().output.distPath.root;
+      const distPath = api.context.distPath;
       await writeManifestFile(distPath, manifest);
 
       console.log('Built the extension successfully');
