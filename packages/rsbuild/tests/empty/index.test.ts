@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { createRsbuild } from '@rsbuild/core';
-import { pluginWebExt } from '../../src/index.js';
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { createRsbuild } from '@rsbuild/core';
+import { describe, expect, it } from 'vitest';
+import { pluginWebExt } from '../../src/index.js';
 import pkg from './package.json' with { type: 'json' };
 
 const __dirname = import.meta.dirname;
