@@ -19,6 +19,7 @@ import optionsProcessor from './options.js';
 import overrideProcessors from './overrides.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
+import sidepanelProcessor from './sidepanel.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -29,6 +30,7 @@ const entryProcessors: ManifestEntryProcessor[] = [
   sandboxProcessor,
   iconsProcessor,
   ...overrideProcessors,
+  sidepanelProcessor,
 ];
 
 const getDefaultSrcDir = (rootPath: string) => {

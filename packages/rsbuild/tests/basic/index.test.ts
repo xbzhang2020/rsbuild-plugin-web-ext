@@ -1,11 +1,11 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { describe, expect, it } from 'vitest';
 import { pluginWebExt } from '../../src/index.js';
-import { config as contentConfig } from './src/content.js';
-import { existsSync } from 'node:fs';
 import { getFileExt } from '../helper.js';
+import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
 
 const __dirname = import.meta.dirname;
@@ -36,9 +36,11 @@ describe('basic', () => {
       chrome_url_overrides,
       sandbox,
       icons,
+      side_panel,
     } = manifest;
 
     function existFile(name: string, ext: string) {
+      if (!name) return false;
       return existsSync(resolve(distPath, name)) && getFileExt(name) === ext;
     }
 
@@ -91,5 +93,8 @@ describe('basic', () => {
 
     // history
     expect(existFile(chrome_url_overrides?.history || '', 'html')).toBeTruthy();
+
+    // sidepanel
+    expect(existFile(side_panel?.default_path || '', 'html')).toBeTruthy();
   });
 });
