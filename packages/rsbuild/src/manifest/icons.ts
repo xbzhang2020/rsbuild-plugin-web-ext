@@ -3,14 +3,13 @@ import sharp from 'sharp';
 import { getAssetPaths, getFileName } from '../util.js';
 import type { Manifest, ManifestEntry, ManifestEntryProcessor, ManifestV3 } from './manifest.js';
 
-const ICON_SIZES = [16, 32, 48, 64, 128, 512];
-const DERIVED_IMAGE = 'icon.png';
+const ICON_SIZES = [16, 32, 48, 64, 128];
+const DERIVER_IMAGE = 'icon.png';
 
 const getIconSize = (filePath: string) => {
-  const res = filePath.match(/icon-?(\d+)\.png$/);
-  if (res?.[1]) return Number(res[1]);
-  if (filePath.endsWith(DERIVED_IMAGE)) return -1;
-  return null;
+  if (filePath.endsWith(DERIVER_IMAGE)) return -1;
+  const match = filePath.match(/icon-?(\d+)\.png$/);
+  return match?.[1] ? Number(match[1]) : null;
 };
 
 const getDeclarativeIcons = (entryPath: string[]) => {
@@ -21,7 +20,12 @@ const getDeclarativeIcons = (entryPath: string[]) => {
       declarativeIcons[size] = filePath;
     }
   }
-  return !Object.keys(declarativeIcons).length ? null : declarativeIcons;
+  return Object.keys(declarativeIcons).length ? declarativeIcons : null;
+};
+
+const getIconAsset = (assets: string[], input: string | undefined, size: number) => {
+  const name = input ? getFileName(input) : undefined;
+  return assets.find((item) => (name && item.endsWith(name)) || getIconSize(item) === size);
 };
 
 const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
@@ -90,39 +94,37 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const getIconAsset = (assets: string[], input: string, size: number) => {
-  const name = getFileName(input) || '';
-  return assets.find((item) => item.endsWith(name) || getIconSize(item) === size);
-};
-
 export const processIcons = async (manifest: Manifest, assets: Record<string, Rspack.sources.Source>) => {
   const { icons = {}, action, browser_action, manifest_version } = manifest;
+
   const assetsNames = Object.keys(assets);
-
-  const deriverImage = icons[-1] ? getIconAsset(assetsNames, icons[-1], -1) || '' : '';
-
-  let deleteDeriverImage = true;
+  const deriverImagePath = getIconAsset(assetsNames, icons[-1], -1);
   const needDerivedIcons = new Map<number, string>();
+  let needDeleteDeriverImage = true;
 
   function helper(icons: Manifest['icons']) {
     if (typeof icons !== 'object') return;
+
     const sizes = Object.keys(icons).map(Number);
     const needDerivedSizes = ICON_SIZES.filter((item) => !sizes.includes(item));
 
     for (const key of sizes) {
       const size = Number(key);
+      const iconPath = icons[key];
       if (size === -1) {
         delete icons[key];
-        for (const newSize of needDerivedSizes) {
-          const newName = deriverImage.replace(DERIVED_IMAGE, `icon-${newSize}.png`);
-          icons[newSize] = newName;
-          needDerivedIcons.set(newSize, newName);
+        if (deriverImagePath) {
+          for (const derivedSize of needDerivedSizes) {
+            const derivedIconPath = deriverImagePath.replace(DERIVER_IMAGE, `icon-${derivedSize}.png`);
+            icons[derivedSize] = derivedIconPath;
+            needDerivedIcons.set(derivedSize, derivedIconPath);
+          }
         }
       } else {
-        if (icons[key].endsWith(DERIVED_IMAGE)) {
-          deleteDeriverImage = false;
+        if (iconPath.endsWith(DERIVER_IMAGE)) {
+          needDeleteDeriverImage = false;
         }
-        const iconAsset = getIconAsset(assetsNames, icons[key], size);
+        const iconAsset = getIconAsset(assetsNames, iconPath, size);
         if (iconAsset) {
           icons[key] = iconAsset;
         } else {
@@ -141,16 +143,14 @@ export const processIcons = async (manifest: Manifest, assets: Record<string, Rs
     helper(pointer?.default_icon);
   }
 
-  const deleteAssets = assetsNames.filter((name) => {
-    if (name.endsWith('.js')) return true;
-    if (deleteDeriverImage && name.endsWith(DERIVED_IMAGE)) return true;
-    return false;
-  });
+  const deleteAssets = assetsNames.filter(
+    (name) => name.endsWith('.js') || (needDeleteDeriverImage && name.endsWith(DERIVER_IMAGE)),
+  );
 
-  const emitAssets: Array<{ name: string; buffer: Buffer }> = [];
-  if (deriverImage) {
+  const emitAssets: { name: string; buffer: Buffer }[] = [];
+  if (deriverImagePath) {
     for (const [size, name] of needDerivedIcons) {
-      const input = assets[deriverImage].buffer();
+      const input = assets[deriverImagePath].buffer();
       const buffer = await sharp(input).resize(size, size).toBuffer();
       emitAssets.push({ name, buffer });
     }
@@ -159,15 +159,12 @@ export const processIcons = async (manifest: Manifest, assets: Record<string, Rs
   return { emitAssets, deleteAssets };
 };
 
-// completed in processIcons
-const writeIconsEntry: ManifestEntryProcessor['write'] = () => {};
-
 const iconsProcessor: ManifestEntryProcessor = {
   key: 'icons',
   match: (entryName) => entryName === 'icons',
   merge: mergeIconsEntry,
   read: readIconsEntry,
-  write: writeIconsEntry,
+  write: () => {}, // completed in processIcons
 };
 
 export default iconsProcessor;
