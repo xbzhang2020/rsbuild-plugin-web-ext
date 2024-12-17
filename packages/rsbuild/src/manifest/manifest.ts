@@ -46,7 +46,7 @@ export type ManifestEntryKey =
   | 'devtools'
   | 'sandbox'
   | 'icons'
-  | PageToOverride
+  | 'overrides'
   | 'sidepanel';
 
 export type ManifestEntry = Record<

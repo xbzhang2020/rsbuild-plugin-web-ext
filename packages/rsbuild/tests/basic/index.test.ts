@@ -17,6 +17,9 @@ describe('basic', () => {
       rsbuildConfig: {
         plugins: [pluginWebExt()],
         output: {
+          distPath: {
+            root: 'dist/prod',
+          },
           sourceMap: false,
         },
       },
