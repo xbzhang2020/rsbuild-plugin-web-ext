@@ -1,6 +1,6 @@
-import sharp from 'sharp';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import sharp from 'sharp';
 
 async function resize(input, output, size) {
   return await sharp(input).resize(size).toFile(output);
