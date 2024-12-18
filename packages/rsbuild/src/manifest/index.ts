@@ -1,27 +1,26 @@
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { readPackageJson } from '../util.js';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
 import iconsProcessor from './icons.js';
 import type {
   BrowserTarget,
+  BuildMode,
   Manifest,
   ManifestEntry,
   ManifestEntryPoints,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
-  BuildMode,
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
 import sidepanelProcessor from './sidepanel.js';
-import { isDevMode } from './util.js';
+import { isDevMode, readPackageJson } from './util.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -57,7 +56,7 @@ export async function normalizeManifest(options: {
     rootPath,
     selfRootPath,
     srcDir = getDefaultSrcDir(rootPath),
-    mode
+    mode,
   } = options || {};
 
   const defaultManifest = await getDefaultManifest(rootPath, target);

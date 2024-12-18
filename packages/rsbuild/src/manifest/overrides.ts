@@ -1,4 +1,4 @@
-import { getSingleEntryFilePath } from '../util.js';
+import { getSingleEntryFilePath } from './util.js';
 import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];

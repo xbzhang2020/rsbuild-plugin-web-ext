@@ -1,4 +1,4 @@
-import { getSingleEntryFilePath } from '../util.js';
+import { getSingleEntryFilePath } from './util.js';
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 
 const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, target, srcPath, files }) => {
