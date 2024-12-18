@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { resolve, isAbsolute } from 'node:path';
+import { isAbsolute, resolve } from 'node:path';
 import sharp from 'sharp';
 
 function getTemplatePath(template: string) {
