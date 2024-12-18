@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
-import { readFile } from 'node:fs/promises';
 
 function getFileExt(path: string) {
   return path.split('.').pop();
