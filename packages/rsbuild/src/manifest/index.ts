@@ -78,15 +78,27 @@ export async function normalizeManifest(options: {
       finalManifest.host_permissions.push('*://*/*');
     }
   }
-
-  await mergeManifestEntries({
+  const srcPath = resolve(rootPath, srcDir);
+  const props: NormalizeManifestProps = {
     manifest: finalManifest,
     target,
-    srcPath: resolve(rootPath, srcDir),
+    srcPath,
     rootPath,
     selfRootPath,
     mode,
-  });
+  };
+
+  try {
+    const files = await readdir(srcPath, {
+      withFileTypes: true,
+    });
+    for (const processor of entryProcessors) {
+      await processor.merge({ ...props, files });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
   return finalManifest;
 }
 
@@ -110,21 +122,6 @@ async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
   }
 
   return manifest;
-}
-
-async function mergeManifestEntries(props: NormalizeManifestProps) {
-  const { srcPath } = props;
-
-  try {
-    const files = await readdir(srcPath, {
-      withFileTypes: true,
-    });
-    for (const processor of entryProcessors) {
-      await processor.merge({ ...props, files });
-    }
-  } catch (err) {
-    console.error(err);
-  }
 }
 
 export function readManifestEntries(manifest: Manifest) {

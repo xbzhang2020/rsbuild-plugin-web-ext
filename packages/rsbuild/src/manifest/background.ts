@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import type { ManifestEntry, ManifestEntryProcessor, ManifestV2, ManifestV3 } from './manifest.js';
-import { isDevMode, getSingleEntryFilePath } from './util.js';
+import { getSingleEntryFilePath, isDevMode } from './util.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,

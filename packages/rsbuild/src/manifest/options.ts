@@ -1,5 +1,5 @@
-import { getSingleEntryFilePath } from './util.js';
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
+import { getSingleEntryFilePath } from './util.js';
 
 const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { options_ui, options_page } = manifest;

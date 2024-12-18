@@ -1,5 +1,5 @@
-import { getAssetPaths, getFileName } from './util.js';
 import type { Manifest, ManifestEntry, ManifestEntryProcessor, ManifestV3 } from './manifest.js';
+import { getAssetPaths, getFileName } from './util.js';
 
 const getIconSize = (filePath: string) => {
   const match = filePath.match(/icon-?(\d+)\.png$/);
