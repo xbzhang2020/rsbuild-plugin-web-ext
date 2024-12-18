@@ -20,8 +20,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
     let manifest = {} as Manifest;
+    let mode: RsbuildConfig['mode'] = undefined;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
+      mode = config.mode;
       const { manifest: optionsManifest, srcDir, target } = options;
       manifest = await normalizeManifest({
         rootPath,
@@ -29,6 +31,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         manifest: optionsManifest,
         srcDir,
         target,
+        mode,
       });
 
       const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
@@ -114,7 +117,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onDevCompileDone(async ({ stats }) => {
       const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
-      await writeManifestFile(distPath, manifest);
+      await writeManifestFile(distPath, manifest, mode);
 
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
@@ -125,7 +128,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onAfterBuild(async () => {
       const distPath = api.context.distPath;
-      await writeManifestFile(distPath, manifest);
+      await writeManifestFile(distPath, manifest, mode);
 
       console.log('Built the extension successfully');
     });

@@ -1,5 +1,7 @@
 import type { Dirent } from 'node:fs';
 
+export type BuildMode = 'development' | 'production' | 'none';
+
 export type ManifestV2 = chrome.runtime.ManifestV2;
 
 export type ManifestV3 = chrome.runtime.ManifestV3;
@@ -78,6 +80,7 @@ export interface NormalizeManifestProps {
   rootPath: string;
   srcPath: string;
   selfRootPath: string;
+  mode?: BuildMode;
 }
 
 export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {

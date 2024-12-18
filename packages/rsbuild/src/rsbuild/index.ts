@@ -5,6 +5,7 @@ import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rs
 import { readManifestEntries } from '../manifest/index.js';
 import type { Manifest } from '../manifest/manifest.js';
 import type { EnviromentKey } from './rsbuild.js';
+import { isDevMode } from '../manifest/util.js';
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
@@ -16,6 +17,7 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
 
 export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig, selfRootPath: string) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
+  const { mode } = config;
 
   const environments: {
     [key in EnviromentKey]?: EnvironmentConfig;
@@ -31,9 +33,6 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
         target: 'web',
         dataUriLimit: 0,
         filenameHash: false,
-        // filename: {
-        //   image: '[name].[ext]',
-        // }
       },
     };
   }
@@ -57,7 +56,7 @@ export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildC
       output: {
         target: 'web',
         // support hmr
-        injectStyles: process.env.NODE_ENV === 'development',
+        injectStyles: isDevMode(mode),
       },
       dev: {
         // support hmr

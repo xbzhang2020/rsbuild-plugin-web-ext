@@ -14,12 +14,14 @@ import type {
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WriteMainfestEntryProps,
+  BuildMode,
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';
 import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
 import sidepanelProcessor from './sidepanel.js';
+import { isDevMode } from './util.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -47,6 +49,7 @@ export async function normalizeManifest(options: {
   target?: BrowserTarget;
   rootPath: string;
   selfRootPath: string;
+  mode?: 'development' | 'production' | 'none';
 }) {
   const {
     manifest = {},
@@ -54,6 +57,7 @@ export async function normalizeManifest(options: {
     rootPath,
     selfRootPath,
     srcDir = getDefaultSrcDir(rootPath),
+    mode
   } = options || {};
 
   const defaultManifest = await getDefaultManifest(rootPath, target);
@@ -62,7 +66,7 @@ export async function normalizeManifest(options: {
     ...(manifest as Manifest),
   } as Manifest;
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevMode(mode)) {
     finalManifest.version_name ??= `${finalManifest.version} (development)`;
     finalManifest.permissions ??= [];
     finalManifest.host_permissions ??= [];
@@ -82,6 +86,7 @@ export async function normalizeManifest(options: {
     srcPath: resolve(rootPath, srcDir),
     rootPath,
     selfRootPath,
+    mode,
   });
   return finalManifest;
 }
@@ -153,11 +158,11 @@ export async function writeManifestEntries({ manifest, rootPath, entrypoints }: 
   }
 }
 
-export async function writeManifestFile(distPath: string, manifest: Manifest) {
+export async function writeManifestFile(distPath: string, manifest: Manifest, mode?: BuildMode) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
   }
-  const data = process.env.NODE_ENV === 'development' ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
+  const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(`${distPath}/manifest.json`, data);
 }
 

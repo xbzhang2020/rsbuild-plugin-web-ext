@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 import { getSingleEntryFilePath } from '../util.js';
+import { isDevMode } from './util.js';
 import type { ManifestEntry, ManifestEntryProcessor, ManifestV2, ManifestV3 } from './manifest.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
@@ -8,6 +9,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   files,
   selfRootPath,
   target,
+  mode,
 }) => {
   const { background } = manifest;
   const scripts: string[] = [];
@@ -21,7 +23,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
     scripts.push(...entryPath);
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevMode(mode)) {
     const defaultBackground = resolve(selfRootPath, './static/background.js');
     scripts.push(defaultBackground);
   }
