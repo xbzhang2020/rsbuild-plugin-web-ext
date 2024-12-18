@@ -15,6 +15,7 @@ describe('basic', () => {
     const rsbuild = await createRsbuild({
       cwd: __dirname,
       rsbuildConfig: {
+        mode: 'development',
         plugins: [pluginWebExt()],
         output: {
           distPath: {
@@ -32,6 +33,7 @@ describe('basic', () => {
     const rsbuild = await createRsbuild({
       cwd: __dirname,
       rsbuildConfig: {
+        mode: 'production',
         plugins: [pluginWebExt()],
         output: {
           distPath: {
