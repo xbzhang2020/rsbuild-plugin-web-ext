@@ -2,11 +2,35 @@ import { describe, expect, it } from 'vitest';
 import { existsFile, initRsbuild, readManifest } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
+import { existsSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const __dirname = import.meta.dirname;
 
-describe('basic in prod mode', () => {
-  it('should build successfully', async () => {
+describe('basic for chrome', () => {
+  it('should build chrome-mv3-dev successfully', async () => {
+    const rsbuild = await initRsbuild({
+      cwd: __dirname,
+      mode: 'development',
+      outDir: 'dist/chrome-mv3-dev',
+    });
+    const { server } = await rsbuild.startDevServer();
+    const distPath = rsbuild.context.distPath;
+
+    return new Promise((resolve, reject) => {
+      rsbuild.onDevCompileDone(async () => {
+        const manifest = await readManifest(distPath);
+        const { manifest_version } = manifest as chrome.runtime.ManifestV3;
+        expect(manifest_version).toBe(3);
+
+        server.close();
+        resolve({});
+      });
+    });
+  });
+
+  it('should build chrome-mv3-prod successfully', async () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',
@@ -82,5 +106,13 @@ describe('basic in prod mode', () => {
 
     // sidepanel
     expect(existsFile(distPath, side_panel?.default_path || '', 'html')).toBeTruthy();
+
+    // public
+    const publicPath = resolve(__dirname, 'public');
+    const files = await readdir(publicPath, { recursive: true });
+    for (const file of files) {
+      const filePath = resolve(distPath, file);
+      expect(existsSync(filePath)).toBeTruthy();
+    }
   });
 });
