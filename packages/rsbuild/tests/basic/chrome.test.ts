@@ -1,10 +1,10 @@
+import { existsSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { existsFile, initRsbuild, readManifest } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
-import { existsSync } from 'node:fs';
-import { readdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
 
 const __dirname = import.meta.dirname;
 

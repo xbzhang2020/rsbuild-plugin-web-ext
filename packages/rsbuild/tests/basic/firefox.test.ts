@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { initRsbuild, readManifest, existsFile } from '../helper.js';
 import type { Manifest } from 'webextension-polyfill';
+import { existsFile, initRsbuild, readManifest } from '../helper.js';
 
 const __dirname = import.meta.dirname;
 
@@ -53,7 +53,7 @@ describe('basic for firefox', () => {
     const { manifest_version, browser_action, icons } = manifest as Manifest.WebExtensionManifest;
 
     expect(manifest_version).toBe(2);
-    
+
     expect(existsFile(distPath, browser_action?.default_popup || '', 'html')).toBeTruthy();
     expect(browser_action?.default_icon).toEqual(icons);
   });
