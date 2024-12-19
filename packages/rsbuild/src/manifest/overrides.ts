@@ -1,6 +1,6 @@
+import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
 import { getSingleEntryFilePath } from './util.js';
-import type { Manifest } from 'webextension-polyfill';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
 

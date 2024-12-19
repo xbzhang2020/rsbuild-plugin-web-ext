@@ -1,6 +1,6 @@
-import type { WebExtensionManifest, ManifestEntry, ManifestEntryProcessor } from './manifest.js';
-import { getAssetPaths, getFileName } from './util.js';
 import type { Manifest } from 'webextension-polyfill';
+import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './manifest.js';
+import { getAssetPaths, getFileName } from './util.js';
 
 const getIconSize = (filePath: string) => {
   const match = filePath.match(/icon-?(\d+)\.png$/);

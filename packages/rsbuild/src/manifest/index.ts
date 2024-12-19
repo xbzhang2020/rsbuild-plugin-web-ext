@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, writeFile } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
@@ -11,8 +11,8 @@ import type {
   ManifestEntry,
   ManifestEntryProcessor,
   NormalizeManifestProps,
+  WebExtensionManifest,
   WriteManifestProps,
-  WebExtensionManifest
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';

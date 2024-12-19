@@ -15,7 +15,11 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   return entry.import;
 }
 
-export function normalizeRsbuildEnviroments(manifest: WebExtensionManifest, config: RsbuildConfig, selfRootPath: string) {
+export function normalizeRsbuildEnviroments(
+  manifest: WebExtensionManifest,
+  config: RsbuildConfig,
+  selfRootPath: string,
+) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
   const { mode } = config;
 

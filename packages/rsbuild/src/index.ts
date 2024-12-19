@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { BrowserTarget, WebExtensionManifest, ManifestEntryPoints } from './manifest/manifest.js';
+import type { BrowserTarget, ManifestEntryPoints, WebExtensionManifest } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
 
