@@ -41,10 +41,19 @@ export function normalizeRsbuildEnviroments(
     };
   }
 
-  if (background) {
+  const backgroundImport = background ? [getRsbuildEntryFile(background as RsbuildEntry, 'background')].flat() : [];
+  if (isDevMode(mode)) {
+    backgroundImport.push(resolve(selfRootPath, './static/background.js'));
+  }
+  if (backgroundImport.length) {
     defaultEnvironment = environments.background = {
       source: {
-        entry: background as RsbuildEntry,
+        entry: {
+          background: {
+            import: backgroundImport,
+            html: false,
+          },
+        },
       },
       output: {
         target: 'web-worker',

@@ -67,7 +67,6 @@ export type ManifestEntryProcessor = {
 
 export interface NormalizeManifestProps {
   rootPath: string;
-  selfRootPath: string;
   mode: BuildMode;
   manifest?: WebExtensionManifest;
   srcDir?: string;
