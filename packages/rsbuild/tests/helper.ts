@@ -1,10 +1,14 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { resolve, extname } from 'node:path';
+import { extname, resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
 import type { PluginWebExtOptions } from '../src/index.js';
 import type { WebExtensionManifest } from '../src/manifest/types.js';
+
+export function getFileContent(distPath: string, name: string) {
+  return readFile(resolve(distPath, name), 'utf-8');
+}
 
 export function existsFile(distPath: string, name: string, ext: string) {
   if (!name) return false;

@@ -3,14 +3,14 @@ import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from 'webextension-polyfill';
-import { existsFile, initRsbuild, readManifest } from '../helper.js';
+import { existsFile, initRsbuild, readManifest, getFileContent } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
 
 const __dirname = import.meta.dirname;
 
 describe('basic for chrome', () => {
-  it('should build chrome-mv3-dev successfully', async () => {
+  it('should build successfully in dev mode', async () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'development',
@@ -22,8 +22,11 @@ describe('basic for chrome', () => {
     return new Promise((resolve, reject) => {
       rsbuild.onDevCompileDone(async () => {
         const manifest = await readManifest(distPath);
-        const { manifest_version } = manifest;
-        expect(manifest_version).toBe(3);
+        const { background } = manifest;
+
+        const backgroundPath = (background as Manifest.WebExtensionManifestBackgroundC3Type)?.service_worker || '';
+        const backgroundContent = await getFileContent(distPath, backgroundPath);
+        expect(backgroundContent).toContain('web-extend-reload-extension');
 
         server.close();
         resolve({});
@@ -31,7 +34,7 @@ describe('basic for chrome', () => {
     });
   });
 
-  it('should build chrome-mv3-prod successfully', async () => {
+  it('should build successfully in prod mode', async () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',
