@@ -85,8 +85,6 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets = [
       const output = getIconAsset(assets, icons[key]);
       if (output) {
         icons[key] = output;
-      } else {
-        delete icons[key];
       }
     }
   }

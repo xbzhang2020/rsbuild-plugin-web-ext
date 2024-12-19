@@ -31,10 +31,10 @@ describe('basic for firefox', () => {
     expect(manifest_version).toBe(3);
 
     const scripts = background && 'scripts' in background ? background.scripts : [];
-    expect(existsFile(distPath, scripts[0] || '', 'js')).toBeTruthy();
+    expect(existsFile(distPath, scripts[0] || '', '.js')).toBeTruthy();
 
     const sidepanel = sidebar_action?.default_panel;
-    expect(existsFile(distPath, sidepanel || '', 'html')).toBeTruthy();
+    expect(existsFile(distPath, sidepanel || '', '.html')).toBeTruthy();
 
     expect(action?.default_icon).toMatch(basename(defaultIcon));
   });
@@ -57,7 +57,7 @@ describe('basic for firefox', () => {
 
     expect(manifest_version).toBe(2);
 
-    expect(existsFile(distPath, browser_action?.default_popup || '', 'html')).toBeTruthy();
+    expect(existsFile(distPath, browser_action?.default_popup || '', '.html')).toBeTruthy();
     expect(browser_action?.default_icon).toEqual(icons);
   });
 });

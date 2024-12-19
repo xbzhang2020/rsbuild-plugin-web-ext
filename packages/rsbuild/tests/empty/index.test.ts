@@ -8,7 +8,7 @@ import pkg from './package.json' with { type: 'json' };
 const __dirname = import.meta.dirname;
 
 describe('empty', () => {
-  it('should build successfully', async () => {
+  it('should build successfully with empty manifest', async () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',

@@ -68,14 +68,9 @@ export const getAssetFiles = async (
 };
 
 export async function readPackageJson(rootPath: string) {
-  try {
-    const filePath = resolve(rootPath, './package.json');
-    const content = await readFile(filePath, 'utf-8');
-    return JSON.parse(content);
-  } catch (err) {
-    console.warn('Failed to read package.json:', err instanceof Error ? err.message : err);
-    return {};
-  }
+  const filePath = resolve(rootPath, './package.json');
+  const content = await readFile(filePath, 'utf-8');
+  return JSON.parse(content);
 }
 
 export async function getFileContent(rootPath: string, filePath: string) {

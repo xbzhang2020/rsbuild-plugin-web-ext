@@ -51,6 +51,12 @@ export async function normalizeManifest({
     ...manifest,
   } as WebExtensionManifest;
 
+  const requiredFields = ['name', 'version'];
+  const invalidFields = requiredFields.filter((field) => !(field in finalManifest));
+  if (invalidFields.length) {
+    throw new Error(`Required fields missing or invalid in manifest: ${invalidFields.join(', ')}`);
+  }
+
   if (isDevMode(mode)) {
     finalManifest.version_name ??= `${finalManifest.version} (development)`;
     finalManifest.permissions ??= [];
@@ -93,18 +99,18 @@ async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
     manifest_version: target?.includes('2') ? 2 : 3,
   };
 
-  const pkg = await readPackageJson(rootPath);
-  const { name, displayName, version, description, author, homepage } = pkg;
-  const trimVersion = version.match(/[\d\.]+/)?.[0];
+  try {
+    const pkg = await readPackageJson(rootPath);
+    const { name, displayName, version, description, author, homepage } = pkg;
+    const trimVersion = version?.match(/[\d\.]+/)?.[0];
 
-  manifest.name ??= displayName || name;
-  manifest.version ??= trimVersion;
-  manifest.description ??= description;
-  manifest.author ??= author;
-  manifest.homepage_url ??= homepage;
-
-  if (!manifest.name || !manifest.version) {
-    throw new Error('manifest.name and manifest.version are required fields.');
+    manifest.name ??= displayName || name;
+    manifest.version ??= trimVersion;
+    manifest.description ??= description;
+    manifest.author ??= author;
+    manifest.homepage_url ??= homepage;
+  } catch (err) {
+    console.warn('Failed to read package.json:', err instanceof Error ? err.message : err);
   }
 
   return manifest;

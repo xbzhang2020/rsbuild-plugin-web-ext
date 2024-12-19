@@ -20,7 +20,6 @@ function astToObject(node: t.Node): unknown {
   if (t.isArrayExpression(node)) {
     return node.elements.map((element) => (element ? astToObject(element) : null));
   }
-  return null;
 }
 
 export function parseExportObject<T = unknown>(code: string, name: string): T | null {
