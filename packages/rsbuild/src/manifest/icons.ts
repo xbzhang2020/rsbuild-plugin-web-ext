@@ -1,5 +1,6 @@
-import type { Manifest, ManifestEntry, ManifestEntryProcessor, ManifestV3 } from './manifest.js';
+import type { WebExtensionManifest, ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 import { getAssetPaths, getFileName } from './util.js';
+import type { Manifest } from 'webextension-polyfill';
 
 const getIconSize = (filePath: string) => {
   const match = filePath.match(/icon-?(\d+)\.png$/);
@@ -7,7 +8,7 @@ const getIconSize = (filePath: string) => {
 };
 
 const getDeclarativeIcons = (entryPath: string[]) => {
-  const declarativeIcons: Manifest['icons'] = {};
+  const declarativeIcons: WebExtensionManifest['icons'] = {};
   for (const filePath of entryPath) {
     const size = getIconSize(filePath);
     if (size) {
@@ -35,7 +36,7 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
   };
 
   const { manifest_version } = manifest;
-  let pointer: ManifestV3['action'] = undefined;
+  let pointer: Manifest.ActionManifest | undefined = undefined;
   if (manifest_version === 2) {
     manifest.browser_action ??= {};
     pointer = manifest.browser_action;
@@ -57,7 +58,7 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
 const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const paths = new Set<string>();
 
-  function helper(icons?: Manifest['icons'] | string) {
+  function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
     if (!icons) return;
     if (typeof icons === 'string') {
       paths.add(icons);
@@ -84,7 +85,7 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
 };
 
 const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets = [] }) => {
-  function helper(icons?: Manifest['icons']) {
+  function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
     if (typeof icons !== 'object') return;
     for (const key in icons) {
       const size = Number(key);

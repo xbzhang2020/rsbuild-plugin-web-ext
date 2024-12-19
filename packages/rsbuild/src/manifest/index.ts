@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
@@ -8,12 +8,11 @@ import iconsProcessor from './icons.js';
 import type {
   BrowserTarget,
   BuildMode,
-  Manifest,
   ManifestEntry,
-  ManifestEntryPoints,
   ManifestEntryProcessor,
   NormalizeManifestProps,
-  WriteMainfestEntryProps,
+  WriteManifestProps,
+  WebExtensionManifest
 } from './manifest.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';
@@ -42,7 +41,7 @@ export async function normalizeManifest({
   rootPath,
   selfRootPath,
   mode,
-  manifest = {} as Manifest,
+  manifest = {} as WebExtensionManifest,
   srcDir = getDefaultSrcDir(rootPath),
   target = 'chrome-mv3',
 }: NormalizeManifestProps) {
@@ -50,7 +49,7 @@ export async function normalizeManifest({
   const finalManifest = {
     ...defaultManifest,
     ...manifest,
-  } as Manifest;
+  } as WebExtensionManifest;
 
   if (isDevMode(mode)) {
     finalManifest.version_name ??= `${finalManifest.version} (development)`;
@@ -73,12 +72,12 @@ export async function normalizeManifest({
     });
     for (const processor of entryProcessors) {
       await processor.merge({
-        manifest: finalManifest,
-        target,
-        srcDir,
         rootPath,
         selfRootPath,
         mode,
+        manifest: finalManifest,
+        target,
+        srcDir,
         files,
       });
     }
@@ -90,7 +89,7 @@ export async function normalizeManifest({
 }
 
 async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
-  const manifest: Partial<Manifest> = {
+  const manifest: Partial<WebExtensionManifest> = {
     manifest_version: target?.includes('2') ? 2 : 3,
   };
 
@@ -111,42 +110,33 @@ async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
   return manifest;
 }
 
-export function readManifestEntries(manifest: Manifest) {
+export function readManifestEntries(manifest: WebExtensionManifest) {
   return entryProcessors.reduce(
     (res, processor) => Object.assign(res, { [processor.key]: processor.read(manifest) }),
     {} as Record<ManifestEntryProcessor['key'], ManifestEntry | null>,
   );
 }
 
-export interface WriteManifestProps {
-  manifest: Manifest;
-  rootPath: string;
-  entrypoints: ManifestEntryPoints;
-}
-
 export async function writeManifestEntries({ manifest, rootPath, entrypoints }: WriteManifestProps) {
   for (const entryName in entrypoints) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
-
-    const props: WriteMainfestEntryProps = {
+    await processor.write({
       entryName,
       entryPath: entrypoints[entryName].entryPath,
       assets: entrypoints[entryName].assets,
       manifest,
       rootPath,
-    };
-
-    await processor.write(props);
+    });
   }
 }
 
-export async function writeManifestFile(distPath: string, manifest: Manifest, mode?: BuildMode) {
+export async function writeManifestFile(distPath: string, manifest: WebExtensionManifest, mode?: BuildMode) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
   }
   const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
-  await writeFile(`${distPath}/manifest.json`, data);
+  await writeFile(join(distPath, 'manifest.json'), data);
 }
 
 export async function copyPublicFiles(rootPath: string, distPath: string) {

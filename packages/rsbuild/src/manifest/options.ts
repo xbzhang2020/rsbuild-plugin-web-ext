@@ -8,8 +8,10 @@ const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, ro
   const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'options');
   if (!entryPath) return;
 
-  manifest.options_ui ??= {};
-  manifest.options_ui.page = entryPath;
+  manifest.options_ui = {
+    ...(options_ui || {}),
+    page: entryPath,
+  };
 };
 
 const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {

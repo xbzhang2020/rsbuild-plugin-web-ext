@@ -9,15 +9,17 @@ const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, 
   if (!entryPath) return;
 
   if (target.includes('firefox')) {
-    if (sidebar_action?.default_panel) return;
-    manifest.sidebar_action ??= {};
-    manifest.sidebar_action.default_panel = entryPath;
+    manifest.sidebar_action = {
+      default_panel: entryPath,
+      ...(sidebar_action || {}),
+    };
     return;
   }
 
-  if (side_panel?.default_path) return;
-  manifest.side_panel ??= {};
-  manifest.side_panel.default_path = entryPath;
+  manifest.side_panel = {
+    default_path: entryPath,
+    ...(side_panel || {}),
+  };
 };
 
 const readSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {

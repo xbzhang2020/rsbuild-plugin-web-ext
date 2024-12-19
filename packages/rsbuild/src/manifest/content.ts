@@ -22,6 +22,7 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, ro
   manifest.content_scripts ??= [];
   for (const filePath of entryPath) {
     manifest.content_scripts.push({
+      matches: [], // get from entry in writeContentEntry
       js: [filePath],
     });
   }

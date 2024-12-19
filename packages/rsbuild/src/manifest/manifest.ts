@@ -1,42 +1,30 @@
 import type { Dirent } from 'node:fs';
+import type { Manifest } from 'webextension-polyfill';
 
 export type BuildMode = 'development' | 'production' | 'none' | undefined;
+export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
 
-export type ManifestV2 = chrome.runtime.ManifestV2;
-
-export type ManifestV3 = chrome.runtime.ManifestV3;
-
-export type ManifestBase = ManifestV3 | ManifestV2;
-
-export interface SidePanel {
-  default_path?: string;
-}
-
-export interface SidebarAction {
-  default_title?: string;
-  default_panel?: string;
-  default_icon?: string;
-}
-
-export type Manifest = ManifestBase & {
-  side_panel?: SidePanel;
-  sidebar_action?: SidebarAction;
+export type WebExtensionManifest = Manifest.WebExtensionManifest & {
+  // Firefox doesn't support sandbox
+  sandbox?: chrome.runtime.ManifestV3['sandbox'];
+  // Firefox doesn't support side_panel, but supports sidebar_action
+  side_panel?: {
+    default_path?: string;
+  };
 };
 
 export type ContentScriptConfig = {
-  matches?: string[] | undefined;
-  exclude_matches?: string[] | undefined;
-  css?: string[] | undefined;
-  js?: string[] | undefined;
-  run_at?: string | undefined;
-  all_frames?: boolean | undefined;
-  match_about_blank?: boolean | undefined;
-  include_globs?: string[] | undefined;
-  exclude_globs?: string[] | undefined;
-  world?: 'ISOLATED' | 'MAIN' | undefined;
+  matches: string[];
+  exclude_matches?: string[];
+  css?: string[];
+  js?: string[];
+  run_at?: 'document_start' | 'document_end' | 'document_idle';
+  all_frames?: boolean;
+  match_about_blank?: boolean;
+  include_globs?: string[];
+  exclude_globs?: string[];
+  world?: 'ISOLATED' | 'MAIN';
 };
-
-export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
 
 export type PageToOverride = 'newtab' | 'history' | 'bookmarks';
 
@@ -61,7 +49,7 @@ export type ManifestEntry = Record<
 
 export type ManifestEntryPoint = {
   entryPath?: string | string[];
-  assets?: string[]; // js, css...
+  assets?: string[];
 };
 
 export type ManifestEntryPoints = Record<string, ManifestEntryPoint>;
@@ -70,7 +58,7 @@ export type ManifestEntryProcessor = {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
-  read: (manifest?: Manifest) => ManifestEntry | null;
+  read: (manifest?: WebExtensionManifest) => ManifestEntry | null;
   write: (props: WriteMainfestEntryProps) => void | Promise<void>;
 };
 
@@ -78,7 +66,7 @@ export interface NormalizeManifestProps {
   rootPath: string;
   selfRootPath: string;
   mode: BuildMode;
-  manifest?: Manifest;
+  manifest?: WebExtensionManifest;
   srcDir?: string;
   target?: BrowserTarget;
 }
@@ -87,8 +75,14 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
   files: Dirent[];
 }
 
+export interface WriteManifestProps {
+  manifest: WebExtensionManifest;
+  rootPath: string;
+  entrypoints: ManifestEntryPoints;
+}
+
 export interface WriteMainfestEntryProps {
-  manifest: Manifest;
+  manifest: WebExtensionManifest;
   rootPath: string;
   entryName: string;
   entryPath: ManifestEntryPoint['entryPath'];

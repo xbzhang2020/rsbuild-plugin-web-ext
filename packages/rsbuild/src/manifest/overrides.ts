@@ -1,5 +1,6 @@
 import type { ManifestEntry, ManifestEntryProcessor, PageToOverride } from './manifest.js';
 import { getSingleEntryFilePath } from './util.js';
+import type { Manifest } from 'webextension-polyfill';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
 
@@ -11,8 +12,10 @@ const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, 
     const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, key);
     if (!entryPath) continue;
 
-    manifest.chrome_url_overrides ??= {};
-    manifest.chrome_url_overrides[key] = entryPath;
+    manifest.chrome_url_overrides = {
+      ...(manifest.chrome_url_overrides || {}),
+      [key]: entryPath,
+    };
   }
 };
 
@@ -22,7 +25,7 @@ const readOverridesEntry: ManifestEntryProcessor['read'] = (manifest) => {
 
   const entry: ManifestEntry = {};
   for (const key of overrides) {
-    const input = chrome_url_overrides[key];
+    const input = chrome_url_overrides[key as keyof Manifest.WebExtensionManifestChromeUrlOverridesType];
     if (!input) continue;
 
     entry[key] = {
@@ -37,7 +40,7 @@ const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, entryN
   const { chrome_url_overrides } = manifest;
   if (!chrome_url_overrides) return;
 
-  const key = entryName as PageToOverride;
+  const key = entryName as keyof Manifest.WebExtensionManifestChromeUrlOverridesType;
   if (!overrides.includes(key)) return;
 
   chrome_url_overrides[key] = `${entryName}.html`;

@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import type { ManifestEntry, ManifestEntryProcessor, ManifestV2, ManifestV3 } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './manifest.js';
+import type { Manifest } from 'webextension-polyfill';
 import { getSingleEntryFilePath, isDevMode } from './util.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
@@ -31,12 +32,13 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   }
 
   if (!scripts.length) return;
-  manifest.background ??= {};
+
+  manifest.background ??= {} as WebExtensionManifest['background'];
   // Firefox only supports background.scripts
   if (target.includes('firefox')) {
-    (manifest.background as ManifestV2).scripts = scripts;
+    (manifest.background as Manifest.WebExtensionManifestBackgroundC2Type).scripts = scripts;
   } else {
-    (manifest.background as ManifestV3).service_worker = scripts.join(',');
+    (manifest.background as Manifest.WebExtensionManifestBackgroundC3Type).service_worker = scripts.join(',');
   }
 };
 

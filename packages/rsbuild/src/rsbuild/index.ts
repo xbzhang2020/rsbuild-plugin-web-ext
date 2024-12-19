@@ -3,7 +3,7 @@ import { readdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries } from '../manifest/index.js';
-import type { Manifest } from '../manifest/manifest.js';
+import type { WebExtensionManifest } from '../manifest/manifest.js';
 import { isDevMode } from '../manifest/util.js';
 import type { EnviromentKey } from './rsbuild.js';
 
@@ -15,7 +15,7 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   return entry.import;
 }
 
-export function normalizeRsbuildEnviroments(manifest: Manifest, config: RsbuildConfig, selfRootPath: string) {
+export function normalizeRsbuildEnviroments(manifest: WebExtensionManifest, config: RsbuildConfig, selfRootPath: string) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
   const { mode } = config;
 

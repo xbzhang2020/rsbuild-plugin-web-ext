@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { BrowserTarget, Manifest, ManifestEntryPoints } from './manifest/manifest.js';
+import type { BrowserTarget, WebExtensionManifest, ManifestEntryPoints } from './manifest/manifest.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/rsbuild.js';
 
@@ -19,7 +19,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
   setup: (api) => {
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
-    let manifest = {} as Manifest;
+    let manifest = {} as WebExtensionManifest;
     let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
@@ -30,7 +30,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
-        manifest: optionsManifest as Manifest,
+        manifest: optionsManifest as WebExtensionManifest,
         srcDir,
         target,
         mode,
