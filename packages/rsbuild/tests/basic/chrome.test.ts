@@ -2,10 +2,10 @@ import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import type { Manifest } from 'webextension-polyfill';
 import { existsFile, initRsbuild, readManifest } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
-import type { Manifest } from 'webextension-polyfill';
 
 const __dirname = import.meta.dirname;
 
@@ -65,7 +65,9 @@ describe('basic for chrome', () => {
     });
 
     // background
-    expect(existsFile(distPath, (background as Manifest.WebExtensionManifestBackgroundC3Type)?.service_worker || '', 'js')).toBeTruthy();
+    expect(
+      existsFile(distPath, (background as Manifest.WebExtensionManifestBackgroundC3Type)?.service_worker || '', 'js'),
+    ).toBeTruthy();
 
     // content_scripts
     expect(content_scripts).toHaveLength(3);
