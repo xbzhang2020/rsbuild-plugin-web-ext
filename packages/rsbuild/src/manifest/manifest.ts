@@ -6,7 +6,10 @@ export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safa
 
 export type WebExtensionManifest = Manifest.WebExtensionManifest & {
   // Firefox doesn't support sandbox
-  sandbox?: chrome.runtime.ManifestV3['sandbox'];
+  sandbox?: {
+    pages: string[];
+    content_security_policy?: string;
+  };
   // Firefox doesn't support side_panel, but supports sidebar_action
   side_panel?: {
     default_path?: string;

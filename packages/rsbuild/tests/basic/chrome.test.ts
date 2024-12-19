@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { existsFile, initRsbuild, readManifest } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
+import type { Manifest } from 'webextension-polyfill';
 
 const __dirname = import.meta.dirname;
 
@@ -21,7 +22,7 @@ describe('basic for chrome', () => {
     return new Promise((resolve, reject) => {
       rsbuild.onDevCompileDone(async () => {
         const manifest = await readManifest(distPath);
-        const { manifest_version } = manifest as chrome.runtime.ManifestV3;
+        const { manifest_version } = manifest;
         expect(manifest_version).toBe(3);
 
         server.close();
@@ -52,7 +53,7 @@ describe('basic for chrome', () => {
       sandbox,
       icons,
       side_panel,
-    } = manifest as chrome.runtime.ManifestV3;
+    } = manifest;
 
     expect(manifest_version).toBe(3);
 
@@ -64,7 +65,7 @@ describe('basic for chrome', () => {
     });
 
     // background
-    expect(existsFile(distPath, background?.service_worker || '', 'js')).toBeTruthy();
+    expect(existsFile(distPath, (background as Manifest.WebExtensionManifestBackgroundC3Type)?.service_worker || '', 'js')).toBeTruthy();
 
     // content_scripts
     expect(content_scripts).toHaveLength(3);

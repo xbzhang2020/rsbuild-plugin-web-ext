@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
 import type { PluginWebExtOptions } from '../src/index.js';
+import type { WebExtensionManifest } from '../src/manifest/manifest.js';
 
 function getFileExt(path: string) {
   return path.split('.').pop();
@@ -40,6 +41,6 @@ export async function initRsbuild({ cwd, mode, outDir = 'dist', pluginOptions }:
 
 export async function readManifest(distPath: string) {
   const manifestPath = resolve(distPath, 'manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8')) as WebExtensionManifest;
   return manifest;
 }

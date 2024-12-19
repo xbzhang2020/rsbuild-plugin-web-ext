@@ -118,9 +118,6 @@ importers:
       '@types/babel__traverse':
         specifier: ^7.20.6
         version: 7.20.6
-      '@types/chrome':
-        specifier: ^0.0.287
-        version: 0.0.287
       '@types/node':
         specifier: ^22.8.6
         version: 22.10.1
@@ -947,20 +944,8 @@ packages:
   '@types/babel__traverse@7.20.6':
     resolution: {integrity: sha512-r1bzfrm0tomOI8g1SzvCaQHo6Lcv6zu0EA+W2kHrt8dyrHQxGzBBL4kdkzIS+jBMV+EYcMAEAqXqYaLJq5rOZg==}
 
-  '@types/chrome@0.0.287':
-    resolution: {integrity: sha512-wWhBNPNXZHwycHKNYnexUcpSbrihVZu++0rdp6GEk5ZgAglenLx+RwdEouh6FrHS0XQiOxSd62yaujM1OoQlZQ==}
-
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
-
-  '@types/filesystem@0.0.36':
-    resolution: {integrity: sha512-vPDXOZuannb9FZdxgHnqSwAG/jvdGM8Wq+6N4D/d80z+D4HWH+bItqsZaVRQykAn6WEVeEkLm2oQigyHtgb0RA==}
-
-  '@types/filewriter@0.0.33':
-    resolution: {integrity: sha512-xFU8ZXTw4gd358lb2jw25nxY9QAgqn2+bKKjKOYfNCzN4DKCFetK7sPtrlpg66Ywe3vWY9FNxprZawAh9wfJ3g==}
-
-  '@types/har-format@1.2.16':
-    resolution: {integrity: sha512-fluxdy7ryD3MV6h8pTfTYpy/xQzCFC7m89nOH9y94cNqJ1mDIDPut7MnRHI3F6qRmh/cT2fUjG1MLdCNb4hE9A==}
 
   '@types/node@22.10.1':
     resolution: {integrity: sha512-qKgsUwfHZV2WCWLAnVP1JqnpE6Im6h3Y0+fYgMTasNQ7V++CBX5OT1as0g0f+OyubbFqhf6XVNIsmN4IIhEgGQ==}
@@ -2228,20 +2213,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.26.3
 
-  '@types/chrome@0.0.287':
-    dependencies:
-      '@types/filesystem': 0.0.36
-      '@types/har-format': 1.2.16
-
   '@types/estree@1.0.6': {}
-
-  '@types/filesystem@0.0.36':
-    dependencies:
-      '@types/filewriter': 0.0.33
-
-  '@types/filewriter@0.0.33': {}
-
-  '@types/har-format@1.2.16': {}
 
   '@types/node@22.10.1':
     dependencies:
