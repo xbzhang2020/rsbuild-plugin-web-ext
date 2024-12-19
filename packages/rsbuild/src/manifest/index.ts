@@ -19,7 +19,7 @@ import type {
   WebExtensionManifest,
   WriteManifestProps,
 } from './types.js';
-import { isDevMode, readPackageJson } from './util.js';
+import { isDevMode, isProdMode, readPackageJson } from './util.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -33,16 +33,24 @@ const entryProcessors: ManifestEntryProcessor[] = [
   sidepanelProcessor,
 ];
 
-const getDefaultSrcDir = (rootPath: string) => {
+export const DEFAULT_TARGET = 'chrome-mv3';
+
+export const getDefaultSrcDir = (rootPath: string) => {
   return existsSync(resolve(rootPath, './src/')) ? './src' : './';
 };
+
+export function getOutputDir(distPath: string, target: BrowserTarget, mode: BuildMode) {
+  const postfix = isDevMode(mode) ? 'dev' : isProdMode(mode) ? 'prod' : '';
+  const subDir = [target || DEFAULT_TARGET, postfix].filter(Boolean).join('-');
+  return join(distPath, subDir);
+}
 
 export async function normalizeManifest({
   rootPath,
   mode,
   manifest = {} as WebExtensionManifest,
   srcDir = getDefaultSrcDir(rootPath),
-  target = 'chrome-mv3',
+  target = DEFAULT_TARGET,
 }: NormalizeManifestProps) {
   const defaultManifest = await getDefaultManifest(rootPath, target);
   const finalManifest = {
