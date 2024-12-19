@@ -94,4 +94,3 @@ export interface WriteMainfestEntryProps {
   entryPath: ManifestEntryPoint['entryPath'];
   assets: ManifestEntryPoint['assets'];
 }
-

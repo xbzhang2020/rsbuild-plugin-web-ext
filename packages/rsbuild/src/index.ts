@@ -23,7 +23,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      if(config.mode) {
+      if (config.mode) {
         mode = config.mode;
       }
       const { manifest: optionsManifest, srcDir, target } = options;

@@ -1,6 +1,6 @@
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { BuildMode } from './manifest.js';
 
 export function isDevMode(mode: BuildMode) {
@@ -60,7 +60,12 @@ export const getMultipleEntryFilePath = async (rootPath: string, srcDir: string,
   return entryPath;
 };
 
-export const getAssetPaths = async (rootPath: string, srcDir: string, files: Dirent[], filter = (asset: string) => true) => {
+export const getAssetPaths = async (
+  rootPath: string,
+  srcDir: string,
+  files: Dirent[],
+  filter = (asset: string) => true,
+) => {
   const srcPath = resolve(rootPath, srcDir);
   const assets = files.find((item) => item.isDirectory() && item.name === 'assets');
   if (!assets) return [];
