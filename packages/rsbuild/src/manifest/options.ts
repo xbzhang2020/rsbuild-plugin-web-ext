@@ -1,15 +1,15 @@
 import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
 import { getSingleEntryFilePath } from './util.js';
 
-const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
+const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { options_ui, options_page } = manifest;
   if (options_ui?.page || options_page) return;
 
-  const entryPath = await getSingleEntryFilePath(srcPath, files, 'options');
-  if (!entryPath.length) return;
+  const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'options');
+  if (!entryPath) return;
 
   manifest.options_ui ??= {};
-  manifest.options_ui.page = entryPath[0];
+  manifest.options_ui.page = entryPath;
 };
 
 const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {

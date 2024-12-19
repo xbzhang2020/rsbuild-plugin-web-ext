@@ -4,7 +4,8 @@ import { getSingleEntryFilePath, isDevMode } from './util.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
-  srcPath,
+  rootPath,
+  srcDir,
   files,
   selfRootPath,
   target,
@@ -18,8 +19,10 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = await getSingleEntryFilePath(srcPath, files, 'background');
-    scripts.push(...entryPath);
+    const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'background');
+    if (entryPath) {
+      scripts.push(entryPath);
+    }
   }
 
   if (isDevMode(mode)) {

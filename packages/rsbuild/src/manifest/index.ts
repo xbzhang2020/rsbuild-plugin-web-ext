@@ -35,34 +35,21 @@ const entryProcessors: ManifestEntryProcessor[] = [
 ];
 
 const getDefaultSrcDir = (rootPath: string) => {
-  const srcPath = resolve(rootPath, './src/');
-  if (existsSync(srcPath)) {
-    return srcPath;
-  }
-  return './';
+  return existsSync(resolve(rootPath, './src/')) ? './src' : './';
 };
 
-export async function normalizeManifest(options: {
-  srcDir?: string;
-  manifest?: unknown;
-  target?: BrowserTarget;
-  rootPath: string;
-  selfRootPath: string;
-  mode?: 'development' | 'production' | 'none';
-}) {
-  const {
-    manifest = {},
-    target = 'chrome-mv3',
-    rootPath,
-    selfRootPath,
-    srcDir = getDefaultSrcDir(rootPath),
-    mode,
-  } = options || {};
-
+export async function normalizeManifest({
+  rootPath,
+  selfRootPath,
+  mode,
+  manifest = {} as Manifest,
+  srcDir = getDefaultSrcDir(rootPath),
+  target = 'chrome-mv3',
+}: NormalizeManifestProps) {
   const defaultManifest = await getDefaultManifest(rootPath, target);
   const finalManifest = {
     ...defaultManifest,
-    ...(manifest as Manifest),
+    ...manifest,
   } as Manifest;
 
   if (isDevMode(mode)) {
@@ -78,22 +65,22 @@ export async function normalizeManifest(options: {
       finalManifest.host_permissions.push('*://*/*');
     }
   }
-  const srcPath = resolve(rootPath, srcDir);
-  const props: NormalizeManifestProps = {
-    manifest: finalManifest,
-    target,
-    srcPath,
-    rootPath,
-    selfRootPath,
-    mode,
-  };
 
   try {
+    const srcPath = resolve(rootPath, srcDir);
     const files = await readdir(srcPath, {
       withFileTypes: true,
     });
     for (const processor of entryProcessors) {
-      await processor.merge({ ...props, files });
+      await processor.merge({
+        manifest: finalManifest,
+        target,
+        srcDir,
+        rootPath,
+        selfRootPath,
+        mode,
+        files,
+      });
     }
   } catch (err) {
     console.error(err);

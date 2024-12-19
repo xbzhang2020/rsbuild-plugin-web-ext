@@ -20,15 +20,17 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
     let manifest = {} as Manifest;
-    let mode: RsbuildConfig['mode'] = undefined;
+    let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
-      mode = config.mode;
+      if(config.mode) {
+        mode = config.mode;
+      }
       const { manifest: optionsManifest, srcDir, target } = options;
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
-        manifest: optionsManifest,
+        manifest: optionsManifest as Manifest,
         srcDir,
         target,
         mode,

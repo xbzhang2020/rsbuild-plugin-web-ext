@@ -22,8 +22,8 @@ const getIconAsset = (assets: string[], input: string | undefined, size: number)
   return assets.find((item) => (name && item.endsWith(name)) || getIconSize(item) === size);
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
-  const entryPath = await getAssetPaths(srcPath, files, (asset) => asset.endsWith('.png'));
+const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+  const entryPath = await getAssetPaths(rootPath, srcDir, files, (asset) => asset.endsWith('.png'));
   if (!entryPath.length) return;
 
   const declarativeIcons = getDeclarativeIcons(entryPath);

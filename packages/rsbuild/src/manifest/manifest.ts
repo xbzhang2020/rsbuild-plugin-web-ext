@@ -1,6 +1,6 @@
 import type { Dirent } from 'node:fs';
 
-export type BuildMode = 'development' | 'production' | 'none';
+export type BuildMode = 'development' | 'production' | 'none' | undefined;
 
 export type ManifestV2 = chrome.runtime.ManifestV2;
 
@@ -75,15 +75,15 @@ export type ManifestEntryProcessor = {
 };
 
 export interface NormalizeManifestProps {
-  manifest: Manifest;
-  target: BrowserTarget;
   rootPath: string;
-  srcPath: string;
   selfRootPath: string;
-  mode?: BuildMode;
+  mode: BuildMode;
+  manifest?: Manifest;
+  srcDir?: string;
+  target?: BrowserTarget;
 }
 
-export interface NormalizeMainfestEntryProps extends NormalizeManifestProps {
+export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestProps> {
   files: Dirent[];
 }
 
@@ -94,3 +94,4 @@ export interface WriteMainfestEntryProps {
   entryPath: ManifestEntryPoint['entryPath'];
   assets: ManifestEntryPoint['assets'];
 }
+

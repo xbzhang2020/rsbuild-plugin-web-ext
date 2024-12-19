@@ -2,13 +2,20 @@ import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from 
 import { parseExportObject } from './parser/export.js';
 import { getMultipleEntryFilePath, getSingleEntryFilePath, readFileContent } from './util.js';
 
-const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
+const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { content_scripts } = manifest;
   if (content_scripts?.length) return;
 
-  const singleEntryPath = await getSingleEntryFilePath(srcPath, files, 'content');
-  const multipleEntryPath = await getMultipleEntryFilePath(srcPath, files, 'contents');
-  const entryPath = [...singleEntryPath, ...multipleEntryPath];
+  const entryPath: string[] = [];
+  const singleEntryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'content');
+  if (singleEntryPath) {
+    entryPath.push(singleEntryPath);
+  }
+
+  const multipleEntryPath = await getMultipleEntryFilePath(rootPath, srcDir, files, 'contents');
+  if (multipleEntryPath) {
+    entryPath.push(...multipleEntryPath);
+  }
 
   if (!entryPath.length) return;
 
