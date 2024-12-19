@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
 import type { PluginWebExtOptions } from '../src/index.js';
-import type { WebExtensionManifest } from '../src/manifest/manifest.js';
+import type { WebExtensionManifest } from '../src/manifest/types.js';
 
 function getFileExt(path: string) {
   return path.split('.').pop();

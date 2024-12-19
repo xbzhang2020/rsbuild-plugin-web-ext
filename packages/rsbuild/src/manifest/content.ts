@@ -1,18 +1,18 @@
-import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './manifest.js';
+import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './types.js';
 import { parseExportObject } from './parser/export.js';
-import { getMultipleEntryFilePath, getSingleEntryFilePath, readFileContent } from './util.js';
+import { getMultipleEntryFiles, getSingleEntryFile, getFileContent } from './util.js';
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { content_scripts } = manifest;
   if (content_scripts?.length) return;
 
   const entryPath: string[] = [];
-  const singleEntryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'content');
+  const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
   if (singleEntryPath) {
     entryPath.push(singleEntryPath);
   }
 
-  const multipleEntryPath = await getMultipleEntryFilePath(rootPath, srcDir, files, 'contents');
+  const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
   if (multipleEntryPath) {
     entryPath.push(...multipleEntryPath);
   }
@@ -59,7 +59,7 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({
   const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
 
   if (!matches?.length && input) {
-    const code = await readFileContent(rootPath, input);
+    const code = await getFileContent(rootPath, input);
     const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],
     };

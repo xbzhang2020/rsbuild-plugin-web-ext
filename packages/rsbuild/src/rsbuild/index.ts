@@ -3,9 +3,9 @@ import { readdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries } from '../manifest/index.js';
-import type { WebExtensionManifest } from '../manifest/manifest.js';
+import type { WebExtensionManifest } from '../manifest/types.js';
 import { isDevMode } from '../manifest/util.js';
-import type { EnviromentKey } from './rsbuild.js';
+import type { EnviromentKey } from './types.js';
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];

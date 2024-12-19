@@ -1,42 +1,36 @@
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
-import type { BuildMode } from './manifest.js';
+import { join, resolve, basename, extname } from 'node:path';
+import type { BuildMode } from './types.js';
 
 export function isDevMode(mode: BuildMode) {
   return mode === 'development';
 }
 
-export function getFileName(path: string) {
-  const res = path.split('/');
-  return res.pop() || '';
+export function isJsEntryFile(file: string, name?: string) {
+  if (name) {
+    const ext = extname(file);
+    const fileBaseName = basename(file, ext);
+    if (fileBaseName !== name) return false;
+  }
+  return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(extname(file));
 }
 
-export function getFileBaseName(file: string) {
-  return file.split('.')[0];
-}
-
-export function isJsFile(file: string, baseName = '') {
-  const fileBaseName = getFileBaseName(getFileName(file));
-  if (baseName && fileBaseName !== baseName) return false;
-  return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file);
-}
-
-export const getSingleEntryFilePath = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
+export const getSingleEntryFile = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
   const srcPath = resolve(rootPath, srcDir);
-  const entryFile = files.find((item) => item.isFile() && isJsFile(item.name, key));
+  const entryFile = files.find((item) => item.isFile() && isJsEntryFile(item.name, key));
   if (entryFile) return join(srcDir, entryFile.name);
 
   const entryDir = files.find((item) => item.isDirectory() && item.name === key);
   if (entryDir) {
     const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
-    const entryFile = subFiles.find((item) => item.isFile() && isJsFile(item.name, 'index'));
+    const entryFile = subFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
     if (entryFile) return join(srcDir, entryDir.name, entryFile.name);
   }
   return null;
 };
 
-export const getMultipleEntryFilePath = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
+export const getMultipleEntryFiles = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
   const srcPath = resolve(rootPath, srcDir);
   const entryDir = files.find((item) => item.isDirectory() && item.name === key);
   if (!entryDir) return [];
@@ -44,13 +38,13 @@ export const getMultipleEntryFilePath = async (rootPath: string, srcDir: string,
   const entryPath: string[] = [];
   const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
   for (const item of subFiles) {
-    if (item.isFile() && isJsFile(item.name)) {
+    if (item.isFile() && isJsEntryFile(item.name)) {
       entryPath.push(join(srcDir, entryDir.name, item.name));
     } else if (item.isDirectory()) {
       const grandChildFiles = await readdir(resolve(srcPath, entryDir.name, item.name), {
         withFileTypes: true,
       });
-      const indexFile = grandChildFiles.find((item) => item.isFile() && isJsFile(item.name, 'index'));
+      const indexFile = grandChildFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
       if (indexFile) {
         entryPath.push(join(srcDir, entryDir.name, item.name, indexFile.name));
       }
@@ -60,7 +54,7 @@ export const getMultipleEntryFilePath = async (rootPath: string, srcDir: string,
   return entryPath;
 };
 
-export const getAssetPaths = async (
+export const getAssetFiles = async (
   rootPath: string,
   srcDir: string,
   files: Dirent[],
@@ -84,13 +78,7 @@ export async function readPackageJson(rootPath: string) {
   }
 }
 
-/**
- *
- * @param rootPath absolute path
- * @param filePath relative path or absolute path
- * @returns
- */
-export async function readFileContent(rootPath: string, filePath: string) {
+export async function getFileContent(rootPath: string, filePath: string) {
   const code = await readFile(resolve(rootPath, filePath), 'utf-8');
   return code;
 }

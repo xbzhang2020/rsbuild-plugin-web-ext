@@ -1,11 +1,11 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
 import { parseExportObject } from './parser/export.js';
-import { getSingleEntryFilePath, readFileContent } from './util.js';
+import { getSingleEntryFile, getFileContent } from './util.js';
 
 const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { manifest_version } = manifest;
 
-  const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'popup');
+  const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'popup');
   if (!entryPath) return;
 
   if (manifest_version === 2) {
@@ -41,7 +41,7 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entr
   const { default_title } = pointer;
   const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
   if (!default_title && input) {
-    const code = await readFileContent(rootPath, input);
+    const code = await getFileContent(rootPath, input);
     const title = parseExportObject<string>(code, 'title');
     if (title) {
       pointer.default_title = title;

@@ -2,9 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
-import type { BrowserTarget, ManifestEntryPoints, WebExtensionManifest } from './manifest/manifest.js';
+import type { BrowserTarget, ManifestEntryPoints, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
-import type { EnviromentKey } from './rsbuild/rsbuild.js';
+import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
@@ -12,7 +12,7 @@ export type PluginWebExtOptions<T = unknown> = {
   target?: BrowserTarget;
 };
 
-export type { ContentScriptConfig } from './manifest/manifest.js';
+export type { ContentScriptConfig } from './manifest/types.js';
 
 export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin => ({
   name: 'rsbuild:plugin-web-ext',

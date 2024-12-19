@@ -13,7 +13,7 @@ import type {
   NormalizeManifestProps,
   WebExtensionManifest,
   WriteManifestProps,
-} from './manifest.js';
+} from './types.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';
 import popupProcessor from './popup.js';

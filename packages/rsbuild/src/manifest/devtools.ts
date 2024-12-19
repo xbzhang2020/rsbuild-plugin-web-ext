@@ -1,11 +1,11 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './manifest.js';
-import { getSingleEntryFilePath } from './util.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import { getSingleEntryFile } from './util.js';
 
 const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { devtools_page } = manifest;
   if (devtools_page) return;
 
-  const entryPath = await getSingleEntryFilePath(rootPath, srcDir, files, 'devtools');
+  const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'devtools');
   if (!entryPath) return;
   manifest.devtools_page = entryPath;
 };

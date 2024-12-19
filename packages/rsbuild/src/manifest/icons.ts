@@ -1,16 +1,13 @@
 import type { Manifest } from 'webextension-polyfill';
-import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './manifest.js';
-import { getAssetPaths, getFileName } from './util.js';
-
-const getIconSize = (filePath: string) => {
-  const match = filePath.match(/icon-?(\d+)\.png$/);
-  return match ? Number(match[1]) : null;
-};
+import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
+import { getAssetFiles } from './util.js';
+import { basename } from 'node:path';
 
 const getDeclarativeIcons = (entryPath: string[]) => {
   const declarativeIcons: WebExtensionManifest['icons'] = {};
   for (const filePath of entryPath) {
-    const size = getIconSize(filePath);
+    const match = filePath.match(/icon-?(\d+)\.png$/);
+    const size = match ? Number(match[1]) : null;
     if (size) {
       declarativeIcons[size] = filePath;
     }
@@ -18,13 +15,13 @@ const getDeclarativeIcons = (entryPath: string[]) => {
   return Object.keys(declarativeIcons).length ? declarativeIcons : null;
 };
 
-const getIconAsset = (assets: string[], input: string | undefined, size: number) => {
-  const name = input ? getFileName(input) : undefined;
-  return assets.find((item) => (name && item.endsWith(name)) || getIconSize(item) === size);
+const getIconAsset = (assets: string[], input: string) => {
+  const name = basename(input);
+  return assets.find((item) => item.endsWith(name));
 };
 
 const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
-  const entryPath = await getAssetPaths(rootPath, srcDir, files, (asset) => asset.endsWith('.png'));
+  const entryPath = await getAssetFiles(rootPath, srcDir, files, (asset) => asset.endsWith('.png'));
   if (!entryPath.length) return;
 
   const declarativeIcons = getDeclarativeIcons(entryPath);
@@ -44,15 +41,12 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
     manifest.action ??= {};
     pointer = manifest.action;
   }
-  if (typeof pointer.default_icon === 'string') {
+  if (typeof pointer.default_icon !== 'string') {
     pointer.default_icon = {
-      16: pointer.default_icon,
+      ...declarativeIcons,
+      ...(pointer.default_icon || {}),
     };
   }
-  pointer.default_icon = {
-    ...declarativeIcons,
-    ...(pointer.default_icon || {}),
-  };
 };
 
 const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
@@ -88,10 +82,11 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets = [
   function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
     if (typeof icons !== 'object') return;
     for (const key in icons) {
-      const size = Number(key);
-      const output = getIconAsset(assets, icons[key], size);
+      const output = getIconAsset(assets, icons[key]);
       if (output) {
-        icons[size] = output;
+        icons[key] = output;
+      } else {
+        delete icons[key];
       }
     }
   }
@@ -101,7 +96,7 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets = [
 
   const pointer = manifest_version === 2 ? browser_action : action;
   if (typeof pointer?.default_icon === 'string') {
-    pointer.default_icon = getIconAsset(assets, pointer.default_icon, 16);
+    pointer.default_icon = getIconAsset(assets, pointer.default_icon);
   } else {
     helper(pointer?.default_icon);
   }
