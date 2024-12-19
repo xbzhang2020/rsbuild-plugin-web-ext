@@ -1,6 +1,6 @@
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { join, resolve, basename, extname } from 'node:path';
+import { basename, extname, join, resolve } from 'node:path';
 import type { BuildMode } from './types.js';
 
 export function isDevMode(mode: BuildMode) {

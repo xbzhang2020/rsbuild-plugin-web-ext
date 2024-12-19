@@ -1,7 +1,7 @@
+import { basename } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getAssetFiles } from './util.js';
-import { basename } from 'node:path';
 
 const getDeclarativeIcons = (entryPath: string[]) => {
   const declarativeIcons: WebExtensionManifest['icons'] = {};

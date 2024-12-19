@@ -1,7 +1,7 @@
+import { basename } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from 'webextension-polyfill';
 import { existsFile, initRsbuild, readManifest } from '../helper.js';
-import { basename } from 'node:path';
 
 const __dirname = import.meta.dirname;
 

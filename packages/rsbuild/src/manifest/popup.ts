@@ -1,6 +1,6 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
 import { parseExportObject } from './parser/export.js';
-import { getSingleEntryFile, getFileContent } from './util.js';
+import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import { getFileContent, getSingleEntryFile } from './util.js';
 
 const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { manifest_version } = manifest;

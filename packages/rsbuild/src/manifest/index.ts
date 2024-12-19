@@ -5,6 +5,11 @@ import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
 import iconsProcessor from './icons.js';
+import optionsProcessor from './options.js';
+import overrideProcessor from './overrides.js';
+import popupProcessor from './popup.js';
+import sandboxProcessor from './sandbox.js';
+import sidepanelProcessor from './sidepanel.js';
 import type {
   BrowserTarget,
   BuildMode,
@@ -14,11 +19,6 @@ import type {
   WebExtensionManifest,
   WriteManifestProps,
 } from './types.js';
-import optionsProcessor from './options.js';
-import overrideProcessor from './overrides.js';
-import popupProcessor from './popup.js';
-import sandboxProcessor from './sandbox.js';
-import sidepanelProcessor from './sidepanel.js';
 import { isDevMode, readPackageJson } from './util.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
