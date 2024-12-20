@@ -14,10 +14,10 @@ import type {
   BrowserTarget,
   BuildMode,
   ManifestEntry,
+  ManifestEntryKey,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WebExtensionManifest,
-  ManifestEntryKey,
   WriteMainfestEntryProps,
 } from './types.js';
 import { isDevMode, isProdMode, readPackageJson } from './util.js';
