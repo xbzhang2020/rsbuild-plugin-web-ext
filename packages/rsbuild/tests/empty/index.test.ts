@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
-import { describe, expect, it, beforeAll } from 'vitest';
-import { initRsbuild, clearDist, readManifestFile } from '../helper.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { clearDist, initRsbuild, readManifestFile } from '../helper.js';
 import pkg from './package.json' with { type: 'json' };
 
 const __dirname = import.meta.dirname;
