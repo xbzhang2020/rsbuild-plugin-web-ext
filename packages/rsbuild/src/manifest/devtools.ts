@@ -22,8 +22,8 @@ const readDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeDevtoolsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
-  manifest.devtools_page = `${entryName}.html`;
+const writeDevtoolsEntry: ManifestEntryProcessor['write'] = ({ manifest }) => {
+  manifest.devtools_page = 'devtools.html';
 };
 
 const devtoolsProcessor: ManifestEntryProcessor = {

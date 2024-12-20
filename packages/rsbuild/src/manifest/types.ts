@@ -50,12 +50,13 @@ export type ManifestEntry = Record<
   }
 >;
 
-export type ManifestEntryPoint = {
-  entryPath?: string | string[];
-  assets?: string[];
-};
-
-export type ManifestEntryPoints = Record<string, ManifestEntryPoint>;
+export type ManifestEntryOutput = Record<
+  string,
+  {
+    import?: string | string[];
+    assets?: string[];
+  }
+>;
 
 export type ManifestEntryProcessor = {
   key: ManifestEntryKey;
@@ -78,18 +79,9 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
   files: Dirent[];
 }
 
-export interface WriteManifestProps {
-  manifest: WebExtensionManifest;
-  rootPath: string;
-  distPath: string;
-  entrypoints: ManifestEntryPoints;
-}
-
 export interface WriteMainfestEntryProps {
   manifest: WebExtensionManifest;
   rootPath: string;
   distPath: string;
-  entryName: string;
-  entryPath: ManifestEntryPoint['entryPath'];
-  assets: ManifestEntryPoint['assets'];
+  entry?: ManifestEntryOutput;
 }

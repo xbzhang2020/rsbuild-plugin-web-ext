@@ -28,8 +28,8 @@ const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeOptionsEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
-  const output = `${entryName}.html`;
+const writeOptionsEntry: ManifestEntryProcessor['write'] = ({ manifest }) => {
+  const output = 'options.html';
   if (manifest.options_page) {
     manifest.options_page = output;
   }

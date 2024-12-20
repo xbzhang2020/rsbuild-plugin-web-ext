@@ -17,7 +17,8 @@ import type {
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WebExtensionManifest,
-  WriteManifestProps,
+  ManifestEntryKey,
+  WriteMainfestEntryProps,
 } from './types.js';
 import { isDevMode, isProdMode, readPackageJson } from './util.js';
 
@@ -138,17 +139,25 @@ export function readManifestEntries(manifest: WebExtensionManifest) {
   );
 }
 
-export async function writeManifestEntries({ manifest, rootPath, entrypoints, distPath }: WriteManifestProps) {
-  for (const entryName in entrypoints) {
+export async function writeManifestEntries({ manifest, rootPath, entry, distPath }: WriteMainfestEntryProps) {
+  const entries = {} as Record<ManifestEntryKey, WriteMainfestEntryProps['entry']>;
+
+  for (const entryName in entry) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
+    const key = processor.key;
+    entries[key] ??= {};
+    entries[key][entryName] = entry[entryName];
+  }
+
+  for (const [key, entry] of Object.entries(entries)) {
+    const processor = entryProcessors.find((item) => item.key === key);
+    if (!processor) continue;
     await processor.write({
-      entryName,
-      entryPath: entrypoints[entryName].entryPath,
-      assets: entrypoints[entryName].assets,
       manifest,
       rootPath,
       distPath,
+      entry,
     });
   }
 }
@@ -159,26 +168,37 @@ export async function readManifestFile(distPath: string) {
   return manifest;
 }
 
-export async function writeManifestFile(
-  selfRootPath: string,
-  distPath: string,
-  manifest: WebExtensionManifest,
-  mode: BuildMode | undefined,
-  isFirstCompile: boolean,
-) {
+type WriteManifestFileProps = {
+  distPath: string;
+  selfRootPath: string;
+  manifest: WebExtensionManifest;
+  mode: BuildMode | undefined;
+  isFirstCompile?: boolean;
+};
+
+export async function writeManifestFile({
+  distPath,
+  selfRootPath,
+  manifest,
+  mode,
+  isFirstCompile,
+}: WriteManifestFileProps) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
   }
 
-  const { content_scripts } = manifest;
+  // inject content runtime in dev mode
+  const { content_scripts = [] } = manifest;
   if (isDevMode(mode) && content_scripts?.length && isFirstCompile) {
-    const contentRuntime = resolve(selfRootPath, './static/content_runtime.js');
-    await copyFile(contentRuntime, join(distPath, 'content_runtime.js'));
+    const contentRuntimeName = 'content_runtime.js';
+    const contentRuntime = resolve(selfRootPath, `./static/${contentRuntimeName}`);
+    await copyFile(contentRuntime, join(distPath, contentRuntimeName));
     content_scripts.push({
-      js: ['content_runtime.js'],
+      js: [contentRuntimeName],
       matches: ['<all_urls>'],
     });
   }
+
   const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(join(distPath, 'manifest.json'), data);
 }

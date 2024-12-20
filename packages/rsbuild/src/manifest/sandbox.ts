@@ -33,11 +33,13 @@ const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, entryName }) => {
+const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) => {
   const pages = manifest?.sandbox?.pages || [];
-  if (!pages.length) return;
-  const index = Number(entryName.replace('sandbox', '') || '0');
-  pages[index] = `${entryName}.html`;
+  if (!pages.length || !entry) return;
+  for (const entryName in entry) {
+    const index = Number(entryName.replace('sandbox', '') || '0');
+    pages[index] = `${entryName}.html`;
+  }
 };
 
 const sandboxProcessor: ManifestEntryProcessor = {

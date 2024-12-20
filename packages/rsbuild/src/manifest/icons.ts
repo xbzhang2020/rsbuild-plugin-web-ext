@@ -78,7 +78,9 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets = [] }) => {
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) => {
+  const { assets = [] } = entry?.icons || {};
+
   function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
     if (typeof icons !== 'object') return;
     for (const key in icons) {

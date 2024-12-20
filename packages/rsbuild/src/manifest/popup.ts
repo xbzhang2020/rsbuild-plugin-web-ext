@@ -33,11 +33,11 @@ const readPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entryName, entryPath, rootPath }) => {
+const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entry, rootPath }) => {
   const { manifest_version, action, browser_action } = manifest;
   const pointer = manifest_version === 2 ? browser_action : action;
   if (!pointer) return;
-
+  const { import: entryPath } = entry?.popup || {};
   const { default_title } = pointer;
   const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
   if (!default_title && input) {
@@ -48,7 +48,7 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entr
     }
   }
 
-  const popup = `${entryName}.html`;
+  const popup = 'popup.html';
   pointer.default_popup = popup;
 };
 

@@ -1,16 +1,8 @@
-import { resolve } from 'node:path';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './types.js';
 import { getFileContent, getMultipleEntryFiles, getSingleEntryFile, isDevMode } from './util.js';
 
-const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
-  manifest,
-  rootPath,
-  srcDir,
-  files,
-  mode,
-  // selfRootPath,
-}) => {
+const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { content_scripts } = manifest;
 
   if (!content_scripts?.length) {
@@ -35,14 +27,6 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
       }
     }
   }
-
-  // if (isDevMode(mode) && manifest.content_scripts?.length) {
-  //   const contentRuntime = resolve(selfRootPath, './static/content_runtime.js');
-  //   manifest.content_scripts.unshift({
-  //     js: [contentRuntime],
-  //     matches: ['<all_urls>'],
-  //   });
-  // }
 };
 
 const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
@@ -61,33 +45,30 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeContentEntry: ManifestEntryProcessor['write'] = async ({
-  manifest,
-  rootPath,
-  entryPath,
-  assets,
-  entryName,
-}) => {
+const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, entry }) => {
   const { content_scripts } = manifest;
-  if (!content_scripts?.length || !assets?.length) return;
+  if (!content_scripts?.length || !entry) return;
 
-  const index = Number(entryName.replace('content', '') || '0');
-  const { matches } = content_scripts[index];
-  const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
+  for (const entryName in entry) {
+    const index = Number(entryName.replace('content', '') || '0');
+    const { matches } = content_scripts[index];
+    const { import: entryPath, assets = [] } = entry[entryName];
+    const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
 
-  if (!matches?.length && input) {
-    const code = await getFileContent(rootPath, input);
-    const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
-      matches: ['<all_urls>'],
-    };
-    content_scripts[index] = {
-      ...content_scripts[index],
-      ...config,
-    };
+    if (!matches?.length && input) {
+      const code = await getFileContent(rootPath, input);
+      const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
+        matches: ['<all_urls>'],
+      };
+      content_scripts[index] = {
+        ...content_scripts[index],
+        ...config,
+      };
+    }
+
+    content_scripts[index].js = assets.filter((item) => item.endsWith('.js'));
+    content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
   }
-
-  content_scripts[index].js = assets.filter((item) => item.endsWith('.js'));
-  content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
 };
 
 const contentProcessor: ManifestEntryProcessor = {

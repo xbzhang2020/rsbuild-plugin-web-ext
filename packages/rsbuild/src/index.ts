@@ -8,7 +8,7 @@ import {
   writeManifestEntries,
   writeManifestFile,
 } from './manifest/index.js';
-import type { BrowserTarget, ManifestEntryPoints, WebExtensionManifest } from './manifest/types.js';
+import type { BrowserTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
@@ -118,15 +118,15 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
         const entryPath = getRsbuildEntryFile(environment.entry, entryName);
         return Object.assign(res, {
-          [entryName]: { assets: entryAssets, entryPath },
-        } as ManifestEntryPoints);
-      }, {} as ManifestEntryPoints);
+          [entryName]: { assets: entryAssets, import: entryPath },
+        } as ManifestEntryOutput);
+      }, {} as ManifestEntryOutput);
 
       const distPath = api.context.distPath;
       await writeManifestEntries({
         manifest,
         rootPath,
-        entrypoints: manifestEntryPoints,
+        entry: manifestEntryPoints,
         distPath,
       });
     });
@@ -134,7 +134,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onDevCompileDone(async ({ stats, isFirstCompile }) => {
       const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
-      await writeManifestFile(selfRootPath, distPath, manifest, mode, isFirstCompile);
+      await writeManifestFile({ selfRootPath, distPath, manifest, mode, isFirstCompile });
 
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
@@ -145,7 +145,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onAfterBuild(async ({ isFirstCompile }) => {
       const distPath = api.context.distPath;
-      await writeManifestFile(selfRootPath, distPath, manifest, mode, isFirstCompile);
+      await writeManifestFile({ selfRootPath, distPath, manifest, mode, isFirstCompile });
 
       console.log('Built the extension successfully');
     });
