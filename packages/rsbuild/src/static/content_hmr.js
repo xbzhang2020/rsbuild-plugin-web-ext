@@ -18,12 +18,12 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
 
       inProgress[url] = [done];
       const onScriptComplete = (event) => {
-        // const code = typeof event === 'object' && event !== null ? event.code : undefined;
-        // if (code === 0) {
-        //   console.log('[HMR] loaded.');
-        // } else {
-        //   console.log('[HMR] failed', event);
-        // }
+        const code = typeof event === 'object' && event !== null ? event.code : undefined;
+        if (code === 0) {
+          console.log('[HMR] loaded.');
+        } else {
+          console.log('[HMR] failed', event);
+        }
 
         const doneFns = inProgress[url];
         delete inProgress[url];
@@ -34,7 +34,7 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
 
       const file = url?.split('/').at(-1);
       if (file) {
-        // console.log(`[HMR] fetching script ${file}.`);
+        console.log(`[HMR] fetching script ${file}.`);
         browser.runtime
           .sendMessage({ type: 'web-extend-execute-script', file })
           .then(onScriptComplete)
@@ -46,14 +46,14 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
   initializeWebpackLoader();
 }
 
-// Initialize reload handler once per window instance
-if (!window.__WEB_EXTEND_RELOAD_INIT__) {
-  window.__WEB_EXTEND_RELOAD_INIT__ = true;
+// // Initialize reload handler once per window instance
+// if (!window.__WEB_EXTEND_RELOAD_INIT__) {
+//   window.__WEB_EXTEND_RELOAD_INIT__ = true;
 
-  function reloadExtension() {
-    if (!browser.runtime) return;
-    browser.runtime.sendMessage({ type: 'web-extend-reload-extension' });
-  }
+//   function reloadExtension() {
+//     if (!browser.runtime) return;
+//     browser.runtime.sendMessage({ type: 'web-extend-reload-extension' });
+//   }
 
-  window.addEventListener('beforeunload', reloadExtension);
-}
+//   window.addEventListener('beforeunload', reloadExtension);
+// }

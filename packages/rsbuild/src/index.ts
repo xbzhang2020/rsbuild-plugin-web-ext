@@ -122,17 +122,19 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         } as ManifestEntryPoints);
       }, {} as ManifestEntryPoints);
 
+      const distPath = api.context.distPath;
       await writeManifestEntries({
         manifest,
         rootPath,
         entrypoints: manifestEntryPoints,
+        distPath,
       });
     });
 
-    api.onDevCompileDone(async ({ stats }) => {
+    api.onDevCompileDone(async ({ stats, isFirstCompile }) => {
       const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
-      await writeManifestFile(distPath, manifest, mode);
+      await writeManifestFile(selfRootPath, distPath, manifest, mode, isFirstCompile);
 
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
@@ -141,9 +143,9 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       console.log('Built the extension successfully');
     });
 
-    api.onAfterBuild(async () => {
+    api.onAfterBuild(async ({ isFirstCompile }) => {
       const distPath = api.context.distPath;
-      await writeManifestFile(distPath, manifest, mode);
+      await writeManifestFile(selfRootPath, distPath, manifest, mode, isFirstCompile);
 
       console.log('Built the extension successfully');
     });

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, writeFile, copyFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -138,7 +138,7 @@ export function readManifestEntries(manifest: WebExtensionManifest) {
   );
 }
 
-export async function writeManifestEntries({ manifest, rootPath, entrypoints }: WriteManifestProps) {
+export async function writeManifestEntries({ manifest, rootPath, entrypoints, distPath }: WriteManifestProps) {
   for (const entryName in entrypoints) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
@@ -148,6 +148,7 @@ export async function writeManifestEntries({ manifest, rootPath, entrypoints }: 
       assets: entrypoints[entryName].assets,
       manifest,
       rootPath,
+      distPath,
     });
   }
 }
@@ -158,9 +159,25 @@ export async function readManifestFile(distPath: string) {
   return manifest;
 }
 
-export async function writeManifestFile(distPath: string, manifest: WebExtensionManifest, mode?: BuildMode) {
+export async function writeManifestFile(
+  selfRootPath: string,
+  distPath: string,
+  manifest: WebExtensionManifest,
+  mode: BuildMode | undefined,
+  isFirstCompile: boolean,
+) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
+  }
+
+  const { content_scripts } = manifest;
+  if (isDevMode(mode) && content_scripts?.length && isFirstCompile) {
+    const contentRuntime = resolve(selfRootPath, './static/content_runtime.js');
+    await copyFile(contentRuntime, join(distPath, 'content_runtime.js'));
+    content_scripts.push({
+      js: ['content_runtime.js'],
+      matches: ['<all_urls>'],
+    });
   }
   const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);
   await writeFile(join(distPath, 'manifest.json'), data);

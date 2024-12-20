@@ -27,7 +27,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   }
 
   if (isDevMode(mode)) {
-    scripts.push(resolve(selfRootPath, './static/background.js'));
+    scripts.push(resolve(selfRootPath, './static/background_runtime.js'));
   }
 
   if (!scripts.length) return;

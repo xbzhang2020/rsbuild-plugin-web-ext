@@ -1,31 +1,48 @@
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './util.js';
+import { getFileContent, getMultipleEntryFiles, getSingleEntryFile, isDevMode } from './util.js';
+import { resolve } from 'node:path';
 
-const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
+  manifest,
+  rootPath,
+  srcDir,
+  files,
+  mode,
+  // selfRootPath,
+}) => {
   const { content_scripts } = manifest;
-  if (content_scripts?.length) return;
 
-  const entryPath: string[] = [];
-  const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
-  if (singleEntryPath) {
-    entryPath.push(singleEntryPath);
+  if (!content_scripts?.length) {
+    const entryPath: string[] = [];
+    const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
+    if (singleEntryPath) {
+      entryPath.push(singleEntryPath);
+    }
+
+    const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
+    if (multipleEntryPath) {
+      entryPath.push(...multipleEntryPath);
+    }
+
+    if (entryPath.length) {
+      manifest.content_scripts ??= [];
+      for (const filePath of entryPath) {
+        manifest.content_scripts.push({
+          matches: [], // get from entry in writeContentEntry
+          js: [filePath],
+        });
+      }
+    }
   }
 
-  const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
-  if (multipleEntryPath) {
-    entryPath.push(...multipleEntryPath);
-  }
-
-  if (!entryPath.length) return;
-
-  manifest.content_scripts ??= [];
-  for (const filePath of entryPath) {
-    manifest.content_scripts.push({
-      matches: [], // get from entry in writeContentEntry
-      js: [filePath],
-    });
-  }
+  // if (isDevMode(mode) && manifest.content_scripts?.length) {
+  //   const contentRuntime = resolve(selfRootPath, './static/content_runtime.js');
+  //   manifest.content_scripts.unshift({
+  //     js: [contentRuntime],
+  //     matches: ['<all_urls>'],
+  //   });
+  // }
 };
 
 const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
