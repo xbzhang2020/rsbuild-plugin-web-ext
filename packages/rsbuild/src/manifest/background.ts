@@ -1,7 +1,7 @@
+import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getSingleEntryFile, isDevMode } from './util.js';
-import { resolve } from 'node:path';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,

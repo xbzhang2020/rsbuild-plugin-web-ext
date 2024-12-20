@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
+import type { Manifest } from 'webextension-polyfill';
 import { clearDist, initRsbuild, readManifestFile } from '../helper.js';
 import pkg from './package.json' with { type: 'json' };
-import type { Manifest } from 'webextension-polyfill';
 
 const __dirname = import.meta.dirname;
 

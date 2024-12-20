@@ -44,7 +44,6 @@ export function normalizeRsbuildEnviroments(
     };
   }
 
-
   if (background) {
     defaultEnvironment = environments.background = {
       source: {
