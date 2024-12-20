@@ -1,8 +1,17 @@
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getSingleEntryFile } from './util.js';
+import { getSingleEntryFile, isDevMode } from './util.js';
+import { resolve } from 'node:path';
 
-const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files, target }) => {
+const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
+  manifest,
+  rootPath,
+  srcDir,
+  files,
+  target,
+  selfRootPath,
+  mode,
+}) => {
   const { background } = manifest;
   const scripts: string[] = [];
 
@@ -15,6 +24,10 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({ manifest,
     if (entryPath) {
       scripts.push(entryPath);
     }
+  }
+
+  if (isDevMode(mode)) {
+    scripts.push(resolve(selfRootPath, './static/background.js'));
   }
 
   if (!scripts.length) return;

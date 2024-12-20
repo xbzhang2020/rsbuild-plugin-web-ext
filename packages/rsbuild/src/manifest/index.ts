@@ -53,6 +53,7 @@ export function getOutputDir(
 
 export async function normalizeManifest({
   rootPath,
+  selfRootPath,
   mode,
   srcDir: optionSrcDir,
   manifest = {} as WebExtensionManifest,
@@ -93,6 +94,7 @@ export async function normalizeManifest({
     for (const processor of entryProcessors) {
       await processor.merge({
         rootPath,
+        selfRootPath,
         mode,
         manifest: finalManifest,
         target,

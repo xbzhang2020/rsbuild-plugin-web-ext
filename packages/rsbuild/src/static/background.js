@@ -14,7 +14,7 @@ if (typeof browser !== 'undefined') {
 
     if (message.type === 'web-extend-execute-script') {
       const tabId = sender.tab?.id;
-      const file = message.url?.split('/').at(-1);
+      const file = message.file;
       if (tabId && file) {
         browser.scripting
           .executeScript({
@@ -22,10 +22,10 @@ if (typeof browser !== 'undefined') {
             files: [file],
           })
           .then(() => {
-            sendResponse({ type: 'ok' });
+            sendResponse({ code: 0 });
           })
-          .catch(() => {
-            sendResponse({ type: 'failed' });
+          .catch((error) => {
+            sendResponse({ code: -1, error });
           });
       }
       return true;

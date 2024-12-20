@@ -37,6 +37,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const { manifest: optionsManifest, srcDir, target } = options;
       manifest = await normalizeManifest({
         rootPath,
+        selfRootPath,
         manifest: optionsManifest as WebExtensionManifest,
         srcDir,
         target,
