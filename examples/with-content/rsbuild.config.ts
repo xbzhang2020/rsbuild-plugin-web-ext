@@ -5,5 +5,5 @@ export default defineConfig({
   plugins: [pluginWebExt()],
   dev: {
     liveReload: false,
-  }
+  },
 });

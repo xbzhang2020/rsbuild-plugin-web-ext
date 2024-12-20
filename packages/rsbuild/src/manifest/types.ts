@@ -81,14 +81,14 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
 export interface WriteManifestProps {
   manifest: WebExtensionManifest;
   rootPath: string;
-  distPath: string
+  distPath: string;
   entrypoints: ManifestEntryPoints;
 }
 
 export interface WriteMainfestEntryProps {
   manifest: WebExtensionManifest;
   rootPath: string;
-  distPath: string
+  distPath: string;
   entryName: string;
   entryPath: ManifestEntryPoint['entryPath'];
   assets: ManifestEntryPoint['assets'];
