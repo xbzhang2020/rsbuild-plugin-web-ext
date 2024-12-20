@@ -1,15 +1,22 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
-import { copyPublicFiles, normalizeManifest, writeManifestEntries, writeManifestFile } from './manifest/index.js';
+import {
+  copyPublicFiles,
+  getOutputDir,
+  normalizeManifest,
+  writeManifestEntries,
+  writeManifestFile,
+} from './manifest/index.js';
 import type { BrowserTarget, ManifestEntryPoints, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
-  srcDir?: string;
   target?: BrowserTarget;
+  srcDir?: string;
+  outDir?: string;
 };
 
 export type { ContentScriptConfig } from './manifest/types.js';
@@ -26,6 +33,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       if (config.mode) {
         mode = config.mode;
       }
+
       const { manifest: optionsManifest, srcDir, target } = options;
       manifest = await normalizeManifest({
         rootPath,
@@ -35,9 +43,9 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         mode,
       });
 
-      const environments = normalizeRsbuildEnviroments(manifest, config, selfRootPath);
+      const outDir = options.outDir || getOutputDir(config.output?.distPath?.root, target, mode);
       const extraConfig: RsbuildConfig = {
-        environments,
+        environments: normalizeRsbuildEnviroments(manifest, config, selfRootPath),
         dev: {
           writeToDisk: true,
           client: {
@@ -48,6 +56,11 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
         server: {
           printUrls: false,
+        },
+        output: {
+          distPath: {
+            root: outDir,
+          },
         },
       };
 

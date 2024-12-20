@@ -1,13 +1,15 @@
-import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { initRsbuild } from '../helper.js';
+import { describe, expect, it, beforeAll } from 'vitest';
+import { initRsbuild, clearDist, readManifestFile } from '../helper.js';
 import pkg from './package.json' with { type: 'json' };
 
 const __dirname = import.meta.dirname;
 
 describe('empty', () => {
+  beforeAll(async () => {
+    await clearDist(resolve(__dirname, 'dist'));
+  });
+
   it('should build successfully with empty manifest', async () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
@@ -16,10 +18,7 @@ describe('empty', () => {
     await rsbuild.build();
 
     const distPath = rsbuild.context.distPath;
-    const manifestPath = resolve(distPath, 'manifest.json');
-    expect(existsSync(manifestPath)).toBe(true);
-
-    const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
+    const manifest = await readManifestFile(distPath);
     const { manifest_version, name, version, description, author, homepage_url } = manifest;
 
     expect(manifest_version).toBe(3);
@@ -27,6 +26,6 @@ describe('empty', () => {
     expect(version).toBe(pkg.version.split('-')[0]);
     expect(description).toBe(pkg.description);
     expect(author).toBe(pkg.author);
-    expect(manifest.homepage_url).toBe(pkg.homepage);
+    expect(homepage_url).toBe(pkg.homepage);
   });
 });

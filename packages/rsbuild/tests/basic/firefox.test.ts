@@ -1,7 +1,7 @@
 import { basename } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from 'webextension-polyfill';
-import { existsFile, initRsbuild, readManifest } from '../helper.js';
+import { existsFile, initRsbuild, readManifestFile } from '../helper.js';
 
 const __dirname = import.meta.dirname;
 
@@ -11,7 +11,6 @@ describe('basic for firefox', () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',
-      outDir: 'dist/firefox-mv3-prod',
       pluginOptions: {
         target: 'firefox-mv3',
         manifest: {
@@ -25,7 +24,7 @@ describe('basic for firefox', () => {
     result.close();
 
     const distPath = rsbuild.context.distPath;
-    const manifest = await readManifest(distPath);
+    const manifest = await readManifestFile(distPath);
     const { manifest_version, background, sidebar_action, action } = manifest as Manifest.WebExtensionManifest;
 
     expect(manifest_version).toBe(3);
@@ -43,7 +42,6 @@ describe('basic for firefox', () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',
-      outDir: 'dist/firefox-mv2-prod',
       pluginOptions: {
         target: 'firefox-mv2',
       },
@@ -52,7 +50,7 @@ describe('basic for firefox', () => {
     result.close();
 
     const distPath = rsbuild.context.distPath;
-    const manifest = await readManifest(distPath);
+    const manifest = await readManifestFile(distPath);
     const { manifest_version, browser_action, icons } = manifest as Manifest.WebExtensionManifest;
 
     expect(manifest_version).toBe(2);

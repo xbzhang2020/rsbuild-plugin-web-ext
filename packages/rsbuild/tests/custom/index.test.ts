@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from 'webextension-polyfill';
-import { existsFile, initRsbuild, readManifest } from '../helper.js';
+import { existsFile, initRsbuild, readManifestFile } from '../helper.js';
 
 const __dirname = import.meta.dirname;
 
@@ -33,7 +33,7 @@ describe('custom', () => {
     await rsbuild.build();
 
     const distPath = rsbuild.context.distPath;
-    const manifest = await readManifest(distPath);
+    const manifest = await readManifestFile(distPath);
     const { background, options_page } = manifest;
 
     const { service_worker } = background as Manifest.WebExtensionManifestBackgroundC3Type;

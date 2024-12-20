@@ -4,8 +4,11 @@ import { resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries } from '../manifest/index.js';
 import type { WebExtensionManifest } from '../manifest/types.js';
-import { isDevMode } from '../manifest/util.js';
 import type { EnviromentKey } from './types.js';
+
+function isDevMode(mode: string | undefined) {
+  return mode === 'development';
+}
 
 export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
@@ -21,7 +24,7 @@ export function normalizeRsbuildEnviroments(
   selfRootPath: string,
 ) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
-  const { mode } = config;
+  const mode = config.mode || process.env.NODE_ENV;
 
   const environments: {
     [key in EnviromentKey]?: EnvironmentConfig;

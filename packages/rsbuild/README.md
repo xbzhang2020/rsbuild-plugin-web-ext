@@ -87,6 +87,10 @@ Target browser, supports:
 - `firefox-mv2`
 - `safari-mv3`
 
+### outDir
+
+Output directory path. Defaults to `dist/<target>-<mode>`, e.g. `dist/chrome-mv3-dev` in development mode, `dist/chrome-mv3-prod` in production mode.
+
 <h2 id="declarative-development">Declarative Development</h2>
 
 Supports automatic configuration generation based on the following directory structure:

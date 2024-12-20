@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -35,21 +35,27 @@ const entryProcessors: ManifestEntryProcessor[] = [
 
 export const DEFAULT_TARGET = 'chrome-mv3';
 
-export const getDefaultSrcDir = (rootPath: string) => {
+export const getSrcDir = (rootPath: string, srcDir: string | undefined) => {
+  if (srcDir) return srcDir;
   return existsSync(resolve(rootPath, './src/')) ? './src' : './';
 };
 
-export function getOutputDir(distPath: string, target: BrowserTarget, mode: BuildMode) {
-  const postfix = isDevMode(mode) ? 'dev' : isProdMode(mode) ? 'prod' : '';
-  const subDir = [target || DEFAULT_TARGET, postfix].filter(Boolean).join('-');
-  return join(distPath, subDir);
+export function getOutputDir(
+  distPath: string | undefined,
+  target: BrowserTarget | undefined,
+  mode: BuildMode | undefined,
+) {
+  const postfix = isDevMode(mode) ? 'dev' : isProdMode(mode) ? 'prod' : mode;
+  const dir = distPath || 'dist';
+  const subDir = [target || DEFAULT_TARGET, postfix].join('-');
+  return join(dir, subDir);
 }
 
 export async function normalizeManifest({
   rootPath,
   mode,
+  srcDir: optionSrcDir,
   manifest = {} as WebExtensionManifest,
-  srcDir = getDefaultSrcDir(rootPath),
   target = DEFAULT_TARGET,
 }: NormalizeManifestProps) {
   const defaultManifest = await getDefaultManifest(rootPath, target);
@@ -79,6 +85,7 @@ export async function normalizeManifest({
   }
 
   try {
+    const srcDir = getSrcDir(rootPath, optionSrcDir);
     const srcPath = resolve(rootPath, srcDir);
     const files = await readdir(srcPath, {
       withFileTypes: true,
@@ -141,6 +148,12 @@ export async function writeManifestEntries({ manifest, rootPath, entrypoints }: 
       rootPath,
     });
   }
+}
+
+export async function readManifestFile(distPath: string) {
+  const manifestPath = resolve(distPath, 'manifest.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8')) as WebExtensionManifest;
+  return manifest;
 }
 
 export async function writeManifestFile(distPath: string, manifest: WebExtensionManifest, mode?: BuildMode) {

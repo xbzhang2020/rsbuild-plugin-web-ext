@@ -3,7 +3,7 @@ import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from 'webextension-polyfill';
-import { existsFile, initRsbuild, readManifest } from '../helper.js';
+import { existsFile, initRsbuild, readManifestFile } from '../helper.js';
 import { config as contentConfig } from './src/content.js';
 import { title as popupTitle } from './src/popup/index.js';
 
@@ -14,14 +14,13 @@ describe('basic for chrome', () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'development',
-      outDir: 'dist/chrome-mv3-dev',
     });
     const { server } = await rsbuild.startDevServer();
     const distPath = rsbuild.context.distPath;
 
     return new Promise((resolve, reject) => {
       rsbuild.onDevCompileDone(async () => {
-        const manifest = await readManifest(distPath);
+        const manifest = await readManifestFile(distPath);
         const { manifest_version } = manifest;
 
         expect(manifest_version).toBe(3);
@@ -36,13 +35,12 @@ describe('basic for chrome', () => {
     const rsbuild = await initRsbuild({
       cwd: __dirname,
       mode: 'production',
-      outDir: 'dist/chrome-mv3-prod',
     });
     const result = await rsbuild.build();
     result.close();
 
     const distPath = rsbuild.context.distPath;
-    const manifest = await readManifest(distPath);
+    const manifest = await readManifestFile(distPath);
     const {
       manifest_version,
       background,

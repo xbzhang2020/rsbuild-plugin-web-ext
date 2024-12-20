@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
 import type { PluginWebExtOptions } from '../src/index.js';
-import type { WebExtensionManifest } from '../src/manifest/types.js';
+
+export { readManifestFile } from '../src/manifest/index.js';
 
 export function getFileContent(distPath: string, name: string) {
   return readFile(resolve(distPath, name), 'utf-8');
@@ -18,29 +19,20 @@ export function existsFile(distPath: string, name: string, ext: string) {
 type InitRsbuildOptions = {
   cwd: string;
   mode: 'development' | 'production';
-  outDir?: string;
   pluginOptions?: Partial<PluginWebExtOptions>;
 };
 
-export async function initRsbuild({ cwd, mode, outDir = 'dist', pluginOptions }: InitRsbuildOptions) {
+export async function initRsbuild({ cwd, mode, pluginOptions }: InitRsbuildOptions) {
   const rsbuild = await createRsbuild({
     cwd,
     rsbuildConfig: {
       mode,
       plugins: [pluginWebExt(pluginOptions)],
-      output: {
-        distPath: {
-          root: outDir,
-        },
-        sourceMap: false,
-      },
     },
   });
   return rsbuild;
 }
 
-export async function readManifest(distPath: string) {
-  const manifestPath = resolve(distPath, 'manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8')) as WebExtensionManifest;
-  return manifest;
+export async function clearDist(distPath: string) {
+  await rm(distPath, { recursive: true, force: true });
 }
