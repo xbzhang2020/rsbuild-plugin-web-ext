@@ -6,8 +6,7 @@ import { getSrcDir } from '../util.js';
 interface GenerateOptions {
   root?: string;
   template?: string;
-  outDir?: string;
-  format?: string;
+  output?: string;
   size?: string;
 }
 
@@ -27,13 +26,7 @@ function getTemplateIconPath(root: string, template?: string) {
   throw new Error('Icon template not found');
 }
 
-async function generateIcons({
-  root = process.cwd(),
-  template,
-  format = 'icon-<size>.png',
-  outDir,
-  size = ICON_SIZES.join(','),
-}: GenerateOptions) {
+async function generateIcons({ root = process.cwd(), template, output, size = ICON_SIZES.join(',') }: GenerateOptions) {
   const input = getTemplateIconPath(root, template);
   const sizes = size
     .split(',')
@@ -41,8 +34,8 @@ async function generateIcons({
     .filter((item) => Number.isInteger(item) && item > 0);
 
   for (const size of sizes) {
-    const newIncoName = format.includes('<size>') ? format.replace('<size>', String(size)) : `icon-${size}.png`;
-    const newIconPath = outDir || resolve(dirname(input), newIncoName);
+    const newIncoName = `icon-${size}.png`;
+    const newIconPath = output ? resolve(root, output, newIncoName) : resolve(dirname(input), newIncoName);
     await sharp(input).resize(size).toFile(newIconPath);
   }
 }

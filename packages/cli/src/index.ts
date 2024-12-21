@@ -7,14 +7,14 @@ function main() {
     .alias('g')
     .description('generate files')
     .argument('<type>', 'type of file (icons)')
-    .option('-r, --root', 'root path (defaults to cwd)')
-    .option('-t, --template', "template's name or path")
-    .option('-s, --size', 'sizes of output icons (defaults to 16,32,48,64,128)')
-    .option('-f, --format', 'format output files (defaults to icon-<size>.png)')
-    .option('--out-dir', 'output directory')
+    .option('-r, --root <dir>', 'root path (defaults to cwd)')
+    .option('-t, --template <name>', "template's name or path")
+    .option('-s, --size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)')
+    .option('-o, --output <dir>', 'output directory')
     .action(async (type, options) => {
       if (type === 'icons') {
         try {
+          console.log('options', options);
           await generateIcons(options);
           console.log('Generated icons successfully!');
         } catch (error) {
