@@ -8,7 +8,7 @@ import {
   writeManifestEntries,
   writeManifestFile,
 } from './manifest/index.js';
-import type { BrowserTarget, WebExtensionManifest, ManifestEntryOutput } from './manifest/types.js';
+import type { BrowserTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 

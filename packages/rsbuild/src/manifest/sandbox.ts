@@ -36,7 +36,7 @@ const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
 const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) => {
   const pages = manifest?.sandbox?.pages || [];
   if (!pages.length) return;
-  
+
   const index = Number(name.replace('sandbox', '') || '0');
   if (pages[index]) {
     pages[index] = `${name}.html`;
