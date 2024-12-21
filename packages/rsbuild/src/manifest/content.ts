@@ -1,31 +1,27 @@
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getMultipleEntryFiles, getSingleEntryFile, isDevMode } from './util.js';
+import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './util.js';
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
-  const { content_scripts } = manifest;
+  if (manifest.content_scripts?.length) return;
 
-  if (!content_scripts?.length) {
-    const entryPath: string[] = [];
-    const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
-    if (singleEntryPath) {
-      entryPath.push(singleEntryPath);
-    }
+  const entryPath: string[] = [];
+  const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
+  if (singleEntryPath) {
+    entryPath.push(singleEntryPath);
+  }
+  const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
+  if (multipleEntryPath) {
+    entryPath.push(...multipleEntryPath);
+  }
 
-    const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
-    if (multipleEntryPath) {
-      entryPath.push(...multipleEntryPath);
-    }
-
-    if (entryPath.length) {
-      manifest.content_scripts ??= [];
-      for (const filePath of entryPath) {
-        manifest.content_scripts.push({
-          matches: [], // get from entry in writeContentEntry
-          js: [filePath],
-        });
-      }
-    }
+  if (!entryPath.length) return;
+  manifest.content_scripts ??= [];
+  for (const filePath of entryPath) {
+    manifest.content_scripts.push({
+      matches: [], // get from entry in writeContentEntry
+      js: [filePath],
+    });
   }
 };
 
@@ -51,6 +47,8 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
 
   for (const entryName in entry) {
     const index = Number(entryName.replace('content', '') || '0');
+    if (!content_scripts[index]) continue;
+
     const { matches } = content_scripts[index];
     const { import: entryPath, assets = [] } = entry[entryName];
     const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -19,6 +19,7 @@ import type {
   NormalizeManifestProps,
   WebExtensionManifest,
   WriteMainfestEntryProps,
+  WriteManifestFileProps,
 } from './types.js';
 import { isDevMode, isProdMode, readPackageJson } from './util.js';
 
@@ -168,35 +169,9 @@ export async function readManifestFile(distPath: string) {
   return manifest;
 }
 
-type WriteManifestFileProps = {
-  distPath: string;
-  selfRootPath: string;
-  manifest: WebExtensionManifest;
-  mode: BuildMode | undefined;
-  isFirstCompile?: boolean;
-};
-
-export async function writeManifestFile({
-  distPath,
-  selfRootPath,
-  manifest,
-  mode,
-  isFirstCompile,
-}: WriteManifestFileProps) {
+export async function writeManifestFile({ distPath, manifest, mode }: WriteManifestFileProps) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
-  }
-
-  // inject content runtime in dev mode
-  const { content_scripts = [] } = manifest;
-  if (isDevMode(mode) && content_scripts?.length && isFirstCompile) {
-    const contentRuntimeName = 'content_runtime.js';
-    const contentRuntime = resolve(selfRootPath, `./static/${contentRuntimeName}`);
-    await copyFile(contentRuntime, join(distPath, contentRuntimeName));
-    content_scripts.push({
-      js: [contentRuntimeName],
-      matches: ['<all_urls>'],
-    });
   }
 
   const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);

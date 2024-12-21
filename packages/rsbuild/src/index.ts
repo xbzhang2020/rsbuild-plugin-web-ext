@@ -97,10 +97,12 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       );
     });
 
-    api.processAssets({ stage: 'additional', environments: ['icons'] }, async ({ assets, compilation }) => {
-      for (const name in assets) {
-        if (name.endsWith('.js')) {
-          compilation.deleteAsset(name);
+    api.processAssets({ stage: 'additional' }, async ({ assets, compilation, environment }) => {
+      if (environment.name === 'icons') {
+        for (const name in assets) {
+          if (name.endsWith('.js')) {
+            compilation.deleteAsset(name);
+          }
         }
       }
     });
@@ -134,7 +136,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     api.onDevCompileDone(async ({ stats, isFirstCompile }) => {
       const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
-      await writeManifestFile({ selfRootPath, distPath, manifest, mode, isFirstCompile });
+      await writeManifestFile({ distPath, manifest, mode });
 
       // clear outdated hmr files
       const statsList = 'stats' in stats ? stats.stats : [stats];
@@ -145,7 +147,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
     api.onAfterBuild(async ({ isFirstCompile }) => {
       const distPath = api.context.distPath;
-      await writeManifestFile({ selfRootPath, distPath, manifest, mode, isFirstCompile });
+      await writeManifestFile({ distPath, manifest, mode });
 
       console.log('Built the extension successfully');
     });

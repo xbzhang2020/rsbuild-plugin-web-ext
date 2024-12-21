@@ -85,3 +85,9 @@ export interface WriteMainfestEntryProps {
   distPath: string;
   entry?: ManifestEntryOutput;
 }
+
+export interface WriteManifestFileProps {
+  distPath: string;
+  manifest: WebExtensionManifest;
+  mode: BuildMode | undefined;
+}

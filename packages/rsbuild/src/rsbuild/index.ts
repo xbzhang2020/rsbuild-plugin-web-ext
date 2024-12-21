@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries } from '../manifest/index.js';
 import type { WebExtensionManifest } from '../manifest/types.js';
@@ -70,6 +70,15 @@ export function normalizeRsbuildEnviroments(
         assetPrefix: true,
       },
     };
+    if (isDevMode(mode) && environments.content.output && manifest.content_scripts) {
+      const from = resolve(selfRootPath, './static/content_runtime.js');
+      const to = join(config.output?.distPath?.js || 'static/js', 'content_runtime.js');
+      environments.content.output.copy = [{ from, to }];
+      manifest.content_scripts.push({
+        js: [to],
+        matches: ['<all_urls>'],
+      });
+    }
   }
 
   const webEntry = Object.values(others)
