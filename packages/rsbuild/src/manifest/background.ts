@@ -1,17 +1,8 @@
-import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getSingleEntryFile, isDevMode } from './util.js';
+import { getSingleEntryFile } from './util.js';
 
-const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
-  manifest,
-  rootPath,
-  srcDir,
-  files,
-  target,
-  selfRootPath,
-  mode,
-}) => {
+const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files, target }) => {
   const { background } = manifest;
   const scripts: string[] = [];
 
@@ -26,12 +17,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
     }
   }
 
-  if (isDevMode(mode)) {
-    scripts.push(resolve(selfRootPath, './static/background_runtime.js'));
-  }
-
   if (!scripts.length) return;
-
   manifest.background ??= {} as WebExtensionManifest['background'];
   // Firefox only supports background.scripts
   if (target.includes('firefox')) {
@@ -68,11 +54,11 @@ const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, entry
 
   const output = assets?.filter((item) => item.endsWith('.js')) || [];
   if (!background || !output.length) return;
+
   if ('scripts' in background) {
     background.scripts = output;
-  }
-  if ('service_worker' in background) {
-    background.service_worker = output[0];
+  } else {
+    (background as Manifest.WebExtensionManifestBackgroundC3Type).service_worker = output[0];
   }
 };
 

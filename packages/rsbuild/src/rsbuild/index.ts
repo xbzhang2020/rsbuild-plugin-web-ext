@@ -44,10 +44,20 @@ export function normalizeRsbuildEnviroments(
     };
   }
 
-  if (background) {
+  const backgroundEntries = background ? [getRsbuildEntryFile(background as RsbuildEntry, 'background')].flat() : [];
+  if (isDevMode(mode)) {
+    backgroundEntries.push(resolve(selfRootPath, './static/background_runtime.js'));
+    manifest.background ??= {} as WebExtensionManifest['background'];
+  }
+  if (backgroundEntries.length) {
     defaultEnvironment = environments.background = {
       source: {
-        entry: background as RsbuildEntry,
+        entry: {
+          background: {
+            import: backgroundEntries,
+            html: false,
+          },
+        },
       },
       output: {
         target: 'web-worker',

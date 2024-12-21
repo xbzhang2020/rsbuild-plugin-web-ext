@@ -97,11 +97,11 @@ export async function normalizeManifest({
       await processor.merge({
         rootPath,
         selfRootPath,
-        mode,
         manifest: finalManifest,
         target,
         srcDir,
         files,
+        mode,
       });
     }
   } catch (err) {
