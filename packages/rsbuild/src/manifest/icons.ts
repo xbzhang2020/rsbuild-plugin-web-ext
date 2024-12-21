@@ -78,10 +78,10 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) => {
-  const { assets = [] } = entry?.icons || {};
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
+  if (!assets) return;
 
-  function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
+  function helper(icons: WebExtensionManifest['icons'] | Manifest.IconPath | undefined, assets: string[]) {
     if (typeof icons !== 'object') return;
     for (const key in icons) {
       const output = getIconAsset(assets, icons[key]);
@@ -92,13 +92,13 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) =
   }
 
   const { icons, action, browser_action, manifest_version } = manifest;
-  helper(icons);
+  helper(icons, assets);
 
   const pointer = manifest_version === 2 ? browser_action : action;
   if (typeof pointer?.default_icon === 'string') {
     pointer.default_icon = getIconAsset(assets, pointer.default_icon);
   } else {
-    helper(pointer?.default_icon);
+    helper(pointer?.default_icon, assets);
   }
 };
 

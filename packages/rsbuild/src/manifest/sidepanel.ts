@@ -36,8 +36,8 @@ const readSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeSidepanelEntry: ManifestEntryProcessor['write'] = ({ manifest }) => {
-  const output = 'sidepanel.html';
+const writeSidepanelEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) => {
+  const output = `${name}.html`;
   const { side_panel, sidebar_action } = manifest;
   if (side_panel) {
     side_panel.default_path = output;

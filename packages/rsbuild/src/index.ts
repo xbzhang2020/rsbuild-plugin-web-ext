@@ -8,13 +8,8 @@ import {
   writeManifestEntries,
   writeManifestFile,
 } from './manifest/index.js';
-import type { BrowserTarget, WebExtensionManifest } from './manifest/types.js';
-import {
-  clearOutdatedHotUpdateFiles,
-  getManifestEntryOutput,
-  getRsbuildEntryFile,
-  normalizeRsbuildEnvironments,
-} from './rsbuild/index.js';
+import type { BrowserTarget, WebExtensionManifest, ManifestEntryOutput } from './manifest/types.js';
+import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
@@ -81,7 +76,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       if (!content) return;
 
       const contentEntries = Object.keys(content.entry)
-        .flatMap((key) => getRsbuildEntryFile(content.entry, key))
+        .flatMap((key) => getRsbuildEntryImport(content.entry, key))
         .filter((item) => !!item)
         .map((item) => resolve(rootPath, item));
 
@@ -113,11 +108,27 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       }
     });
 
-    api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
+    api.onAfterEnvironmentCompile(async ({ stats }) => {
+      // @see https://rspack.dev/api/javascript-api/stats-json
+      const entrypoints = stats?.toJson().entrypoints;
+      if (!entrypoints) return;
+
+      const manifestEntry: ManifestEntryOutput = {};
+      for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
+        const { assets = [], auxiliaryAssets = [] } = entrypoint;
+        const entryAssets = [...assets, ...auxiliaryAssets]
+          .map((item) => item.name)
+          .filter((item) => !item.includes('.hot-update.'));
+
+        manifestEntry[entryName] = {
+          assets: entryAssets,
+        };
+      }
+
       await writeManifestEntries({
         manifest,
         rootPath,
-        entry: getManifestEntryOutput({ stats, environment }),
+        entry: manifestEntry,
       });
     });
 

@@ -1,23 +1,16 @@
 import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
-import type {
-  EnvironmentConfig,
-  EnvironmentContext,
-  OutputConfig,
-  RsbuildConfig,
-  RsbuildEntry,
-  Rspack,
-} from '@rsbuild/core';
+import type { EnvironmentConfig, OutputConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
-import type { ManifestEntryOutput, WebExtensionManifest } from '../manifest/types.js';
+import type { WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
 function isDevMode(mode: string | undefined) {
   return mode === 'development';
 }
 
-export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
+export function getRsbuildEntryImport(entries: RsbuildEntry, key: string) {
   const entry = entries[key];
   if (typeof entry === 'string' || Array.isArray(entry)) {
     return entry;
@@ -86,7 +79,6 @@ export async function normalizeRsbuildEnvironments({
         rootPath,
         entry: {
           content_runtime: {
-            import: content_runtime.import,
             assets: [to],
           },
         },
@@ -142,34 +134,6 @@ export async function normalizeRsbuildEnvironments({
   }
 
   return environments;
-}
-
-export function getManifestEntryOutput({
-  stats,
-  environment,
-}: {
-  stats: Rspack.Stats | undefined;
-  environment: EnvironmentContext;
-}): ManifestEntryOutput | undefined {
-  // @see https://rspack.dev/api/javascript-api/stats-json
-  const entrypoints = stats?.toJson().entrypoints;
-  if (!entrypoints) return;
-
-  const manifestEntry: ManifestEntryOutput = {};
-  for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
-    const { assets = [], auxiliaryAssets = [] } = entrypoint;
-    const entryAssets = [...assets, ...auxiliaryAssets]
-      .map((item) => item.name)
-      .filter((item) => !item.includes('.hot-update.'));
-
-    const entryImport = getRsbuildEntryFile(environment.entry, entryName);
-    manifestEntry[entryName] = {
-      import: entryImport,
-      assets: entryAssets,
-    };
-  }
-
-  return manifestEntry;
 }
 
 function getHotUpdateAssets(statsList: Rspack.Stats[]) {

@@ -36,14 +36,13 @@ const readOverridesEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return Object.keys(entry).length ? entry : null;
 };
 
-const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) => {
+const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) => {
   const { chrome_url_overrides } = manifest;
-  if (!chrome_url_overrides || !entry) return;
-  for (const entryName of overrides) {
-    const key = entryName as keyof Manifest.WebExtensionManifestChromeUrlOverridesType;
-    if (!overrides.includes(key)) return;
+  if (!chrome_url_overrides) return;
 
-    chrome_url_overrides[key] = `${entryName}.html`;
+  const key = name as keyof Manifest.WebExtensionManifestChromeUrlOverridesType;
+  if (chrome_url_overrides[key]) {
+    chrome_url_overrides[key] = `${name}.html`;
   }
 };
 

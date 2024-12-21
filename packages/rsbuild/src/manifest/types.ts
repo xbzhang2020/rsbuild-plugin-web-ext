@@ -53,7 +53,6 @@ export type ManifestEntry = Record<
 export type ManifestEntryOutput = Record<
   string,
   {
-    import?: string | string[];
     assets?: string[];
   }
 >;
@@ -63,7 +62,7 @@ export type ManifestEntryProcessor = {
   match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
   read: (manifest?: WebExtensionManifest) => ManifestEntry | null;
-  write: (props: WriteMainfestEntryProps) => void | Promise<void>;
+  write: (props: WriteMainfestEntryItemProps) => void | Promise<void>;
 };
 
 export interface NormalizeManifestProps {
@@ -79,11 +78,17 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
   files: Dirent[];
 }
 
-export interface WriteMainfestEntryProps {
+export interface WriteMainfestEntriesProps {
   manifest: WebExtensionManifest;
   rootPath: string;
-  // distPath: string;
   entry?: ManifestEntryOutput;
+}
+
+export interface WriteMainfestEntryItemProps {
+  manifest: WebExtensionManifest;
+  rootPath: string;
+  name: string;
+  assets?: string[];
 }
 
 export interface WriteManifestFileProps {

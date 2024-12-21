@@ -14,11 +14,10 @@ import type {
   BrowserTarget,
   BuildMode,
   ManifestEntry,
-  ManifestEntryKey,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WebExtensionManifest,
-  WriteMainfestEntryProps,
+  WriteMainfestEntriesProps,
   WriteManifestFileProps,
 } from './types.js';
 import { isDevMode, isProdMode, readPackageJson } from './util.js';
@@ -140,24 +139,15 @@ export function readManifestEntries(manifest: WebExtensionManifest) {
   );
 }
 
-export async function writeManifestEntries({ manifest, rootPath, entry }: WriteMainfestEntryProps) {
-  const entries = {} as Record<ManifestEntryKey, WriteMainfestEntryProps['entry']>;
-
+export async function writeManifestEntries({ manifest, rootPath, entry }: WriteMainfestEntriesProps) {
   for (const entryName in entry) {
     const processor = entryProcessors.find((item) => item.match(entryName));
-    if (!processor) continue;
-    const key = processor.key;
-    entries[key] ??= {};
-    entries[key][entryName] = entry[entryName];
-  }
-
-  for (const [key, entry] of Object.entries(entries)) {
-    const processor = entryProcessors.find((item) => item.key === key);
     if (!processor) continue;
     await processor.write({
       manifest,
       rootPath,
-      entry,
+      name: entryName,
+      assets: entry[entryName].assets,
     });
   }
 }

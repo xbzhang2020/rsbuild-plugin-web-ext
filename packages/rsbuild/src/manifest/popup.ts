@@ -33,23 +33,21 @@ const readPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, entry, rootPath }) => {
+const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name }) => {
   const { manifest_version, action, browser_action } = manifest;
   const pointer = manifest_version === 2 ? browser_action : action;
   if (!pointer) return;
-  const { import: entryPath } = entry?.popup || {};
-  const { default_title } = pointer;
-  const input = Array.isArray(entryPath) ? entryPath[0] : entryPath;
-  if (!default_title && input) {
-    const code = await getFileContent(rootPath, input);
+
+  const { default_title, default_popup } = pointer;
+  if (!default_title && default_popup) {
+    const code = await getFileContent(rootPath, default_popup);
     const title = parseExportObject<string>(code, 'title');
     if (title) {
       pointer.default_title = title;
     }
   }
 
-  const popup = 'popup.html';
-  pointer.default_popup = popup;
+  pointer.default_popup = `${name}.html`;
 };
 
 const popupProcessor: ManifestEntryProcessor = {

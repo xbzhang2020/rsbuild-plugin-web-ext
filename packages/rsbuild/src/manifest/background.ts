@@ -3,7 +3,7 @@ import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getSingleEntryFile, isDevMode } from './util.js';
 
-const RUNTIME_PATH = 'static/background_runtime.js';
+const BACKGROUND_RUNTIME_PATH = 'static/background_runtime.js';
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -23,14 +23,11 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
     scripts.push(...background.scripts);
   } else {
     const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'background');
-    if (entryPath) {
-      scripts.push(entryPath);
-    }
+    entryPath && scripts.push(entryPath);
   }
 
   if (isDevMode(mode)) {
-    const backgroundRuntimePath = resolve(selfRootPath, RUNTIME_PATH);
-    scripts.push(backgroundRuntimePath);
+    scripts.push(resolve(selfRootPath, BACKGROUND_RUNTIME_PATH));
   }
 
   if (!scripts.length) return;
@@ -64,10 +61,8 @@ const readBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, entry }) => {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
   const { background } = manifest;
-  const { assets } = entry?.background || {};
-
   const output = assets?.filter((item) => item.endsWith('.js')) || [];
   if (!background || !output.length) return;
 
