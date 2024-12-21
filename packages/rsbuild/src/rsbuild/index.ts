@@ -1,16 +1,16 @@
 import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
-import { join, resolve, basename } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import type {
   EnvironmentConfig,
+  EnvironmentContext,
+  OutputConfig,
   RsbuildConfig,
   RsbuildEntry,
   Rspack,
-  OutputConfig,
-  EnvironmentContext,
 } from '@rsbuild/core';
 import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
-import type { WebExtensionManifest, ManifestEntryOutput } from '../manifest/types.js';
+import type { ManifestEntryOutput, WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
 function isDevMode(mode: string | undefined) {

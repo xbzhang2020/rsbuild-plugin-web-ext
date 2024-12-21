@@ -11,9 +11,9 @@ import {
 import type { BrowserTarget, WebExtensionManifest } from './manifest/types.js';
 import {
   clearOutdatedHotUpdateFiles,
+  getManifestEntryOutput,
   getRsbuildEntryFile,
   normalizeRsbuildEnvironments,
-  getManifestEntryOutput,
 } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
