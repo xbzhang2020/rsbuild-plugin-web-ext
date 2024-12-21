@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import sharp from 'sharp';
 import { getSrcDir } from '../util.js';
 
