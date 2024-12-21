@@ -1,9 +1,16 @@
 import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
-import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
-import { readManifestEntries } from '../manifest/index.js';
-import type { WebExtensionManifest } from '../manifest/types.js';
+import { join, resolve, basename } from 'node:path';
+import type {
+  EnvironmentConfig,
+  RsbuildConfig,
+  RsbuildEntry,
+  Rspack,
+  OutputConfig,
+  EnvironmentContext,
+} from '@rsbuild/core';
+import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
+import type { WebExtensionManifest, ManifestEntryOutput } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
 function isDevMode(mode: string | undefined) {
@@ -18,11 +25,23 @@ export function getRsbuildEntryFile(entries: RsbuildEntry, key: string) {
   return entry.import;
 }
 
-export function normalizeRsbuildEnviroments(
-  manifest: WebExtensionManifest,
-  config: RsbuildConfig,
-  selfRootPath: string,
-) {
+function getContentRuntimeOutputPath(from: string, config: RsbuildConfig) {
+  return join(config.output?.distPath?.js || 'static/js', basename(from));
+}
+
+interface NormalizeEnvironmentProps {
+  manifest: WebExtensionManifest;
+  config: RsbuildConfig;
+  selfRootPath: string;
+  rootPath: string;
+}
+
+export async function normalizeRsbuildEnvironments({
+  manifest,
+  config,
+  selfRootPath,
+  rootPath,
+}: NormalizeEnvironmentProps) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
   const mode = config.mode || process.env.NODE_ENV;
 
@@ -44,20 +63,10 @@ export function normalizeRsbuildEnviroments(
     };
   }
 
-  const backgroundEntries = background ? [getRsbuildEntryFile(background as RsbuildEntry, 'background')].flat() : [];
-  if (isDevMode(mode)) {
-    backgroundEntries.push(resolve(selfRootPath, './static/background_runtime.js'));
-    manifest.background ??= {} as WebExtensionManifest['background'];
-  }
-  if (backgroundEntries.length) {
+  if (background) {
     defaultEnvironment = environments.background = {
       source: {
-        entry: {
-          background: {
-            import: backgroundEntries,
-            html: false,
-          },
-        },
+        entry: background,
       },
       output: {
         target: 'web-worker',
@@ -66,29 +75,39 @@ export function normalizeRsbuildEnviroments(
   }
 
   if (content) {
+    const { content_runtime, ...normalContent } = content;
+    const copy: OutputConfig['copy'] = [];
+    if (content_runtime) {
+      const from = [content_runtime.import].flat()[0];
+      const to = getContentRuntimeOutputPath(from, config);
+      copy.push({ from, to });
+      await writeManifestEntries({
+        manifest,
+        rootPath,
+        entry: {
+          content_runtime: {
+            import: content_runtime.import,
+            assets: [to],
+          },
+        },
+      });
+    }
+
     defaultEnvironment = environments.content = {
       source: {
-        entry: content as RsbuildEntry,
+        entry: normalContent as RsbuildEntry,
       },
       output: {
         target: 'web',
         // support hmr
         injectStyles: isDevMode(mode),
+        copy,
       },
       dev: {
         // support hmr
         assetPrefix: true,
       },
     };
-    if (isDevMode(mode) && environments.content.output && manifest.content_scripts) {
-      const from = resolve(selfRootPath, './static/content_runtime.js');
-      const to = join(config.output?.distPath?.js || 'static/js', 'content_runtime.js');
-      environments.content.output.copy = [{ from, to }];
-      manifest.content_scripts.push({
-        js: [to],
-        matches: ['<all_urls>'],
-      });
-    }
   }
 
   const webEntry = Object.values(others)
@@ -123,6 +142,34 @@ export function normalizeRsbuildEnviroments(
   }
 
   return environments;
+}
+
+export function getManifestEntryOutput({
+  stats,
+  environment,
+}: {
+  stats: Rspack.Stats | undefined;
+  environment: EnvironmentContext;
+}): ManifestEntryOutput | undefined {
+  // @see https://rspack.dev/api/javascript-api/stats-json
+  const entrypoints = stats?.toJson().entrypoints;
+  if (!entrypoints) return;
+
+  const manifestEntry: ManifestEntryOutput = {};
+  for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
+    const { assets = [], auxiliaryAssets = [] } = entrypoint;
+    const entryAssets = [...assets, ...auxiliaryAssets]
+      .map((item) => item.name)
+      .filter((item) => !item.includes('.hot-update.'));
+
+    const entryImport = getRsbuildEntryFile(environment.entry, entryName);
+    manifestEntry[entryName] = {
+      import: entryImport,
+      assets: entryAssets,
+    };
+  }
+
+  return manifestEntry;
 }
 
 function getHotUpdateAssets(statsList: Rspack.Stats[]) {

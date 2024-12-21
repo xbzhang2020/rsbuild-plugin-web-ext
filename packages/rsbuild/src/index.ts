@@ -8,8 +8,13 @@ import {
   writeManifestEntries,
   writeManifestFile,
 } from './manifest/index.js';
-import type { BrowserTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
-import { clearOutdatedHotUpdateFiles, getRsbuildEntryFile, normalizeRsbuildEnviroments } from './rsbuild/index.js';
+import type { BrowserTarget, WebExtensionManifest } from './manifest/types.js';
+import {
+  clearOutdatedHotUpdateFiles,
+  getRsbuildEntryFile,
+  normalizeRsbuildEnvironments,
+  getManifestEntryOutput,
+} from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
@@ -44,9 +49,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         mode,
       });
 
+      const environments = await normalizeRsbuildEnvironments({ manifest, config, selfRootPath, rootPath });
       const outDir = options.outDir || getOutputDir(config.output?.distPath?.root, target, mode);
       const extraConfig: RsbuildConfig = {
-        environments: normalizeRsbuildEnviroments(manifest, config, selfRootPath),
+        environments,
         dev: {
           writeToDisk: true,
           client: {
@@ -108,28 +114,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     });
 
     api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
-      // @see https://rspack.dev/api/javascript-api/stats-json
-      const entrypoints = stats?.toJson().entrypoints;
-      if (!entrypoints) return;
-
-      const manifestEntryPoints = Object.entries(entrypoints).reduce((res, [entryName, entrypoint]) => {
-        const { assets = [], auxiliaryAssets = [] } = entrypoint;
-        const entryAssets = [...assets, ...auxiliaryAssets]
-          .map((item) => item.name)
-          .filter((item) => !item.includes('.hot-update.'));
-
-        const entryPath = getRsbuildEntryFile(environment.entry, entryName);
-        return Object.assign(res, {
-          [entryName]: { assets: entryAssets, import: entryPath },
-        } as ManifestEntryOutput);
-      }, {} as ManifestEntryOutput);
-
-      const distPath = api.context.distPath;
       await writeManifestEntries({
         manifest,
         rootPath,
-        entry: manifestEntryPoints,
-        distPath,
+        entry: getManifestEntryOutput({ stats, environment }),
       });
     });
 

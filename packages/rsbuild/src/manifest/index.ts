@@ -140,7 +140,7 @@ export function readManifestEntries(manifest: WebExtensionManifest) {
   );
 }
 
-export async function writeManifestEntries({ manifest, rootPath, entry, distPath }: WriteMainfestEntryProps) {
+export async function writeManifestEntries({ manifest, rootPath, entry }: WriteMainfestEntryProps) {
   const entries = {} as Record<ManifestEntryKey, WriteMainfestEntryProps['entry']>;
 
   for (const entryName in entry) {
@@ -157,7 +157,6 @@ export async function writeManifestEntries({ manifest, rootPath, entry, distPath
     await processor.write({
       manifest,
       rootPath,
-      distPath,
       entry,
     });
   }

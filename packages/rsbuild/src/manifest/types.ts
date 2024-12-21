@@ -45,7 +45,7 @@ export type ManifestEntryKey =
 export type ManifestEntry = Record<
   string,
   {
-    import?: string | string[];
+    import: string | string[];
     html?: boolean;
   }
 >;
@@ -82,7 +82,7 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
 export interface WriteMainfestEntryProps {
   manifest: WebExtensionManifest;
   rootPath: string;
-  distPath: string;
+  // distPath: string;
   entry?: ManifestEntryOutput;
 }
 
