@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
+import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './util.js';
-import { isDevMode } from './env.js';
 
 const CONTENT_RUNTIME_NAME = 'content_runtime';
 const CONTENT_RUNTIME_PATH = 'static/content_runtime.js';

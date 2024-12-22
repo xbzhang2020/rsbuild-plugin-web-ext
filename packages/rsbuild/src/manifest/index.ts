@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
+import { isDevMode } from './env.js';
 import iconsProcessor from './icons.js';
 import optionsProcessor from './options.js';
 import overrideProcessor from './overrides.js';
@@ -20,7 +21,6 @@ import type {
   WriteManifestFileProps,
 } from './types.js';
 import { readPackageJson } from './util.js';
-import { isDevMode } from './env.js';
 
 export { getExtensionTarget, getOutputDir, getSrcDir } from './env.js';
 

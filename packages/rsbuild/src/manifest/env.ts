@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { ExtensionTarget } from './types.js';
 
 export function isDevMode(mode?: string) {

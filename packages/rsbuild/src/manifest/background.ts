@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
+import { isDevMode } from './env.js';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getSingleEntryFile } from './util.js';
-import { isDevMode } from './env.js';
 
 const BACKGROUND_RUNTIME_PATH = 'static/background_runtime.js';
 

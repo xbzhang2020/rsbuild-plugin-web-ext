@@ -2,13 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
-  getExtensionTarget,
   copyPublicFiles,
+  getExtensionTarget,
   getOutputDir,
+  getSrcDir,
   normalizeManifest,
   writeManifestEntries,
   writeManifestFile,
-  getSrcDir,
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
