@@ -63,22 +63,22 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
       : `content${content_scripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
     entry[name] = {
-      import: [...js, ...css],
+      input: [...js, ...css],
       html: false,
     };
   });
   return entry;
 };
 
-const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, assets, name }) => {
+const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name, input, output }) => {
   const { content_scripts } = manifest;
-  if (!content_scripts?.length || !assets) return;
+  if (!content_scripts?.length || !output?.length) return;
 
   // runtime content
   if (name === CONTENT_RUNTIME_NAME) {
     const runtimeContentScript = content_scripts.find(isRumtimeContentScript);
     if (runtimeContentScript) {
-      runtimeContentScript.js = assets.filter((item) => item.endsWith('.js'));
+      runtimeContentScript.js = output.filter((item) => item.endsWith('.js'));
     }
     return;
   }
@@ -87,10 +87,9 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
   const index = Number(name.replace('content', '') || '0');
   if (!content_scripts[index]) return;
 
-  const { matches, js = [] } = content_scripts[index];
-  const input = js[0] ? resolve(rootPath, js[0]) : null;
-  if (!matches?.length && input) {
-    const code = await getFileContent(rootPath, input);
+  const { matches } = content_scripts[index];
+  if (!matches?.length && input?.[0]) {
+    const code = await getFileContent(rootPath, resolve(rootPath, input[0]));
     const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],
     };
@@ -100,8 +99,8 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
     };
   }
 
-  content_scripts[index].js = assets.filter((item) => item.endsWith('.js'));
-  content_scripts[index].css = assets.filter((item) => item.endsWith('.css'));
+  content_scripts[index].js = output.filter((item) => item.endsWith('.js'));
+  content_scripts[index].css = output.filter((item) => item.endsWith('.css'));
 };
 
 const contentProcessor: ManifestEntryProcessor = {

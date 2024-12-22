@@ -108,20 +108,23 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       }
     });
 
-    api.onAfterEnvironmentCompile(async ({ stats }) => {
+    api.onAfterEnvironmentCompile(async ({ stats, environment }) => {
       // @see https://rspack.dev/api/javascript-api/stats-json
       const entrypoints = stats?.toJson().entrypoints;
       if (!entrypoints) return;
 
       const manifestEntry: ManifestEntryOutput = {};
       for (const [entryName, entrypoint] of Object.entries(entrypoints)) {
+        const input = [getRsbuildEntryImport(environment.entry, entryName)].flat();
+
         const { assets = [], auxiliaryAssets = [] } = entrypoint;
-        const entryAssets = [...assets, ...auxiliaryAssets]
+        const output = [...assets, ...auxiliaryAssets]
           .map((item) => item.name)
           .filter((item) => !item.includes('.hot-update.'));
 
         manifestEntry[entryName] = {
-          assets: entryAssets,
+          input,
+          output,
         };
       }
 

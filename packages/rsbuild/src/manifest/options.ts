@@ -21,7 +21,7 @@ const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
 
   const entry: ManifestEntry = {
     options: {
-      import: input,
+      input: [input],
       html: true,
     },
   };

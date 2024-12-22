@@ -29,7 +29,7 @@ const readOverridesEntry: ManifestEntryProcessor['read'] = (manifest) => {
     if (!input) continue;
 
     entry[key] = {
-      import: input,
+      input: [input],
       html: true,
     };
   }

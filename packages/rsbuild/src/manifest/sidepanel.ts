@@ -29,7 +29,7 @@ const readSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {
 
   const entry: ManifestEntry = {
     sidepanel: {
-      import: input,
+      input: [input],
       html: true,
     },
   };

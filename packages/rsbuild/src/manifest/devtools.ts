@@ -15,7 +15,7 @@ const readDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   if (!devtools_page) return null;
   const entry: ManifestEntry = {
     devtools: {
-      import: devtools_page,
+      input: [devtools_page],
       html: true,
     },
   };

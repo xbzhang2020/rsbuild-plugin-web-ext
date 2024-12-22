@@ -26,21 +26,21 @@ const readPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
 
   const entry: ManifestEntry = {
     popup: {
-      import: input,
+      input: [input],
       html: true,
     },
   };
   return entry;
 };
 
-const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name }) => {
+const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name, input }) => {
   const { manifest_version, action, browser_action } = manifest;
   const pointer = manifest_version === 2 ? browser_action : action;
   if (!pointer) return;
 
-  const { default_title, default_popup } = pointer;
-  if (!default_title && default_popup) {
-    const code = await getFileContent(rootPath, default_popup);
+  const { default_title } = pointer;
+  if (!default_title && input?.[0]) {
+    const code = await getFileContent(rootPath, input[0]);
     const title = parseExportObject<string>(code, 'title');
     if (title) {
       pointer.default_title = title;

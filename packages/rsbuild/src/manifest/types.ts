@@ -42,20 +42,11 @@ export type ManifestEntryKey =
   | 'overrides'
   | 'sidepanel';
 
-export type ManifestEntry = Record<
-  string,
-  {
-    import: string | string[];
-    html?: boolean;
-  }
->;
-
-export type ManifestEntryOutput = Record<
-  string,
-  {
-    assets?: string[];
-  }
->;
+interface ManifestEntryItem {
+  input: string[];
+  output: string[];
+  html?: boolean;
+}
 
 export type ManifestEntryProcessor = {
   key: ManifestEntryKey;
@@ -78,6 +69,9 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
   files: Dirent[];
 }
 
+export type ManifestEntry = Record<string, Omit<ManifestEntryItem, 'output'>>;
+export type ManifestEntryOutput = Record<string, Pick<ManifestEntryItem, 'input' | 'output'>>;
+
 export interface WriteMainfestEntriesProps {
   manifest: WebExtensionManifest;
   rootPath: string;
@@ -88,7 +82,8 @@ export interface WriteMainfestEntryItemProps {
   manifest: WebExtensionManifest;
   rootPath: string;
   name: string;
-  assets?: string[];
+  input?: ManifestEntryItem['input'];
+  output?: ManifestEntryItem['output'];
 }
 
 export interface WriteManifestFileProps {

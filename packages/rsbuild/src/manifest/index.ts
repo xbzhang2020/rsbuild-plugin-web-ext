@@ -147,7 +147,8 @@ export async function writeManifestEntries({ manifest, rootPath, entry }: WriteM
       manifest,
       rootPath,
       name: entryName,
-      assets: entry[entryName].assets,
+      input: entry[entryName].input,
+      output: entry[entryName].output,
     });
   }
 }

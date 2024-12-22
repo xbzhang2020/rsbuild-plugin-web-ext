@@ -71,15 +71,15 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   if (paths.size === 0) return null;
   const entry: ManifestEntry = {
     icons: {
-      import: Array.from(paths),
+      input: Array.from(paths),
       html: false,
     },
   };
   return entry;
 };
 
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
-  if (!assets) return;
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, output }) => {
+  if (!output?.length) return;
 
   function helper(icons: WebExtensionManifest['icons'] | Manifest.IconPath | undefined, assets: string[]) {
     if (typeof icons !== 'object') return;
@@ -92,13 +92,13 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) 
   }
 
   const { icons, action, browser_action, manifest_version } = manifest;
-  helper(icons, assets);
+  helper(icons, output);
 
   const pointer = manifest_version === 2 ? browser_action : action;
   if (typeof pointer?.default_icon === 'string') {
-    pointer.default_icon = getIconAsset(assets, pointer.default_icon);
+    pointer.default_icon = getIconAsset(output, pointer.default_icon);
   } else {
-    helper(pointer?.default_icon, assets);
+    helper(pointer?.default_icon, output);
   }
 };
 

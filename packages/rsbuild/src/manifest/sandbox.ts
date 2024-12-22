@@ -26,7 +26,7 @@ const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
   pages.forEach((page, index) => {
     const name = `sandbox${pages.length === 1 ? '' : index}`;
     entry[name] = {
-      import: page,
+      input: [page],
       html: true,
     };
   });

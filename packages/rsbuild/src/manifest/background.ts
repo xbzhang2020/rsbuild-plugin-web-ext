@@ -54,22 +54,22 @@ const readBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   if (!input.length) return null;
   const entry: ManifestEntry = {
     background: {
-      import: input,
+      input,
       html: false,
     },
   };
   return entry;
 };
 
-const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, assets }) => {
+const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, output }) => {
   const { background } = manifest;
-  const output = assets?.filter((item) => item.endsWith('.js')) || [];
-  if (!background || !output.length) return;
+  const scripts = output?.filter((item) => item.endsWith('.js')) || [];
+  if (!background || !scripts.length) return;
 
   if ('scripts' in background) {
-    background.scripts = output;
+    background.scripts = scripts;
   } else {
-    (background as Manifest.WebExtensionManifestBackgroundC3Type).service_worker = output[0];
+    (background as Manifest.WebExtensionManifestBackgroundC3Type).service_worker = scripts[0];
   }
 };
 

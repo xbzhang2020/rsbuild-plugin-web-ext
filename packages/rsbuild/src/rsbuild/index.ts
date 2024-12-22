@@ -3,11 +3,24 @@ import { readdir, unlink } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import type { EnvironmentConfig, OutputConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
-import type { WebExtensionManifest } from '../manifest/types.js';
+import type { ManifestEntry, WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
 function isDevMode(mode: string | undefined) {
   return mode === 'development';
+}
+
+function transformManifestEntry(entry: ManifestEntry | undefined) {
+  if (!entry) return;
+  const res: RsbuildEntry = {};
+  for (const key in entry) {
+    const { input, html } = entry[key];
+    res[key] = {
+      import: input,
+      html,
+    };
+  }
+  return res;
 }
 
 export function getRsbuildEntryImport(entries: RsbuildEntry, key: string) {
@@ -16,10 +29,6 @@ export function getRsbuildEntryImport(entries: RsbuildEntry, key: string) {
     return entry;
   }
   return entry.import;
-}
-
-function getContentRuntimeOutputPath(from: string, config: RsbuildConfig) {
-  return join(config.output?.distPath?.js || 'static/js', basename(from));
 }
 
 interface NormalizeEnvironmentProps {
@@ -46,7 +55,7 @@ export async function normalizeRsbuildEnvironments({
   if (icons) {
     defaultEnvironment = environments.icons = {
       source: {
-        entry: icons as RsbuildEntry,
+        entry: transformManifestEntry(icons),
       },
       output: {
         target: 'web',
@@ -59,7 +68,7 @@ export async function normalizeRsbuildEnvironments({
   if (background) {
     defaultEnvironment = environments.background = {
       source: {
-        entry: background,
+        entry: transformManifestEntry(background),
       },
       output: {
         target: 'web-worker',
@@ -70,16 +79,18 @@ export async function normalizeRsbuildEnvironments({
   if (content) {
     const { content_runtime, ...normalContent } = content;
     const copy: OutputConfig['copy'] = [];
+    
     if (content_runtime) {
-      const from = [content_runtime.import].flat()[0];
-      const to = getContentRuntimeOutputPath(from, config);
+      const from = [content_runtime.input].flat()[0];
+      const to = join(config.output?.distPath?.js || 'static/js', basename(from));
       copy.push({ from, to });
       await writeManifestEntries({
         manifest,
         rootPath,
         entry: {
           content_runtime: {
-            assets: [to],
+            input: [from],
+            output: [to],
           },
         },
       });
@@ -87,7 +98,7 @@ export async function normalizeRsbuildEnvironments({
 
     defaultEnvironment = environments.content = {
       source: {
-        entry: normalContent as RsbuildEntry,
+        entry: transformManifestEntry(normalContent),
       },
       output: {
         target: 'web',
@@ -108,7 +119,7 @@ export async function normalizeRsbuildEnvironments({
   if (Object.values(webEntry).length) {
     defaultEnvironment = environments.web = {
       source: {
-        entry: webEntry as RsbuildEntry,
+        entry: transformManifestEntry(webEntry),
       },
       output: {
         target: 'web',
