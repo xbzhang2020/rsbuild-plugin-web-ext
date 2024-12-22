@@ -79,7 +79,7 @@ export async function normalizeRsbuildEnvironments({
   if (content) {
     const { content_runtime, ...normalContent } = content;
     const copy: OutputConfig['copy'] = [];
-    
+
     if (content_runtime) {
       const from = [content_runtime.input].flat()[0];
       const to = join(config.output?.distPath?.js || 'static/js', basename(from));
