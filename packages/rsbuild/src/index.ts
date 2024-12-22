@@ -2,19 +2,21 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
+  getExtensionTarget,
   copyPublicFiles,
   getOutputDir,
   normalizeManifest,
   writeManifestEntries,
   writeManifestFile,
+  getSrcDir,
 } from './manifest/index.js';
-import type { BrowserTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
+import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
 import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
-  target?: BrowserTarget;
+  target?: ExtensionTarget;
   srcDir?: string;
   outDir?: string;
 };
@@ -28,19 +30,20 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const selfRootPath = __dirname;
     let manifest = {} as WebExtensionManifest;
     let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
+    const target = getExtensionTarget(options.target);
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       if (config.mode) {
         mode = config.mode;
       }
 
-      const { manifest: optionsManifest, srcDir, target } = options;
+      const { manifest: optionsManifest, srcDir } = options;
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
         manifest: optionsManifest as WebExtensionManifest,
-        srcDir,
-        target,
+        srcDir: getSrcDir(rootPath, srcDir),
+        target: getExtensionTarget(options.target),
         mode,
       });
 
@@ -135,7 +138,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
     });
 
-    api.onDevCompileDone(async ({ stats, isFirstCompile }) => {
+    api.onDevCompileDone(async ({ stats }) => {
       const distPath = api.context.distPath;
       await copyPublicFiles(rootPath, distPath);
       await writeManifestFile({ distPath, manifest, mode });
@@ -147,7 +150,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       console.log('Built the extension successfully');
     });
 
-    api.onAfterBuild(async ({ isFirstCompile }) => {
+    api.onAfterBuild(async () => {
       const distPath = api.context.distPath;
       await writeManifestFile({ distPath, manifest, mode });
 

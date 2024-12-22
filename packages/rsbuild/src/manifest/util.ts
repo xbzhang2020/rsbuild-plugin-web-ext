@@ -1,15 +1,6 @@
 import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, extname, resolve } from 'node:path';
-import type { BuildMode } from './types.js';
-
-export function isDevMode(mode: BuildMode) {
-  return mode === 'development';
-}
-
-export function isProdMode(mode: BuildMode) {
-  return mode === 'production';
-}
 
 export function isJsEntryFile(file: string, name?: string) {
   if (name) {

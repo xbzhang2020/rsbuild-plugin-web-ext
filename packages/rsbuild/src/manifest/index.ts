@@ -11,8 +11,7 @@ import popupProcessor from './popup.js';
 import sandboxProcessor from './sandbox.js';
 import sidepanelProcessor from './sidepanel.js';
 import type {
-  BrowserTarget,
-  BuildMode,
+  ExtensionTarget,
   ManifestEntryInput,
   ManifestEntryProcessor,
   NormalizeManifestProps,
@@ -20,7 +19,10 @@ import type {
   WriteMainfestEntriesProps,
   WriteManifestFileProps,
 } from './types.js';
-import { isDevMode, isProdMode, readPackageJson } from './util.js';
+import { readPackageJson } from './util.js';
+import { isDevMode } from './env.js';
+
+export { getExtensionTarget, getOutputDir, getSrcDir } from './env.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,
@@ -34,31 +36,13 @@ const entryProcessors: ManifestEntryProcessor[] = [
   sidepanelProcessor,
 ];
 
-export const DEFAULT_TARGET = 'chrome-mv3';
-
-export const getSrcDir = (rootPath: string, srcDir: string | undefined) => {
-  if (srcDir) return srcDir;
-  return existsSync(resolve(rootPath, './src/')) ? './src' : './';
-};
-
-export function getOutputDir(
-  distPath: string | undefined,
-  target: BrowserTarget | undefined,
-  mode: BuildMode | undefined,
-) {
-  const postfix = isDevMode(mode) ? 'dev' : isProdMode(mode) ? 'prod' : mode;
-  const dir = distPath || 'dist';
-  const subDir = [target || DEFAULT_TARGET, postfix].join('-');
-  return join(dir, subDir);
-}
-
 export async function normalizeManifest({
   rootPath,
   selfRootPath,
   mode,
-  srcDir: optionSrcDir,
+  srcDir,
   manifest = {} as WebExtensionManifest,
-  target = DEFAULT_TARGET,
+  target,
 }: NormalizeManifestProps) {
   const defaultManifest = await getDefaultManifest(rootPath, target);
   const finalManifest = {
@@ -87,7 +71,6 @@ export async function normalizeManifest({
   }
 
   try {
-    const srcDir = getSrcDir(rootPath, optionSrcDir);
     const srcPath = resolve(rootPath, srcDir);
     const files = await readdir(srcPath, {
       withFileTypes: true,
@@ -110,7 +93,7 @@ export async function normalizeManifest({
   return finalManifest;
 }
 
-async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
+async function getDefaultManifest(rootPath: string, target?: ExtensionTarget) {
   const manifest: Partial<WebExtensionManifest> = {
     manifest_version: target?.includes('2') ? 2 : 3,
   };

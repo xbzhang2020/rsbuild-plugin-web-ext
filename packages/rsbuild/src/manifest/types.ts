@@ -1,8 +1,7 @@
 import type { Dirent } from 'node:fs';
 import type { Manifest } from 'webextension-polyfill';
 
-export type BuildMode = 'development' | 'production' | 'none' | undefined;
-export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
+export type ExtensionTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3' | 'edge-mv3' | 'opera-mv3';
 
 export interface WebExtensionManifest extends Manifest.WebExtensionManifest {
   // Firefox doesn't support sandbox
@@ -61,10 +60,10 @@ export interface ManifestEntryProcessor {
 export interface NormalizeManifestProps {
   rootPath: string;
   selfRootPath: string;
-  mode: BuildMode;
-  manifest?: WebExtensionManifest;
-  srcDir?: string;
-  target?: BrowserTarget;
+  mode: string | undefined;
+  manifest: WebExtensionManifest;
+  srcDir: string;
+  target: ExtensionTarget;
 }
 
 export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestProps> {
@@ -88,5 +87,5 @@ export interface WriteMainfestEntryItemProps {
 export interface WriteManifestFileProps {
   distPath: string;
   manifest: WebExtensionManifest;
-  mode: BuildMode | undefined;
+  mode: string | undefined;
 }
