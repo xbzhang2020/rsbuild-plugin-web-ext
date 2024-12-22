@@ -1,12 +1,13 @@
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import sharp from 'sharp';
-import { getSrcDir } from '../util.js';
+import { getSrcDir } from './util.js';
 
 interface GenerateOptions {
   root?: string;
   template?: string;
-  output?: string;
+  srcDir?: string;
+  outDir?: string;
   size?: string;
 }
 
@@ -26,7 +27,7 @@ function getTemplateIconPath(root: string, template?: string) {
   throw new Error('Icon template not found');
 }
 
-async function generateIcons({ root = process.cwd(), template, output, size = ICON_SIZES.join(',') }: GenerateOptions) {
+async function generateIcons({ root = process.cwd(), template, outDir, size = ICON_SIZES.join(',') }: GenerateOptions) {
   const input = getTemplateIconPath(root, template);
   const sizes = size
     .split(',')
@@ -35,7 +36,7 @@ async function generateIcons({ root = process.cwd(), template, output, size = IC
 
   for (const size of sizes) {
     const newIncoName = `icon-${size}.png`;
-    const newIconPath = output ? resolve(root, output, newIncoName) : resolve(dirname(input), newIncoName);
+    const newIconPath = outDir ? resolve(root, outDir, newIncoName) : resolve(dirname(input), newIncoName);
     await sharp(input).resize(size).toFile(newIconPath);
   }
 }

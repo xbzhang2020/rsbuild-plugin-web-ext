@@ -1,5 +1,5 @@
 import { program } from 'commander';
-import { generateIcons } from './generate/index.js';
+import { generateIcons } from './generate.js';
 
 function main() {
   program
@@ -10,7 +10,7 @@ function main() {
     .option('-r, --root <dir>', 'root path (defaults to cwd)')
     .option('-t, --template <name>', "template's name or path")
     .option('-s, --size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)')
-    .option('-o, --output <dir>', 'output directory')
+    .option('-o, --out-dir <dir>', 'output directory')
     .action(async (type, options) => {
       if (type === 'icons') {
         try {
