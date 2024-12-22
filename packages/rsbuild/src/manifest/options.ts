@@ -1,4 +1,4 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getSingleEntryFile } from './util.js';
 
 const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
@@ -19,7 +19,7 @@ const readOptionsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const input = options_ui?.page || options_page;
   if (!input) return null;
 
-  const entry: ManifestEntry = {
+  const entry: ManifestEntryInput = {
     options: {
       input: [input],
       html: true,

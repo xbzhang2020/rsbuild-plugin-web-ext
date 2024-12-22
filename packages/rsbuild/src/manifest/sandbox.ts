@@ -1,4 +1,4 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getMultipleEntryFiles, getSingleEntryFile } from './util.js';
 
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files, target }) => {
@@ -22,7 +22,7 @@ const readSandboxEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const pages = manifest?.sandbox?.pages || [];
   if (!pages.length) return null;
 
-  const entry: ManifestEntry = {};
+  const entry: ManifestEntryInput = {};
   pages.forEach((page, index) => {
     const name = `sandbox${pages.length === 1 ? '' : index}`;
     entry[name] = {

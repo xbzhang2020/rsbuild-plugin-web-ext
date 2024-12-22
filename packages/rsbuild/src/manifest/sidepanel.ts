@@ -1,4 +1,4 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getSingleEntryFile } from './util.js';
 
 const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files, target }) => {
@@ -27,7 +27,7 @@ const readSidepanelEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const input = side_panel?.default_path || sidebar_action?.default_panel;
   if (!input) return null;
 
-  const entry: ManifestEntry = {
+  const entry: ManifestEntryInput = {
     sidepanel: {
       input: [input],
       html: true,

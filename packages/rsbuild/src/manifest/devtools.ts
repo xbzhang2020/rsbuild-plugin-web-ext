@@ -1,4 +1,4 @@
-import type { ManifestEntry, ManifestEntryProcessor } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getSingleEntryFile } from './util.js';
 
 const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
@@ -13,7 +13,7 @@ const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, r
 const readDevtoolsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { devtools_page } = manifest || {};
   if (!devtools_page) return null;
-  const entry: ManifestEntry = {
+  const entry: ManifestEntryInput = {
     devtools: {
       input: [devtools_page],
       html: true,

@@ -4,7 +4,7 @@ import type { Manifest } from 'webextension-polyfill';
 export type BuildMode = 'development' | 'production' | 'none' | undefined;
 export type BrowserTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3';
 
-export type WebExtensionManifest = Manifest.WebExtensionManifest & {
+export interface WebExtensionManifest extends Manifest.WebExtensionManifest {
   // Firefox doesn't support sandbox
   sandbox?: {
     pages: string[];
@@ -14,20 +14,19 @@ export type WebExtensionManifest = Manifest.WebExtensionManifest & {
   side_panel?: {
     default_path?: string;
   };
-};
+}
 
-export type ContentScriptConfig = {
+export interface ContentScriptConfig {
   matches: string[];
   exclude_matches?: string[];
   css?: string[];
-  js?: string[];
   run_at?: 'document_start' | 'document_end' | 'document_idle';
   all_frames?: boolean;
   match_about_blank?: boolean;
   include_globs?: string[];
   exclude_globs?: string[];
   world?: 'ISOLATED' | 'MAIN';
-};
+}
 
 export type PageToOverride = 'newtab' | 'history' | 'bookmarks';
 
@@ -48,13 +47,16 @@ interface ManifestEntryItem {
   html?: boolean;
 }
 
-export type ManifestEntryProcessor = {
+export type ManifestEntryInput = Record<string, Omit<ManifestEntryItem, 'output'>>;
+export type ManifestEntryOutput = Record<string, Pick<ManifestEntryItem, 'input' | 'output'>>;
+
+export interface ManifestEntryProcessor {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
-  read: (manifest?: WebExtensionManifest) => ManifestEntry | null;
+  read: (manifest?: WebExtensionManifest) => ManifestEntryInput | null;
   write: (props: WriteMainfestEntryItemProps) => void | Promise<void>;
-};
+}
 
 export interface NormalizeManifestProps {
   rootPath: string;
@@ -69,13 +71,10 @@ export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestP
   files: Dirent[];
 }
 
-export type ManifestEntry = Record<string, Omit<ManifestEntryItem, 'output'>>;
-export type ManifestEntryOutput = Record<string, Pick<ManifestEntryItem, 'input' | 'output'>>;
-
 export interface WriteMainfestEntriesProps {
   manifest: WebExtensionManifest;
   rootPath: string;
-  entry?: ManifestEntryOutput;
+  entry: ManifestEntryOutput;
 }
 
 export interface WriteMainfestEntryItemProps {

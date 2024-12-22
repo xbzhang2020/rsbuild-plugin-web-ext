@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import { parseExportObject } from './parser/export.js';
-import type { ContentScriptConfig, ManifestEntry, ManifestEntryProcessor } from './types.js';
+import type { ContentScriptConfig, ManifestEntryProcessor, ManifestEntryInput } from './types.js';
 import { getFileContent, getMultipleEntryFiles, getSingleEntryFile, isDevMode } from './util.js';
 
 const CONTENT_RUNTIME_NAME = 'content_runtime';
@@ -56,7 +56,7 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
   const { content_scripts } = manifest || {};
   if (!content_scripts?.length) return null;
 
-  const entry: ManifestEntry = {};
+  const entry: ManifestEntryInput = {};
   content_scripts.forEach((contentScript, index) => {
     const name = isRumtimeContentScript(contentScript)
       ? CONTENT_RUNTIME_NAME

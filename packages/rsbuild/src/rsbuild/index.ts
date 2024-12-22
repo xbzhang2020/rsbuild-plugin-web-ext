@@ -3,14 +3,14 @@ import { readdir, unlink } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import type { EnvironmentConfig, OutputConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
 import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
-import type { ManifestEntry, WebExtensionManifest } from '../manifest/types.js';
+import type { ManifestEntryInput, WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
 function isDevMode(mode: string | undefined) {
   return mode === 'development';
 }
 
-function transformManifestEntry(entry: ManifestEntry | undefined) {
+function transformManifestEntry(entry: ManifestEntryInput | undefined) {
   if (!entry) return;
   const res: RsbuildEntry = {};
   for (const key in entry) {

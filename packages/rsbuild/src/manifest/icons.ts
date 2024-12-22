@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
-import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getAssetFiles } from './util.js';
 
 const getDeclarativeIcons = (entryPath: string[]) => {
@@ -69,7 +69,7 @@ const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
   helper(pointer?.default_icon);
 
   if (paths.size === 0) return null;
-  const entry: ManifestEntry = {
+  const entry: ManifestEntryInput = {
     icons: {
       input: Array.from(paths),
       html: false,

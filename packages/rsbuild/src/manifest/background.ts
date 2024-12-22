@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
-import type { ManifestEntry, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getSingleEntryFile, isDevMode } from './util.js';
 
 const BACKGROUND_RUNTIME_PATH = 'static/background_runtime.js';
@@ -52,7 +52,7 @@ const readBackgroundEntry: ManifestEntryProcessor['read'] = (manifest) => {
   }
 
   if (!input.length) return null;
-  const entry: ManifestEntry = {
+  const entry: ManifestEntryInput = {
     background: {
       input,
       html: false,

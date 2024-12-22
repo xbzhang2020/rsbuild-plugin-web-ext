@@ -13,7 +13,7 @@ import sidepanelProcessor from './sidepanel.js';
 import type {
   BrowserTarget,
   BuildMode,
-  ManifestEntry,
+  ManifestEntryInput,
   ManifestEntryProcessor,
   NormalizeManifestProps,
   WebExtensionManifest,
@@ -135,7 +135,7 @@ async function getDefaultManifest(rootPath: string, target?: BrowserTarget) {
 export function readManifestEntries(manifest: WebExtensionManifest) {
   return entryProcessors.reduce(
     (res, processor) => Object.assign(res, { [processor.key]: processor.read(manifest) }),
-    {} as Record<ManifestEntryProcessor['key'], ManifestEntry | null>,
+    {} as Record<ManifestEntryProcessor['key'], ManifestEntryInput | null>,
   );
 }
 
