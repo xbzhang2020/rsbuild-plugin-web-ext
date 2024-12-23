@@ -1,13 +1,26 @@
 import { program } from 'commander';
 import { generateIcons } from './generate.js';
+import { runDev, runBuild } from './rsbuild.js';
+import type { Command } from 'commander';
+
+function applyCommonRsbuildOptions(command: Command) {
+  command
+    .option('-r, --root <root>', 'specify the project root directory')
+    .option('-c --config <config>', 'specify the configuration file')
+    .option('-m --mode <mode>', 'specify the build mode, can be `development`, `production` or `none`')
+    .option('--env-mode <mode>', 'specify the env mode to load the `.env.[mode]` file')
+    .option('--env-dir <dir>', 'specify the directory to load `.env` files')
+    .option('-t, --target <target>', 'specify the extension target');
+}
 
 function main() {
-  program
-    .command('generate')
-    .alias('g')
-    .description('generate files')
+  const generateCommand = program.command('generate').alias('g').description('generate files');
+  const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
+  const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
+
+  generateCommand
     .argument('<type>', 'type of file (icons)')
-    .option('-r, --root <dir>', 'root path (defaults to cwd)')
+    .option('-r, --root <dir>', 'specify the project root directory')
     .option('-t, --template <name>', "template's name or path")
     .option('-s, --size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)')
     .option('-o, --out-dir <dir>', 'output directory')
@@ -23,6 +36,28 @@ function main() {
         }
       }
     });
+
+  for (const command of [rsbuildDevCommand, rsbuildBuildCommand]) {
+    applyCommonRsbuildOptions(command);
+  }
+
+  rsbuildDevCommand.action((options = {}) => {
+    // TODO: try-catch
+    const { target, ...rsbuildCliOptions } = options;
+    if (options.target) {
+      process.env.WEB_EXTEND_TARGET = options.target;
+    }
+    runDev({ cliOptions: rsbuildCliOptions });
+  });
+
+  rsbuildBuildCommand.action((options) => {
+    // TODO: support watch mode
+    const { target, ...rsbuildCliOptions } = options;
+    if (options.target) {
+      process.env.WEB_EXTEND_TARGET = options.target;
+    }
+    runBuild({ cliOptions: rsbuildCliOptions });
+  });
 
   program.parse();
 }

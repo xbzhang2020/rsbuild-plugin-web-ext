@@ -2,7 +2,7 @@ import './content.css';
 import type { ContentScriptConfig } from '../../lib';
 import './env.d.ts';
 
-console.log('content21');
+console.log('content3');
 
 // see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
 export const config: ContentScriptConfig = {
