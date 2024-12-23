@@ -1,6 +1,6 @@
+import { resolve } from 'node:path';
 import { createRsbuild, loadConfig, loadEnv } from '@rsbuild/core';
 import type { RsbuildMode } from '@rsbuild/core';
-import { resolve } from 'node:path';
 
 export type CommonOptions = {
   root?: string;

@@ -1,7 +1,7 @@
 import { program } from 'commander';
-import { generateIcons } from './generate.js';
-import { runDev, runBuild } from './rsbuild.js';
 import type { Command } from 'commander';
+import { generateIcons } from './generate.js';
+import { runBuild, runDev } from './rsbuild.js';
 
 function applyCommonRsbuildOptions(command: Command) {
   command
