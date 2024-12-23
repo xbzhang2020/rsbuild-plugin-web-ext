@@ -1,9 +1,9 @@
 import { program } from 'commander';
 import type { Command } from 'commander';
 import { generateIcons } from './generate.js';
-import { runBuild, runDev } from './rsbuild.js';
 import type { GenerateOptions } from './generate.js';
-import type { DevOptions as RsbuildDevOptions, BuildOptions as RsbuildBuildOptions } from './rsbuild.js';
+import { runBuild, runDev } from './rsbuild.js';
+import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
 
 interface CommonRunOptions {
   target?: string;

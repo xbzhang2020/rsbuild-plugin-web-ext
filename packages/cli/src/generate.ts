@@ -43,7 +43,7 @@ async function generateIcons({
   filename = 'icon-{size}.png',
 }: GenerateOptions) {
   const input = getTemplatePath(root, template, 'icon.png');
-  
+
   const sizes = size
     .split(',')
     .map((item) => Number(item))
