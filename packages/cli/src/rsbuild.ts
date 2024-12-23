@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { createRsbuild, loadConfig, loadEnv } from '@rsbuild/core';
 import type { RsbuildMode } from '@rsbuild/core';
 
-export type CommonOptions = {
+interface CommonOptions {
   root?: string;
   mode?: RsbuildMode;
   config?: string;
@@ -12,7 +12,10 @@ export type CommonOptions = {
   host?: string;
   port?: number;
   environment?: string[];
-};
+}
+
+export type DevOptions = CommonOptions;
+export type BuildOptions = CommonOptions;
 
 // forked form https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
 async function init({ cliOptions }: { cliOptions?: CommonOptions }) {
@@ -79,14 +82,17 @@ async function init({ cliOptions }: { cliOptions?: CommonOptions }) {
   return rsbuild;
 }
 
-async function runDev({ cliOptions }: { cliOptions?: CommonOptions }) {
+async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   const rsbuild = await init({ cliOptions });
-  await rsbuild.startDevServer();
+  await rsbuild?.startDevServer();
 }
 
-async function runBuild({ cliOptions }: { cliOptions?: CommonOptions }) {
-  const rsbuild = await init({ cliOptions });
-  await rsbuild.build();
+async function runBuild({ cliOptions }: { cliOptions: BuildOptions }) {
+  const rsbuild = await init({
+    cliOptions: cliOptions,
+  });
+  const buildInstance = await rsbuild?.build({});
+  await buildInstance?.close();
 }
 
 export { runDev, runBuild };

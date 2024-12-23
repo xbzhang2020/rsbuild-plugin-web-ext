@@ -2,8 +2,78 @@ import { program } from 'commander';
 import type { Command } from 'commander';
 import { generateIcons } from './generate.js';
 import { runBuild, runDev } from './rsbuild.js';
+import type { GenerateOptions } from './generate.js';
+import type { DevOptions as RsbuildDevOptions, BuildOptions as RsbuildBuildOptions } from './rsbuild.js';
 
-function applyCommonRsbuildOptions(command: Command) {
+interface CommonRunOptions {
+  target?: string;
+}
+
+function main() {
+  const generateCommand = program
+    .command('generate')
+    .alias('g')
+    .argument('<type>', 'type of file (icons)')
+    .description('generate files');
+  const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
+  const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
+
+  applyCommonGenerateOptions(generateCommand);
+
+  generateCommand.action(async (type, options: GenerateOptions) => {
+    try {
+      if (type === 'icons') {
+        await generateIcons(options);
+      }
+      console.log(`Generated ${type} successfully!`);
+    } catch (error) {
+      console.error(`Generated ${type} failed:`, (error as Error).message);
+      process.exit(1);
+    }
+  });
+
+  for (const command of [rsbuildDevCommand, rsbuildBuildCommand]) {
+    applyCommonRunOptions(command);
+  }
+
+  rsbuildDevCommand.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
+    const { target, ...rsbuildCliOptions } = options;
+    prepareRun(target);
+
+    try {
+      await runDev({ cliOptions: rsbuildCliOptions });
+    } catch (err) {
+      console.error('Failed to start dev server.');
+      console.error(err);
+      process.exit(1);
+    }
+  });
+
+  rsbuildBuildCommand.action(async (options: CommonRunOptions & RsbuildBuildOptions) => {
+    const { target, ...rsbuildCliOptions } = options;
+    prepareRun(target);
+    try {
+      runBuild({ cliOptions: rsbuildCliOptions });
+    } catch (err) {
+      console.error('Failed to build.');
+      console.error(err);
+      process.exit(1);
+    }
+  });
+
+  program.parse();
+}
+
+function applyCommonGenerateOptions(command: Command) {
+  command
+    .option('-r, --root <dir>', 'specify the project root directory')
+    .option('-t, --template <name>', "specify the template's name")
+    .option('-o, --out-dir <dir>', 'output directory')
+    .option('--filename <name>', 'specify the filename')
+    .option('--size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)');
+}
+
+function applyCommonRunOptions(command: Command) {
   command
     .option('-r, --root <root>', 'specify the project root directory')
     .option('-c --config <config>', 'specify the configuration file')
@@ -13,53 +83,10 @@ function applyCommonRsbuildOptions(command: Command) {
     .option('-t, --target <target>', 'specify the extension target');
 }
 
-function main() {
-  const generateCommand = program.command('generate').alias('g').description('generate files');
-  const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
-  const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
-
-  generateCommand
-    .argument('<type>', 'type of file (icons)')
-    .option('-r, --root <dir>', 'specify the project root directory')
-    .option('-t, --template <name>', "template's name or path")
-    .option('-s, --size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)')
-    .option('-o, --out-dir <dir>', 'output directory')
-    .action(async (type, options) => {
-      if (type === 'icons') {
-        try {
-          console.log('options', options);
-          await generateIcons(options);
-          console.log('Generated icons successfully!');
-        } catch (error) {
-          console.error('Generated icons failed:', (error as Error).message);
-          process.exit(1);
-        }
-      }
-    });
-
-  for (const command of [rsbuildDevCommand, rsbuildBuildCommand]) {
-    applyCommonRsbuildOptions(command);
+function prepareRun(target: string | undefined) {
+  if (target) {
+    process.env.WEB_EXTEND_TARGET = target;
   }
-
-  rsbuildDevCommand.action((options = {}) => {
-    // TODO: try-catch
-    const { target, ...rsbuildCliOptions } = options;
-    if (options.target) {
-      process.env.WEB_EXTEND_TARGET = options.target;
-    }
-    runDev({ cliOptions: rsbuildCliOptions });
-  });
-
-  rsbuildBuildCommand.action((options) => {
-    // TODO: support watch mode
-    const { target, ...rsbuildCliOptions } = options;
-    if (options.target) {
-      process.env.WEB_EXTEND_TARGET = options.target;
-    }
-    runBuild({ cliOptions: rsbuildCliOptions });
-  });
-
-  program.parse();
 }
 
 export { main };
