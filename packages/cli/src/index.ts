@@ -49,7 +49,7 @@ function applyGenerateCommand(command: Command) {
 function applyRsbuildDevCommand(command: Command) {
   applyCommonRunOptions(command);
   applyServerOptions(command);
-  
+
   command.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);

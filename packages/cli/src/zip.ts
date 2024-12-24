@@ -1,6 +1,6 @@
 import { createWriteStream, existsSync } from 'node:fs';
+import { basename, dirname, resolve } from 'node:path';
 import archiver from 'archiver';
-import { resolve, dirname, basename } from 'node:path';
 
 export interface ZipOptions {
   filename?: string;
