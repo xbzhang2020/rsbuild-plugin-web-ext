@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { createRsbuild, loadConfig, loadEnv } from '@rsbuild/core';
 import type { RsbuildMode } from '@rsbuild/core';
 import { normalizeWebExtRunConfig } from './web-ext.js';
+import type { TargetType } from './web-ext.js';
 
 interface CommonOptions {
   root?: string;
@@ -112,15 +113,11 @@ async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   if (cliOptions.open && webExt) {
     rsbuild.onDevCompileDone(async () => {
       if (extensionRunner !== null) return;
-      const distPath = rsbuild.context.distPath;
-      const target = process.env.WEB_EXTEND_TARGET || '';
-      const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
-      const startUrl = cliOptions.open && typeof cliOptions.open === 'string' ? cliOptions.open : undefined;
 
       const config = await normalizeWebExtRunConfig(root, {
-        target: browser,
-        startUrl,
-        sourceDir: distPath,
+        target: getBrowserTarget(),
+        startUrl: typeof cliOptions.open === 'string' ? cliOptions.open : undefined,
+        sourceDir: rsbuild.context.distPath,
       });
 
       webExt.cmd
@@ -138,6 +135,12 @@ async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   }
 
   await rsbuild?.startDevServer();
+}
+
+export function getBrowserTarget(): TargetType {
+  const target = process.env.WEB_EXTEND_TARGET || '';
+  const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
+  return browser;
 }
 
 async function runBuild({ cliOptions }: { cliOptions: BuildOptions }) {
