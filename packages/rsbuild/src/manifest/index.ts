@@ -22,7 +22,7 @@ import type {
 } from './types.js';
 import { readPackageJson } from './util.js';
 
-export { getExtensionTarget, getOutputDir, getSrcDir } from './env.js';
+export { getTarget, setTargetEnv, getOutDir, getSrcDir, setOutDirEnv } from './env.js';
 
 const entryProcessors: ManifestEntryProcessor[] = [
   backgroundProcessor,

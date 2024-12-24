@@ -13,13 +13,12 @@ function main() {
   const generateCommand = program
     .command('generate')
     .alias('g')
-    .argument('<type>', 'type of file (icons)')
+    .argument('<type>', 'type of files')
     .description('generate files');
   const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
   const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
 
   applyCommonGenerateOptions(generateCommand);
-
   generateCommand.action(async (type, options: GenerateOptions) => {
     try {
       if (type === 'icons') {
@@ -32,10 +31,8 @@ function main() {
     }
   });
 
-  for (const command of [rsbuildDevCommand, rsbuildBuildCommand]) {
-    applyCommonRunOptions(command);
-  }
-
+  applyCommonRunOptions(rsbuildDevCommand);
+  applyServerOptions(rsbuildDevCommand);
   rsbuildDevCommand.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);
@@ -49,6 +46,7 @@ function main() {
     }
   });
 
+  applyCommonRunOptions(rsbuildBuildCommand);
   rsbuildBuildCommand.action(async (options: CommonRunOptions & RsbuildBuildOptions) => {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);
@@ -67,10 +65,10 @@ function main() {
 function applyCommonGenerateOptions(command: Command) {
   command
     .option('-r, --root <dir>', 'specify the project root directory')
-    .option('-t, --template <name>', "specify the template's name")
-    .option('-o, --out-dir <dir>', 'output directory')
-    .option('--filename <name>', 'specify the filename')
-    .option('--size <size>', 'sizes of output icons (defaults to 16,32,48,64,128)');
+    .option('-t, --template <name>', "specify the template's name or path")
+    .option('--out-dir <dir>', 'specify the output directory')
+    .option('--filename <name>', 'specify the output filename')
+    .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)');
 }
 
 function applyCommonRunOptions(command: Command) {
@@ -81,6 +79,12 @@ function applyCommonRunOptions(command: Command) {
     .option('--env-mode <mode>', 'specify the env mode to load the `.env.[mode]` file')
     .option('--env-dir <dir>', 'specify the directory to load `.env` files')
     .option('-t, --target <target>', 'specify the extension target');
+}
+
+function applyServerOptions(command: Command) {
+  command
+    .option('-o --open [url]', 'open the page in browser on startup')
+    .option('--port <port>', 'specify a port number for server to listen');
 }
 
 function prepareRun(target: string | undefined) {

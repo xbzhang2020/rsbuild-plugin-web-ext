@@ -20,7 +20,7 @@ const EXTENSION_TARGETS: ExtensionTarget[] = [
 ];
 const DEFAULT_TARGET: ExtensionTarget = 'chrome-mv3';
 
-export const getExtensionTarget = (target?: string): ExtensionTarget => {
+export function getTarget(target?: string): ExtensionTarget {
   const envTarget = process.env.WEB_EXTEND_TARGET as ExtensionTarget;
   if (envTarget && EXTENSION_TARGETS.includes(envTarget)) {
     return envTarget;
@@ -31,16 +31,51 @@ export const getExtensionTarget = (target?: string): ExtensionTarget => {
     return optionTarget;
   }
   return DEFAULT_TARGET;
-};
+}
 
-export const getSrcDir = (rootPath: string, srcDir: string | undefined) => {
+export function setTargetEnv(target: string) {
+  if (target) {
+    process.env.WEB_EXTEND_TARGET = target;
+  }
+}
+
+export function getSrcDir(rootPath: string, srcDir: string | undefined) {
   if (srcDir) return srcDir;
   return existsSync(resolve(rootPath, './src/')) ? './src' : './';
-};
+}
 
-export function getOutputDir(distPath: string | undefined, target: ExtensionTarget, mode: string | undefined) {
-  const tag = isDevMode(mode) ? 'dev' : isProdMode(mode) ? 'prod' : mode || '';
+interface GetOutDirProps {
+  outdir?: string | undefined;
+  distPath?: string | undefined;
+  target?: ExtensionTarget;
+  mode?: string | undefined;
+  tag?: string | undefined;
+}
+
+export function getOutDir({ outdir, distPath, target, mode, tag }: GetOutDirProps) {
+  const envOutdir = process.env.WEB_EXTEND_OUT_DIR;
+  if (envOutdir) return envOutdir;
+
+  if (outdir) return outdir;
+
   const dir = distPath || 'dist';
-  const subDir = [target || DEFAULT_TARGET, tag].filter(Boolean).join('-');
+
+  let postfix = '';
+  if (tag) {
+    postfix = tag;
+  } else if (isDevMode(mode)) {
+    postfix = 'dev';
+  } else if (isProdMode(mode)) {
+    postfix = 'dev';
+  } else {
+    postfix = mode || '';
+  }
+  const subDir = [target || DEFAULT_TARGET, postfix].filter(Boolean).join('-');
   return join(dir, subDir);
+}
+
+export function setOutDirEnv(outDir: string) {
+  if (outDir) {
+    process.env.WEB_EXTEND_OUT_DIR = outDir;
+  }
 }

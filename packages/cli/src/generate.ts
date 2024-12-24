@@ -14,7 +14,7 @@ export interface GenerateOptions {
 
 const ICON_SIZES = [16, 32, 48, 64, 128];
 
-function getTemplatePath(root: string, template: string | undefined, defaultTemplate: string) {
+function getTemplateIconPath(root: string, template: string | undefined) {
   let templatePath = '';
 
   if (template) {
@@ -25,6 +25,7 @@ function getTemplatePath(root: string, template: string | undefined, defaultTemp
     return templatePath;
   }
 
+  const defaultTemplate = 'icon.png';
   const srcPath = resolve(root, getSrcDir(root));
   templatePath = resolve(srcPath, 'assets', defaultTemplate);
   if (existsSync(templatePath)) return templatePath;
@@ -42,7 +43,7 @@ async function generateIcons({
   size = ICON_SIZES.join(','),
   filename = 'icon-{size}.png',
 }: GenerateOptions) {
-  const input = getTemplatePath(root, template, 'icon.png');
+  const input = getTemplateIconPath(root, template);
 
   const sizes = size
     .split(',')

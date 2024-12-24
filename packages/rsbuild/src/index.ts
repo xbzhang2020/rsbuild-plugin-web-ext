@@ -3,12 +3,14 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
   copyPublicFiles,
-  getExtensionTarget,
-  getOutputDir,
+  getTarget,
+  getOutDir,
   getSrcDir,
   normalizeManifest,
   writeManifestEntries,
   writeManifestFile,
+  setOutDirEnv,
+  setTargetEnv,
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
@@ -30,25 +32,34 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
     const selfRootPath = __dirname;
     let manifest = {} as WebExtensionManifest;
     let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
-    const target = getExtensionTarget(options.target);
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       if (config.mode) {
         mode = config.mode;
       }
 
-      const { manifest: optionsManifest, srcDir } = options;
+      const target = getTarget(options.target);
+      setTargetEnv(target);
+
+      const outDir = getOutDir({
+        outdir: options.outDir,
+        distPath: config.output?.distPath?.root,
+        target,
+        mode,
+      });
+      setOutDirEnv(outDir);
+      
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
-        manifest: optionsManifest as WebExtensionManifest,
-        srcDir: getSrcDir(rootPath, srcDir),
-        target: getExtensionTarget(options.target),
+        manifest: options.manifest as WebExtensionManifest,
+        srcDir: getSrcDir(rootPath, options.srcDir),
+        target,
         mode,
       });
 
       const environments = await normalizeRsbuildEnvironments({ manifest, config, selfRootPath, rootPath });
-      const outDir = options.outDir || getOutputDir(config.output?.distPath?.root, target, mode);
+
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {

@@ -17,7 +17,7 @@ interface CommonOptions {
 export type DevOptions = CommonOptions;
 export type BuildOptions = CommonOptions;
 
-// forked form https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
+// forked from https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
 async function init({ cliOptions }: { cliOptions?: CommonOptions }) {
   const commonOpts = cliOptions || {};
   const cwd = process.cwd();
@@ -82,8 +82,60 @@ async function init({ cliOptions }: { cliOptions?: CommonOptions }) {
   return rsbuild;
 }
 
+interface ExtensionRunner {
+  reloadAllExtensions: () => void;
+  exit: () => void;
+}
+
 async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
-  const rsbuild = await init({ cliOptions });
+  let webExt = null;
+  let extensionRunner: ExtensionRunner | null = null;
+
+  if (cliOptions.open) {
+    webExt = await import('web-ext')
+      .then((mod) => mod.default)
+      .catch(() => {
+        console.warn(`Cannot find package 'web-ext', fell back to default open method.`);
+        return null;
+      });
+  }
+
+  const rsbuild = await init({
+    cliOptions: {
+      ...cliOptions,
+      open: webExt ? false : cliOptions.open,
+    },
+  });
+
+  if (cliOptions.open && webExt) {
+    rsbuild.onDevCompileDone(() => {
+      if (extensionRunner !== null) return;
+      const distPath = rsbuild.context.distPath;
+      const target = process.env.WEB_EXTEND_TARGET || '';
+      const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
+      const startUrl = cliOptions.open && typeof cliOptions.open === 'string' ? cliOptions.open : undefined;
+      webExt.cmd
+        .run(
+          {
+            target: browser,
+            sourceDir: distPath,
+            noReload: true,
+            startUrl,
+          },
+          {
+            shouldExitProgram: false,
+          },
+        )
+        .then((runner: ExtensionRunner) => {
+          extensionRunner = runner;
+        });
+    });
+
+    rsbuild.onCloseDevServer(() => {
+      extensionRunner?.exit();
+    });
+  }
+
   await rsbuild?.startDevServer();
 }
 
