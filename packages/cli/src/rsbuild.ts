@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { createRsbuild, loadConfig, loadEnv } from '@rsbuild/core';
 import type { RsbuildMode } from '@rsbuild/core';
+import { normalizeWebExtRunConfig } from './web-ext.js';
 
 interface CommonOptions {
   root?: string;
@@ -90,12 +91,13 @@ interface ExtensionRunner {
 async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   let webExt = null;
   let extensionRunner: ExtensionRunner | null = null;
+  const root = cliOptions.root || process.cwd();
 
   if (cliOptions.open) {
     webExt = await import('web-ext')
       .then((mod) => mod.default)
       .catch(() => {
-        console.warn(`Cannot find package 'web-ext', fell back to default open method.`);
+        console.warn(`Cannot find package 'web-ext', falling back to default open method.`);
         return null;
       });
   }
@@ -108,24 +110,23 @@ async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   });
 
   if (cliOptions.open && webExt) {
-    rsbuild.onDevCompileDone(() => {
+    rsbuild.onDevCompileDone(async () => {
       if (extensionRunner !== null) return;
       const distPath = rsbuild.context.distPath;
       const target = process.env.WEB_EXTEND_TARGET || '';
       const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
       const startUrl = cliOptions.open && typeof cliOptions.open === 'string' ? cliOptions.open : undefined;
+
+      const config = await normalizeWebExtRunConfig(root, {
+        target: browser,
+        startUrl,
+        sourceDir: distPath,
+      });
+
       webExt.cmd
-        .run(
-          {
-            target: browser,
-            sourceDir: distPath,
-            noReload: true,
-            startUrl,
-          },
-          {
-            shouldExitProgram: false,
-          },
-        )
+        .run(config, {
+          shouldExitProgram: false,
+        })
         .then((runner: ExtensionRunner) => {
           extensionRunner = runner;
         });
