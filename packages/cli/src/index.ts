@@ -4,36 +4,53 @@ import { generateIcons } from './generate.js';
 import type { GenerateOptions } from './generate.js';
 import { runBuild, runDev } from './rsbuild.js';
 import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
+import { zip } from './zip.js';
+import type { ZipOptions } from './zip.js';
 
 interface CommonRunOptions {
   target?: string;
 }
 
 function main() {
-  const generateCommand = program
-    .command('generate')
-    .alias('g')
-    .argument('<type>', 'type of files')
-    .description('generate files');
+  const generateCommand = program.command('generate').alias('g').description('generate files');
   const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
   const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
+  const zipCommand = program.command('zip').description('package an extension into a .zip file for publishing');
 
-  applyCommonGenerateOptions(generateCommand);
-  generateCommand.action(async (type, options: GenerateOptions) => {
-    try {
-      if (type === 'icons') {
-        await generateIcons(options);
+  applyGenerateCommand(generateCommand);
+  applyRsbuildDevCommand(rsbuildDevCommand);
+  applyRsbuildBuildCommand(rsbuildBuildCommand);
+  applyZipCommand(zipCommand);
+
+  program.parse();
+}
+
+function applyGenerateCommand(command: Command) {
+  command
+    .argument('<type>', 'type of files')
+    .option('-r, --root <dir>', 'specify the project root directory')
+    .option('-t, --template <name>', "specify the template's name or path")
+    .option('-o, --out-dir <dir>', 'specify the output directory')
+    .option('-n, --filename <name>', 'specify the output filename')
+    .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)')
+    .action(async (type, options: GenerateOptions) => {
+      try {
+        if (type === 'icons') {
+          await generateIcons(options);
+        }
+        console.log(`Generated ${type} successfully!`);
+      } catch (error) {
+        console.error(`Generated ${type} failed:`, (error as Error).message);
+        process.exit(1);
       }
-      console.log(`Generated ${type} successfully!`);
-    } catch (error) {
-      console.error(`Generated ${type} failed:`, (error as Error).message);
-      process.exit(1);
-    }
-  });
+    });
+}
 
-  applyCommonRunOptions(rsbuildDevCommand);
-  applyServerOptions(rsbuildDevCommand);
-  rsbuildDevCommand.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
+function applyRsbuildDevCommand(command: Command) {
+  applyCommonRunOptions(command);
+  applyServerOptions(command);
+  
+  command.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);
 
@@ -45,9 +62,11 @@ function main() {
       process.exit(1);
     }
   });
+}
 
-  applyCommonRunOptions(rsbuildBuildCommand);
-  rsbuildBuildCommand.action(async (options: CommonRunOptions & RsbuildBuildOptions) => {
+function applyRsbuildBuildCommand(command: Command) {
+  applyCommonRunOptions(command);
+  command.action(async (options: CommonRunOptions & RsbuildBuildOptions) => {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);
     try {
@@ -58,17 +77,6 @@ function main() {
       process.exit(1);
     }
   });
-
-  program.parse();
-}
-
-function applyCommonGenerateOptions(command: Command) {
-  command
-    .option('-r, --root <dir>', 'specify the project root directory')
-    .option('-t, --template <name>', "specify the template's name or path")
-    .option('--out-dir <dir>', 'specify the output directory')
-    .option('--filename <name>', 'specify the output filename')
-    .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)');
 }
 
 function applyCommonRunOptions(command: Command) {
@@ -85,6 +93,22 @@ function applyServerOptions(command: Command) {
   command
     .option('-o --open [url]', 'open the page in browser on startup')
     .option('--port <port>', 'specify a port number for server to listen');
+}
+
+function applyZipCommand(command: Command) {
+  command
+    .argument('<source>', 'specify the dist path')
+    .option('-r, --root <root>', 'specify the project root directory')
+    .option('-n, --filename', 'specify the output filename')
+    .action(async (source: string, options: ZipOptions) => {
+      try {
+        await zip({ ...options, source });
+      } catch (err) {
+        console.error('Failed to package the extension.');
+        console.error(err);
+        process.exit(1);
+      }
+    });
 }
 
 function prepareRun(target: string | undefined) {
