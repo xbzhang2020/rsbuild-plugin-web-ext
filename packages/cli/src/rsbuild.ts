@@ -137,18 +137,18 @@ async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   await rsbuild?.startDevServer();
 }
 
+async function runBuild({ cliOptions }: { cliOptions: BuildOptions }) {
+  const rsbuild = await init({
+    cliOptions,
+  });
+  const buildInstance = await rsbuild?.build({});
+  await buildInstance?.close();
+}
+
 export function getBrowserTarget(): TargetType {
   const target = process.env.WEB_EXTEND_TARGET || '';
   const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
   return browser;
-}
-
-async function runBuild({ cliOptions }: { cliOptions: BuildOptions }) {
-  const rsbuild = await init({
-    cliOptions: cliOptions,
-  });
-  const buildInstance = await rsbuild?.build({});
-  await buildInstance?.close();
 }
 
 export { runDev, runBuild };

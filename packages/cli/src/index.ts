@@ -51,7 +51,7 @@ function main() {
     const { target, ...rsbuildCliOptions } = options;
     prepareRun(target);
     try {
-      runBuild({ cliOptions: rsbuildCliOptions });
+      await runBuild({ cliOptions: rsbuildCliOptions });
     } catch (err) {
       console.error('Failed to build.');
       console.error(err);

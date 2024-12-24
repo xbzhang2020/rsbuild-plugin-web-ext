@@ -66,7 +66,7 @@ export function getOutDir({ outdir, distPath, target, mode, tag }: GetOutDirProp
   } else if (isDevMode(mode)) {
     postfix = 'dev';
   } else if (isProdMode(mode)) {
-    postfix = 'dev';
+    postfix = 'prod';
   } else {
     postfix = mode || '';
   }
