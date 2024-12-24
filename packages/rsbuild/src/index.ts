@@ -3,14 +3,14 @@ import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
   copyPublicFiles,
-  getTarget,
   getOutDir,
   getSrcDir,
+  getTarget,
   normalizeManifest,
-  writeManifestEntries,
-  writeManifestFile,
   setOutDirEnv,
   setTargetEnv,
+  writeManifestEntries,
+  writeManifestFile,
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
@@ -48,7 +48,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         mode,
       });
       setOutDirEnv(outDir);
-      
+
       manifest = await normalizeManifest({
         rootPath,
         selfRootPath,
