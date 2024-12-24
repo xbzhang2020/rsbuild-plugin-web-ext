@@ -3,6 +3,7 @@ import { createRsbuild, loadConfig, loadEnv } from '@rsbuild/core';
 import type { RsbuildMode } from '@rsbuild/core';
 import { normalizeWebExtRunConfig } from './web-ext.js';
 import type { TargetType } from './web-ext.js';
+import { zipExtenison } from './zip.js';
 
 interface CommonOptions {
   root?: string;
@@ -14,13 +15,16 @@ interface CommonOptions {
   host?: string;
   port?: number;
   environment?: string[];
+  target?: string;
 }
 
 export type DevOptions = CommonOptions;
-export type BuildOptions = CommonOptions;
+export interface BuildOptions extends CommonOptions {
+  zip?: boolean;
+}
 
 // forked from https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
-async function init({ cliOptions }: { cliOptions?: CommonOptions }) {
+async function init({ cliOptions }: { cliOptions?: Omit<CommonOptions, 'target'> }) {
   const commonOpts = cliOptions || {};
   const cwd = process.cwd();
   const root = commonOpts.root ? resolve(cwd, commonOpts.root) : cwd;
@@ -89,7 +93,10 @@ interface ExtensionRunner {
   exit: () => void;
 }
 
-async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
+async function runDev(options: DevOptions) {
+  const { target, ...cliOptions } = options;
+  prepareRun(target);
+
   let webExt = null;
   let extensionRunner: ExtensionRunner | null = null;
   const root = cliOptions.root || process.cwd();
@@ -137,15 +144,31 @@ async function runDev({ cliOptions }: { cliOptions: DevOptions }) {
   await rsbuild?.startDevServer();
 }
 
-async function runBuild({ cliOptions }: { cliOptions: BuildOptions }) {
+async function runBuild(options: BuildOptions) {
+  const { target, zip, ...cliOptions } = options;
+  prepareRun(target);
+
   const rsbuild = await init({
     cliOptions,
   });
   const buildInstance = await rsbuild?.build({});
   await buildInstance?.close();
+  
+  if (zip) {
+    await zipExtenison({
+      root: options.root,
+      source: rsbuild.context.distPath,
+    });
+  }
 }
 
-export function getBrowserTarget(): TargetType {
+function prepareRun(target: string | undefined) {
+  if (target) {
+    process.env.WEB_EXTEND_TARGET = target;
+  }
+}
+
+function getBrowserTarget(): TargetType {
   const target = process.env.WEB_EXTEND_TARGET || '';
   const browser = target?.includes('firefox') ? 'firefox-desktop' : 'chromium';
   return browser;

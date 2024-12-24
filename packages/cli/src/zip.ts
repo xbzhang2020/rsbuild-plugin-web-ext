@@ -8,10 +8,15 @@ export interface ZipOptions {
   source: string;
 }
 
-export async function zip({ filename, source, root = process.cwd() }: ZipOptions) {
+export async function zipExtenison({ filename, source, root = process.cwd() }: ZipOptions) {
   const sourceDir = resolve(root, source);
   if (!existsSync(sourceDir)) {
     throw new Error(`${source} doesn't exist`);
+  }
+
+  const manifestFile = resolve(sourceDir, 'manifest.json');
+  if (!existsSync(manifestFile)) {
+    throw new Error(`${manifestFile} doesn't exist`);
   }
 
   const dest = filename || `${basename(sourceDir)}.zip`;

@@ -4,12 +4,8 @@ import { generateIcons } from './generate.js';
 import type { GenerateOptions } from './generate.js';
 import { runBuild, runDev } from './rsbuild.js';
 import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
-import { zip } from './zip.js';
+import { zipExtenison } from './zip.js';
 import type { ZipOptions } from './zip.js';
-
-interface CommonRunOptions {
-  target?: string;
-}
 
 function main() {
   const generateCommand = program.command('generate').alias('g').description('generate files');
@@ -48,29 +44,25 @@ function applyGenerateCommand(command: Command) {
 
 function applyRsbuildDevCommand(command: Command) {
   applyCommonRunOptions(command);
-  applyServerOptions(command);
-
-  command.action(async (options: CommonRunOptions & RsbuildDevOptions) => {
-    const { target, ...rsbuildCliOptions } = options;
-    prepareRun(target);
-
-    try {
-      await runDev({ cliOptions: rsbuildCliOptions });
-    } catch (err) {
-      console.error('Failed to start dev server.');
-      console.error(err);
-      process.exit(1);
-    }
-  });
+  command
+    .option('-o --open [url]', 'open the page in browser on startup')
+    .option('--port <port>', 'specify a port number for server to listen')
+    .action(async (options: RsbuildDevOptions) => {
+      try {
+        await runDev(options);
+      } catch (err) {
+        console.error('Failed to start dev server.');
+        console.error(err);
+        process.exit(1);
+      }
+    });
 }
 
 function applyRsbuildBuildCommand(command: Command) {
   applyCommonRunOptions(command);
-  command.action(async (options: CommonRunOptions & RsbuildBuildOptions) => {
-    const { target, ...rsbuildCliOptions } = options;
-    prepareRun(target);
+  command.option('-z, --zip', 'package the extension after build').action(async (options: RsbuildBuildOptions) => {
     try {
-      await runBuild({ cliOptions: rsbuildCliOptions });
+      await runBuild(options);
     } catch (err) {
       console.error('Failed to build.');
       console.error(err);
@@ -89,12 +81,6 @@ function applyCommonRunOptions(command: Command) {
     .option('-t, --target <target>', 'specify the extension target');
 }
 
-function applyServerOptions(command: Command) {
-  command
-    .option('-o --open [url]', 'open the page in browser on startup')
-    .option('--port <port>', 'specify a port number for server to listen');
-}
-
 function applyZipCommand(command: Command) {
   command
     .argument('<source>', 'specify the dist path')
@@ -102,19 +88,13 @@ function applyZipCommand(command: Command) {
     .option('-n, --filename', 'specify the output filename')
     .action(async (source: string, options: ZipOptions) => {
       try {
-        await zip({ ...options, source });
+        await zipExtenison({ ...options, source });
       } catch (err) {
         console.error('Failed to package the extension.');
         console.error(err);
         process.exit(1);
       }
     });
-}
-
-function prepareRun(target: string | undefined) {
-  if (target) {
-    process.env.WEB_EXTEND_TARGET = target;
-  }
 }
 
 export { main };
