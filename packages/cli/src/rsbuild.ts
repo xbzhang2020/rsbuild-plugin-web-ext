@@ -153,7 +153,7 @@ async function runBuild(options: BuildOptions) {
   });
   const buildInstance = await rsbuild?.build({});
   await buildInstance?.close();
-  
+
   if (zip) {
     await zipExtenison({
       root: options.root,
