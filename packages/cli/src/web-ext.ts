@@ -71,4 +71,3 @@ export async function normalizeWebExtRunConfig(root: string, options: WebExtOpti
 
   return config;
 }
-
