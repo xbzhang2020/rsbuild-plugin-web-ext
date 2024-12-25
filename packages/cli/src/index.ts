@@ -85,7 +85,8 @@ function applyZipCommand(command: Command) {
   command
     .argument('<source>', 'specify the dist path')
     .option('-r, --root <root>', 'specify the project root directory')
-    .option('-n, --filename', 'specify the output filename')
+    .option('-o, --out-dir <dir>', 'specify the output directory')
+    .option('-n, --filename <filename>', 'specify the output filename')
     .action(async (source: string, options: ZipOptions) => {
       try {
         await zipExtenison({ ...options, source });
