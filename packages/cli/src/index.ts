@@ -1,13 +1,13 @@
+import { resolve } from 'node:path';
 import { program } from 'commander';
 import type { Command } from 'commander';
 import { generateIcons } from './generate.js';
 import type { GenerateOptions } from './generate.js';
+import { createProject, normalizeInitialOptions } from './init.js';
 import { runBuild, runDev } from './rsbuild.js';
 import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
 import { zipExtenison } from './zip.js';
 import type { ZipOptions } from './zip.js';
-import { normalizeInitialOptions, createProject } from './init.js';
-import { resolve } from 'node:path';
 
 function main() {
   const initCommand = program.command('init').description('create a new project');

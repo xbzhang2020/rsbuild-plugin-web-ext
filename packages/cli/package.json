@@ -12,11 +12,7 @@
     "build": "tsc",
     "start": "tsx src/index.ts"
   },
-  "files": [
-    "dist",
-    "bin",
-    "templates/*"
-  ],
+  "files": ["dist", "bin", "templates/*"],
   "keywords": [],
   "author": "",
   "license": "ISC",

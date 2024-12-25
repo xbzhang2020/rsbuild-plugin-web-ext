@@ -1,7 +1,7 @@
-import { input, select } from '@inquirer/prompts';
-import { readdir, cp, copyFile, mkdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
+import { copyFile, cp, mkdir, readdir } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { input, select } from '@inquirer/prompts';
 
 export interface InitialOptions {
   projectName?: string;
