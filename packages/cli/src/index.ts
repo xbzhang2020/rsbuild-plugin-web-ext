@@ -6,13 +6,17 @@ import { runBuild, runDev } from './rsbuild.js';
 import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
 import { zipExtenison } from './zip.js';
 import type { ZipOptions } from './zip.js';
+import { normalizeInitialOptions, createProject } from './init.js';
+import { resolve } from 'node:path';
 
 function main() {
+  const initCommand = program.command('init').description('create a new project');
   const generateCommand = program.command('generate').alias('g').description('generate files');
   const rsbuildDevCommand = program.command('rsbuild:dev').description('execute the dev command of rsbuild');
   const rsbuildBuildCommand = program.command('rsbuild:build').description('execute the build command of rsbuild');
   const zipCommand = program.command('zip').description('package an extension into a .zip file for publishing');
 
+  applyInitCommand(initCommand);
   applyGenerateCommand(generateCommand);
   applyRsbuildDevCommand(rsbuildDevCommand);
   applyRsbuildBuildCommand(rsbuildBuildCommand);
@@ -25,7 +29,7 @@ function applyGenerateCommand(command: Command) {
   command
     .argument('<type>', 'type of files')
     .option('-r, --root <dir>', 'specify the project root directory')
-    .option('-t, --template <name>', "specify the template's name or path")
+    .option('-t, --template <name>', 'specify the template name or path')
     .option('-o, --out-dir <dir>', 'specify the output directory')
     .option('-n, --filename <name>', 'specify the output filename')
     .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)')
@@ -42,10 +46,31 @@ function applyGenerateCommand(command: Command) {
     });
 }
 
+function applyInitCommand(command: Command) {
+  command
+    .argument('[project]')
+    .option('-t, --template', 'specify the template name')
+    .action(async (projectName, cliOptions) => {
+      try {
+        const options = await normalizeInitialOptions({
+          projectName,
+          ...cliOptions,
+        });
+        if (options) {
+          await createProject(options);
+        }
+      } catch (err) {
+        console.error('Failed to create the project.');
+        console.error(err);
+        process.exit(1);
+      }
+    });
+}
+
 function applyRsbuildDevCommand(command: Command) {
   applyCommonRunOptions(command);
   command
-    .option('-o --open [url]', 'open the page in browser on startup')
+    .option('-o, --open [url]', 'open the page in browser on startup')
     .option('--port <port>', 'specify a port number for server to listen')
     .action(async (options: RsbuildDevOptions) => {
       try {
