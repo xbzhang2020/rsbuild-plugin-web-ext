@@ -1,42 +1,32 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const posibleConfigFiles = ['web-ext.config.mjs', 'web-ext.config.cjs', 'web-ext.config.js'];
-
 export type TargetType = 'firefox-desktop' | 'firefox-android' | 'chromium';
 
-export type LintMatcher = {
-  code?: string;
-  message?: string;
-  file?: string;
-};
-
 export interface WebExtOptions {
-  args?: Array<string>;
+  run?: WebExtRunOptions;
+}
+
+export interface WebExtRunOptions {
   artifactsDir?: string;
   browserConsole?: boolean;
-  buildPackage?: boolean;
-  chromiumBinary?: string;
-  chromiumProfile?: string;
   devtools?: boolean;
-  firefox?: string;
-  firefoxPreview?: ['mv3'];
-  firefoxProfile?: string;
-  ignoreFiles?: Array<string>;
-  keepProfileChanges?: boolean;
-  noInput?: boolean;
-  outputFilename?: string;
-  overwriteDest?: boolean;
   pref?: { [key: string]: boolean | string | number };
+  firefox?: string;
+  firefoxProfile?: string;
   profileCreateIfMissing?: boolean;
-  runLint?: boolean;
-  lintWarningsAsErrors?: boolean;
-  ignoreKnownChromeLintFailures?: boolean;
-  filterLintFailures?: Array<LintMatcher>;
-  selfHosted?: boolean;
+  keepProfileChanges?: boolean;
+  ignoreFiles?: string[];
+  noInput?: boolean;
+  // noReload?: boolean;
+  preInstall?: boolean;
   sourceDir?: string;
-  startUrl?: string | Array<string>;
-  target?: TargetType | Array<TargetType>;
+  watchFile?: string[];
+  watchIgnored?: string[];
+  startUrl?: string | string[];
+  target?: TargetType | TargetType[];
+  args?: string[];
+  // Android CLI options.
   adbBin?: string;
   adbHost?: string;
   adbPort?: string;
@@ -45,7 +35,12 @@ export interface WebExtOptions {
   adbRemoveOldArtifacts?: boolean;
   firefoxApk?: string;
   firefoxApkComponent?: string;
+  // Chromium CLI options.
+  chromiumBinary?: string;
+  chromiumProfile?: string;
 }
+
+const posibleConfigFiles = ['web-ext.config.mjs', 'web-ext.config.cjs', 'web-ext.config.js'];
 
 export async function loadWebExtConfig(root: string) {
   const configFile = posibleConfigFiles.map((item) => resolve(root, item)).find((item) => existsSync(item));
@@ -59,11 +54,11 @@ export async function loadWebExtConfig(root: string) {
   }
 }
 
-export async function normalizeWebExtRunConfig(root: string, options: WebExtOptions) {
+export async function normalizeWebExtRunConfig(root: string, options: WebExtRunOptions) {
   const userConfig = await loadWebExtConfig(root);
   const userRunconfig = userConfig?.run || {};
 
-  const config: WebExtOptions = {
+  const config: WebExtRunOptions = {
     ...options,
     ...(userRunconfig || {}),
     noReload: true,
