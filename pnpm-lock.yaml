@@ -18,6 +18,31 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
+  examples/my-extension-app:
+    dependencies:
+      react:
+        specifier: ^19.0.0
+        version: 19.0.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.0.0(react@19.0.0)
+    devDependencies:
+      '@rsbuild/core':
+        specifier: ^1.1.8
+        version: 1.1.12
+      '@rsbuild/plugin-react':
+        specifier: ^1.0.7
+        version: 1.1.0(@rsbuild/core@1.1.12)
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.0.1
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.0.2(@types/react@19.0.1)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.2
+
   examples/with-background: {}
 
   examples/with-content:
@@ -124,6 +149,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.0.2(@types/react@19.0.1)
+      rsbuild-plugin-web-ext:
+        specifier: 0.0.1-alpha.8
+        version: 0.0.1-alpha.8(@rsbuild/core@1.1.12)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -2689,6 +2717,14 @@ packages:
       '@microsoft/api-extractor':
         optional: true
       typescript:
+        optional: true
+
+  rsbuild-plugin-web-ext@0.0.1-alpha.8:
+    resolution: {integrity: sha512-fOEsjM0i5mq0J2OSRau5kDaPr0nbORvIFXYUSxZPzNpxLdyA1+4vAOw9OGeMcqmnhQZ6NWuDQP+ZhcHm/8p8hg==}
+    peerDependencies:
+      '@rsbuild/core': 1.x
+    peerDependenciesMeta:
+      '@rsbuild/core':
         optional: true
 
   run-applescript@5.0.0:
@@ -5601,6 +5637,17 @@ snapshots:
     optionalDependencies:
       '@microsoft/api-extractor': 7.48.1(@types/node@22.10.1)
       typescript: 5.7.2
+
+  rsbuild-plugin-web-ext@0.0.1-alpha.8(@rsbuild/core@1.1.12):
+    dependencies:
+      '@babel/parser': 7.26.3
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
+      sharp: 0.33.5
+    optionalDependencies:
+      '@rsbuild/core': 1.1.12
+    transitivePeerDependencies:
+      - supports-color
 
   run-applescript@5.0.0:
     dependencies:

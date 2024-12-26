@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { program } from 'commander';
 import type { Command } from 'commander';
 import { generateIcons } from './generate.js';
@@ -49,13 +48,14 @@ function applyGenerateCommand(command: Command) {
 function applyInitCommand(command: Command) {
   command
     .argument('[project]')
-    .option('-t, --template', 'specify the template name')
+    .option('-t, --template <name>', 'specify the template name')
     .action(async (projectName, cliOptions) => {
       try {
         const options = await normalizeInitialOptions({
           projectName,
           ...cliOptions,
         });
+        console.log('options', options);
         if (options) {
           await createProject(options);
         }
