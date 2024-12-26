@@ -68,6 +68,17 @@ export async function normalizeManifest({
     if (!finalManifest.host_permissions.includes('*://*/*')) {
       finalManifest.host_permissions.push('*://*/*');
     }
+
+    finalManifest.commands = {
+      'web-extend:reload-extension': {
+        suggested_key: {
+          default: 'Alt+R',
+          mac: 'Alt+R',
+        },
+        description: 'Reload the extension.',
+      },
+      ...(finalManifest.commands || {}),
+    };
   }
 
   try {

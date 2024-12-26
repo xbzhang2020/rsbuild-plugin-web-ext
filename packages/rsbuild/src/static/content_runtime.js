@@ -9,7 +9,7 @@ if (!window.__WEB_EXTEND_RELOAD_INIT__) {
 
   function reloadExtension() {
     if (!browser.runtime) return;
-    browser.runtime.sendMessage({ type: 'web-extend-reload-extension' });
+    browser.runtime.sendMessage({ type: 'web-extend:reload-extension' });
   }
 
   window.addEventListener('beforeunload', reloadExtension);

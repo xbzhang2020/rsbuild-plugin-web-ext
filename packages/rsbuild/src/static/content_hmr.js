@@ -36,7 +36,7 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
       if (file) {
         console.log(`[HMR] fetching script ${file}.`);
         browser.runtime
-          .sendMessage({ type: 'web-extend-execute-script', file })
+          .sendMessage({ type: 'web-extend:execute-script', file })
           .then(onScriptComplete)
           .catch(onScriptComplete);
       }

@@ -6,13 +6,13 @@ if (typeof browser !== 'undefined') {
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (typeof message !== 'object') return;
 
-    if (message.type === 'web-extend-reload-extension') {
+    if (message.type === 'web-extend:reload-extension') {
       browser.runtime.reload();
       sendResponse({ type: 'ok' });
       return;
     }
 
-    if (message.type === 'web-extend-execute-script') {
+    if (message.type === 'web-extend:execute-script') {
       const tabId = sender.tab?.id;
       const file = message.file;
       if (tabId && file) {
@@ -29,6 +29,12 @@ if (typeof browser !== 'undefined') {
           });
       }
       return true;
+    }
+  });
+
+  browser.commands.onCommand.addListener((command) => {
+    if (command === 'web-extend:reload-extension') {
+      browser.runtime.reload();
     }
   });
 }
