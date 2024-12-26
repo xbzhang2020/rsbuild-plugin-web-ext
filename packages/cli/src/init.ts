@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
-import { copyFile, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { join, resolve, dirname } from 'node:path';
+import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { input, select } from '@inquirer/prompts';
 
@@ -97,7 +97,7 @@ export async function normalizeInitialOptions(options: InitialOptions) {
 export async function createProject(options: InitialOptions) {
   const { projectName, template } = options;
   if (!projectName || !template) return;
-  
+
   const root = process.cwd();
   const templatePath = getTemplatePath(template);
   const destPath = resolve(root, projectName);
