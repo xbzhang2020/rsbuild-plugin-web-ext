@@ -7,7 +7,6 @@ import {
   getSrcDir,
   getTarget,
   normalizeManifest,
-  setOutDirEnv,
   setTargetEnv,
   writeManifestEntries,
   writeManifestFile,
@@ -47,7 +46,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         target,
         mode,
       });
-      setOutDirEnv(outDir);
 
       manifest = await normalizeManifest({
         rootPath,

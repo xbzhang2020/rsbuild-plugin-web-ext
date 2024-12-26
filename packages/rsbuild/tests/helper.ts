@@ -4,6 +4,7 @@ import { extname, resolve } from 'node:path';
 import { createRsbuild } from '@rsbuild/core';
 import { pluginWebExt } from '../src/index.js';
 import type { PluginWebExtOptions } from '../src/index.js';
+import { setTargetEnv } from '../src/manifest/env.js';
 
 export { readManifestFile } from '../src/manifest/index.js';
 
@@ -23,6 +24,9 @@ type InitRsbuildOptions = {
 };
 
 export async function initRsbuild({ cwd, mode, pluginOptions }: InitRsbuildOptions) {
+  if (pluginOptions?.target) {
+    setTargetEnv(pluginOptions.target);
+  }
   const rsbuild = await createRsbuild({
     cwd,
     rsbuildConfig: {
