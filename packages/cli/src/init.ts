@@ -114,7 +114,7 @@ async function copyDirectory(src: string, dest: string) {
     const srcPath = join(src, entry.name);
     const destPath = join(dest, entry.name);
 
-    if (entry.name === 'node_modules') continue;
+    if (['node_modules', 'dist'].includes(entry.name)) continue;
 
     if (entry.isDirectory()) {
       await cp(srcPath, destPath, { recursive: true });
