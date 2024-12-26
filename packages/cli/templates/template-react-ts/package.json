@@ -16,7 +16,7 @@
     "@rsbuild/plugin-react": "^1.0.7",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "rsbuild-plugin-web-ext": "0.0.1-alpha.8",
+    "rsbuild-plugin-web-ext": "0.0.1-alpha.9",
     "typescript": "^5.7.2"
   }
 }
