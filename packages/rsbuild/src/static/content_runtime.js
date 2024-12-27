@@ -18,8 +18,6 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
 
       inProgress[url] = [done];
       const onScriptComplete = (event) => {
-        console.log('enevt', code);
-
         const doneFns = inProgress[url];
         delete inProgress[url];
         doneFns?.forEach((fn) => fn(event));
@@ -29,7 +27,6 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
 
       const file = url?.split('/').at(-1);
       if (file) {
-        console.log(`[HMR] fetching script ${file}.`);
         browser.runtime
           .sendMessage({ type: 'web-extend:execute-script', file })
           .then(onScriptComplete)
@@ -37,7 +34,6 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
       }
     };
   }
-
   initializeWebpackLoader();
 }
 
@@ -50,5 +46,5 @@ if (!window.__WEB_EXTEND_RELOAD_INIT__) {
     browser.runtime.sendMessage({ type: 'web-extend:reload-extension' });
   }
 
-  // window.addEventListener('beforeunload', reloadExtension);
+  window.addEventListener('beforeunload', reloadExtension);
 }

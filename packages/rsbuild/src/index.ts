@@ -10,7 +10,12 @@ import {
   writeManifestFile,
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
-import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
+import {
+  clearOutdatedHotUpdateFiles,
+  getRsbuildEntryImport,
+  normalizeRsbuildEnvironments,
+  isDevMode,
+} from './rsbuild/index.js';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
@@ -53,8 +58,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         mode,
       });
 
-      const environments = await normalizeRsbuildEnvironments({ manifest, config, selfRootPath, rootPath });
-
+      const environments = await normalizeRsbuildEnvironments({ manifest, config, selfRootPath });
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {
@@ -79,11 +83,30 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       return mergeRsbuildConfig(config, extraConfig);
     });
 
-    api.processAssets({ stage: 'additional' }, async ({ assets, compilation, environment }) => {
+    api.processAssets({ stage: 'additional' }, async ({ assets, compilation, environment, sources }) => {
       if (environment.name === 'icons') {
         for (const name in assets) {
           if (name.endsWith('.js')) {
             compilation.deleteAsset(name);
+          }
+        }
+        return;
+      }
+
+      // support hmr for multiple content scripts
+      const entries = Object.keys(environment.entry);
+      if (isDevMode(mode) && environment.name === 'content' && entries.length > 1) {
+        for (const name in assets) {
+          if (!name.endsWith('.js')) continue;
+          const entryName = entries.find((item) => name.includes(item));
+          if (entryName) {
+            const oldContent = assets[name].source() as string;
+            const newContent = oldContent.replaceAll(
+              'webpackHotUpdateWebExtend_content',
+              `webpackHotUpdateWebExtend_${entryName}`,
+            );
+            const source = new sources.RawSource(newContent);
+            compilation.updateAsset(name, source);
           }
         }
       }

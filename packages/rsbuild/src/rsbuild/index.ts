@@ -6,7 +6,7 @@ import { readManifestEntries } from '../manifest/index.js';
 import type { ManifestEntryInput, WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
-function isDevMode(mode: string | undefined) {
+export function isDevMode(mode: string | undefined) {
   return mode === 'development';
 }
 
@@ -35,15 +35,9 @@ interface NormalizeEnvironmentProps {
   manifest: WebExtensionManifest;
   config: RsbuildConfig;
   selfRootPath: string;
-  rootPath: string;
 }
 
-export async function normalizeRsbuildEnvironments({
-  manifest,
-  config,
-  selfRootPath,
-  rootPath,
-}: NormalizeEnvironmentProps) {
+export async function normalizeRsbuildEnvironments({ manifest, config, selfRootPath }: NormalizeEnvironmentProps) {
   const { icons, background, content, ...others } = readManifestEntries(manifest);
   const mode = config.mode || process.env.NODE_ENV;
 
@@ -87,6 +81,13 @@ export async function normalizeRsbuildEnvironments({
       },
       dev: {
         assetPrefix: true,
+      },
+      tools: {
+        rspack: {
+          output: {
+            hotUpdateGlobal: 'webpackHotUpdateWebExtend_content',
+          },
+        },
       },
     };
   }
