@@ -5,7 +5,11 @@ import { normalizeWebExtRunConfig } from './web-ext.js';
 import type { TargetType } from './web-ext.js';
 import { zipExtenison } from './zip.js';
 
-interface CommonOptions {
+interface CommonRunOptions {
+  target?: string;
+}
+
+interface RsBuildOptions {
   root?: string;
   mode?: RsbuildMode;
   config?: string;
@@ -15,16 +19,16 @@ interface CommonOptions {
   host?: string;
   port?: number;
   environment?: string[];
-  target?: string;
 }
 
-export type DevOptions = CommonOptions;
-export interface BuildOptions extends CommonOptions {
+export interface DevOptions extends RsBuildOptions, CommonRunOptions {}
+
+export interface BuildOptions extends RsBuildOptions, CommonRunOptions {
   zip?: boolean;
 }
 
 // forked from https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
-async function init({ cliOptions }: { cliOptions?: Omit<CommonOptions, 'target'> }) {
+async function init({ cliOptions }: { cliOptions?: Omit<RsBuildOptions, 'target'> }) {
   const commonOpts = cliOptions || {};
   const cwd = process.cwd();
   const root = commonOpts.root ? resolve(cwd, commonOpts.root) : cwd;

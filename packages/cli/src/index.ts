@@ -47,7 +47,7 @@ function applyGenerateCommand(command: Command) {
 
 function applyInitCommand(command: Command) {
   command
-    .argument('[project]')
+    .argument('[dir]')
     .option('-t, --template <name>', 'specify the template name')
     .action(async (projectName, cliOptions) => {
       try {
@@ -55,7 +55,6 @@ function applyInitCommand(command: Command) {
           projectName,
           ...cliOptions,
         });
-        console.log('options', options);
         if (options) {
           await createProject(options);
         }

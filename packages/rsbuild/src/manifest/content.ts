@@ -1,17 +1,8 @@
 import { resolve } from 'node:path';
-import type { Manifest } from 'webextension-polyfill';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './util.js';
-
-const CONTENT_RUNTIME_NAME = 'content_runtime';
-const CONTENT_RUNTIME_PATH = 'static/content_runtime.js';
-
-const isRumtimeContentScript = (contentScript: Manifest.ContentScript) => {
-  const { js = [] } = contentScript;
-  return js.some((item) => item.endsWith(CONTENT_RUNTIME_PATH));
-};
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -44,11 +35,11 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
     }
   }
 
-  // inject content runtime script in dev mode
+  // inject content runtime script for each entry in dev mode
   if (isDevMode(mode) && manifest.content_scripts?.length) {
-    manifest.content_scripts.push({
-      js: [resolve(selfRootPath, CONTENT_RUNTIME_PATH)],
-      matches: ['<all_urls>'],
+    const contentRuntimePath = resolve(selfRootPath, 'static/content_runtime.js');
+    manifest.content_scripts.forEach((item) => {
+      item.js?.push(contentRuntimePath);
     });
   }
 };
@@ -59,9 +50,7 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
 
   const entry: ManifestEntryInput = {};
   content_scripts.forEach((contentScript, index) => {
-    const name = isRumtimeContentScript(contentScript)
-      ? CONTENT_RUNTIME_NAME
-      : `content${content_scripts.length === 1 ? '' : index}`;
+    const name = `content${content_scripts.length === 1 ? '' : index}`;
     const { js = [], css = [] } = contentScript;
     entry[name] = {
       input: [...js, ...css],
@@ -74,15 +63,6 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
 const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name, input, output }) => {
   const { content_scripts } = manifest;
   if (!content_scripts?.length || !output?.length) return;
-
-  // runtime content
-  if (name === CONTENT_RUNTIME_NAME) {
-    const runtimeContentScript = content_scripts.find(isRumtimeContentScript);
-    if (runtimeContentScript) {
-      runtimeContentScript.js = output.filter((item) => item.endsWith('.js'));
-    }
-    return;
-  }
 
   // normal content
   const index = Number(name.replace('content', '') || '0');

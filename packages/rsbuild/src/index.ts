@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
   copyPublicFiles,
@@ -13,7 +11,6 @@ import {
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import { clearOutdatedHotUpdateFiles, getRsbuildEntryImport, normalizeRsbuildEnvironments } from './rsbuild/index.js';
-import type { EnviromentKey } from './rsbuild/types.js';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
@@ -80,34 +77,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
 
       // extraConfig must be at the end, for dev.writeToDisk
       return mergeRsbuildConfig(config, extraConfig);
-    });
-
-    api.onBeforeStartDevServer(async ({ environments }) => {
-      const enviromentKey: EnviromentKey = 'content';
-      const content = environments[enviromentKey];
-      if (!content) return;
-
-      const contentEntries = Object.keys(content.entry)
-        .flatMap((key) => getRsbuildEntryImport(content.entry, key))
-        .filter((item) => !!item)
-        .map((item) => resolve(rootPath, item));
-
-      const contentHmr = await readFile(resolve(selfRootPath, './static/content_hmr.js'), 'utf-8');
-
-      api.transform(
-        {
-          environments: [enviromentKey],
-          test: /\.(ts|js|tsx|jsx|mjs|cjs)$/,
-        },
-        ({ code, resourcePath }) => {
-          // change the origin load_script in source code
-          if (contentEntries.includes(resourcePath)) {
-            return `${code}\n${contentHmr}`;
-          }
-
-          return code;
-        },
-      );
     });
 
     api.processAssets({ stage: 'additional' }, async ({ assets, compilation, environment }) => {

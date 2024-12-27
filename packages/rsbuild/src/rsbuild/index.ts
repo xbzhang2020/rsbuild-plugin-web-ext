@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import { readdir, unlink } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
-import type { EnvironmentConfig, OutputConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
-import { readManifestEntries, writeManifestEntries } from '../manifest/index.js';
+import { resolve } from 'node:path';
+import type { EnvironmentConfig, RsbuildConfig, RsbuildEntry, Rspack } from '@rsbuild/core';
+import { readManifestEntries } from '../manifest/index.js';
 import type { ManifestEntryInput, WebExtensionManifest } from '../manifest/types.js';
 import type { EnviromentKey } from './types.js';
 
@@ -77,37 +77,15 @@ export async function normalizeRsbuildEnvironments({
   }
 
   if (content) {
-    const { content_runtime, ...normalContent } = content;
-    const copy: OutputConfig['copy'] = [];
-
-    if (content_runtime) {
-      const from = [content_runtime.input].flat()[0];
-      const to = join(config.output?.distPath?.js || 'static/js', basename(from));
-      copy.push({ from, to });
-      await writeManifestEntries({
-        manifest,
-        rootPath,
-        entry: {
-          content_runtime: {
-            input: [from],
-            output: [to],
-          },
-        },
-      });
-    }
-
     defaultEnvironment = environments.content = {
       source: {
-        entry: transformManifestEntry(normalContent),
+        entry: transformManifestEntry(content),
       },
       output: {
         target: 'web',
-        // support hmr
         injectStyles: isDevMode(mode),
-        copy,
       },
       dev: {
-        // support hmr
         assetPrefix: true,
       },
     };
