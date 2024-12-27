@@ -13,8 +13,8 @@ import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from 
 import {
   clearOutdatedHotUpdateFiles,
   getRsbuildEntryImport,
-  normalizeRsbuildEnvironments,
   isDevMode,
+  normalizeRsbuildEnvironments,
 } from './rsbuild/index.js';
 
 export type PluginWebExtOptions<T = unknown> = {
