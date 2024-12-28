@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
   copyPublicFiles,
@@ -16,8 +18,6 @@ import {
   isDevMode,
   normalizeRsbuildEnvironments,
 } from './rsbuild/index.js';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 
 export type PluginWebExtOptions<T = unknown> = {
   manifest?: T;
