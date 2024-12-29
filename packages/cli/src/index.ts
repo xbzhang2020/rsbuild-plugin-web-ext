@@ -1,12 +1,8 @@
-import { program } from 'commander';
-import type { Command } from 'commander';
-import { generateIcons } from './generate.js';
-import type { GenerateOptions } from './generate.js';
+import { program, type Command } from 'commander';
+import { generateIcons, type GenerateOptions } from './generate.js';
 import { createProject, normalizeInitialOptions } from './init.js';
-import { runBuild, runDev } from './rsbuild.js';
-import type { BuildOptions as RsbuildBuildOptions, DevOptions as RsbuildDevOptions } from './rsbuild.js';
-import { zipExtenison } from './zip.js';
-import type { ZipOptions } from './zip.js';
+import { startBuild, startDevServer, type StartOptions } from './rsbuild-start.js';
+import { zipExtenison, type ZipOptions } from './zip.js';
 
 function main() {
   const initCommand = program.command('init').description('create a new project');
@@ -71,9 +67,9 @@ function applyRsbuildDevCommand(command: Command) {
   command
     .option('-o, --open [url]', 'open the page in browser on startup')
     .option('--port <port>', 'specify a port number for server to listen')
-    .action(async (options: RsbuildDevOptions) => {
+    .action(async (options: StartOptions) => {
       try {
-        await runDev(options);
+        await startDevServer(options);
       } catch (err) {
         console.error('Failed to start dev server.');
         console.error(err);
@@ -84,9 +80,9 @@ function applyRsbuildDevCommand(command: Command) {
 
 function applyRsbuildBuildCommand(command: Command) {
   applyCommonRunOptions(command);
-  command.option('-z, --zip', 'package the extension after build').action(async (options: RsbuildBuildOptions) => {
+  command.option('-z, --zip', 'package the extension after build').action(async (options: StartOptions) => {
     try {
-      await runBuild(options);
+      await startBuild(options);
     } catch (err) {
       console.error('Failed to build.');
       console.error(err);

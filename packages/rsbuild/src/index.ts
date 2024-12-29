@@ -24,6 +24,7 @@ export type PluginWebExtOptions<T = unknown> = {
   target?: ExtensionTarget;
   srcDir?: string;
   outDir?: string;
+  entrypoints?: string[];
 };
 
 export type { ContentScriptConfig } from './manifest/types.js';
