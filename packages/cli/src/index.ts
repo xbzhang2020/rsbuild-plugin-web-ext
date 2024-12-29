@@ -1,8 +1,8 @@
-import { program, type Command } from 'commander';
-import { generateIcons, type GenerateOptions } from './generate.js';
+import { type Command, program } from 'commander';
+import { type GenerateOptions, generateIcons } from './generate.js';
 import { createProject, normalizeInitialOptions } from './init.js';
-import { startBuild, startDevServer, type StartOptions } from './rsbuild-start.js';
-import { zipExtenison, type ZipOptions } from './zip.js';
+import { type StartOptions, startBuild, startDevServer } from './rsbuild-start.js';
+import { type ZipOptions, zipExtenison } from './zip.js';
 
 function main() {
   const initCommand = program.command('init').description('create a new project');

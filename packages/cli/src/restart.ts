@@ -3,7 +3,7 @@ import chokidar from 'chokidar';
 import type { ChokidarOptions } from 'chokidar';
 import { debounce } from './util.js';
 
-export type RestartCallback = (props: { filePath: string; }) => Promise<unknown> | unknown;
+export type RestartCallback = (props: { filePath: string }) => Promise<unknown> | unknown;
 
 type Cleaner = () => Promise<unknown> | unknown;
 
