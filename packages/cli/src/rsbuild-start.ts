@@ -57,9 +57,29 @@ async function init({
   const restart = isDev ? restartDevServer : isBuildWatch ? restartBuild : null;
   if (restart) {
     const files = [...envs.filePaths];
+
     if (configFilePath) {
       files.push(configFilePath);
     }
+
+    if (config.dev?.watchFiles) {
+      const watchFiles = [config.dev.watchFiles].flat().filter((item) => item.type === 'reload-server');
+      for (const watchFilesConfig of watchFiles) {
+        const paths = [watchFilesConfig.paths].flat();
+        // custom options for chokidar
+        if (watchFilesConfig.options) {
+          watchFilesForRestart({
+            files: paths,
+            root,
+            restart,
+            watchOptions: watchFilesConfig.options,
+          });
+        } else {
+          files.push(...paths);
+        }
+      }
+    }
+
     watchFilesForRestart({ files, root, restart });
   }
 
