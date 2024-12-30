@@ -1,6 +1,6 @@
 import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { GLOB_JS_EXT, getFileContent, getGlobFiles } from './util.js';
 
 const key = 'popup';
 const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];

@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { GLOB_JS_EXT, getFileContent, getGlobFiles } from './util.js';
 
 const key = 'content';
 const globPaths = [
