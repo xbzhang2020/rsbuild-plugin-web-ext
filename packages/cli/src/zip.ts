@@ -29,7 +29,6 @@ export async function zipExtenison({ filename, source, root = process.cwd(), out
       zlib: { level: 9 },
     });
     output.on('close', () => {
-      // console.log(`${archive.pointer()} total bytes`);
       console.log(`Zipped ${source} successfully.`);
       resolve({});
     });
