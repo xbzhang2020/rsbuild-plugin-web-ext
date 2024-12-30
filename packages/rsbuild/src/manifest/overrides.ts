@@ -1,21 +1,26 @@
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntryInput, ManifestEntryProcessor, PageToOverride } from './types.js';
-import { getSingleEntryFile } from './util.js';
+import { GLOB_JS_EXT, getGlobFiles } from './util.js';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
+const globPaths = overrides.flatMap((key) => [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`]);
 
 const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
   const { chrome_url_overrides = {} } = manifest;
   if (Object.keys(chrome_url_overrides).length) return;
 
   for (const key of overrides) {
-    const entryPath = await getSingleEntryFile(rootPath, srcDir, key);
-    if (!entryPath) continue;
-
-    manifest.chrome_url_overrides = {
-      ...(manifest.chrome_url_overrides || {}),
-      [key]: entryPath,
-    };
+    const entryPath = await getGlobFiles(
+      rootPath,
+      srcDir,
+      globPaths.filter((item) => item.includes(key)),
+    );
+    if (entryPath[0]) {
+      manifest.chrome_url_overrides = {
+        ...(manifest.chrome_url_overrides || {}),
+        [key]: entryPath[0],
+      };
+    }
   }
 };
 
@@ -48,6 +53,7 @@ const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, name }
 
 const overrideProcessors: ManifestEntryProcessor = {
   key: 'overrides',
+  globPaths,
   match: (entryName) => overrides.includes(entryName as PageToOverride),
   merge: mergeOverridesEntry,
   read: readOverridesEntry,

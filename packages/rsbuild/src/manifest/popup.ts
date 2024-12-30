@@ -1,21 +1,24 @@
 import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getSingleEntryFile } from './util.js';
+import { getFileContent, GLOB_JS_EXT, getGlobFiles } from './util.js';
+
+const key = 'popup';
+const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
 
 const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
   const { manifest_version } = manifest;
 
-  const entryPath = await getSingleEntryFile(rootPath, srcDir, 'popup');
-  if (!entryPath) return;
+  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  if (entryPath[0]) {
+    if (manifest_version === 2) {
+      manifest.browser_action ??= {};
+      manifest.browser_action.default_popup ??= entryPath[0];
+      return;
+    }
 
-  if (manifest_version === 2) {
-    manifest.browser_action ??= {};
-    manifest.browser_action.default_popup ??= entryPath;
-    return;
+    manifest.action ??= {};
+    manifest.action.default_popup ??= entryPath[0];
   }
-
-  manifest.action ??= {};
-  manifest.action.default_popup ??= entryPath;
 };
 
 const readPopupEntry: ManifestEntryProcessor['read'] = (manifest) => {
@@ -52,6 +55,7 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, root
 
 const popupProcessor: ManifestEntryProcessor = {
   key: 'popup',
+  globPaths,
   match: (entryName) => entryName === 'popup',
   merge: mergePopupEntry,
   read: readPopupEntry,

@@ -2,9 +2,10 @@ import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import { isDevMode } from './env.js';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getSingleEntryFile } from './util.js';
+import { GLOB_JS_EXT, getGlobFiles } from './util.js';
 
-const BACKGROUND_RUNTIME_PATH = 'static/background_runtime.js';
+const key = 'background';
+const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -22,12 +23,14 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = await getSingleEntryFile(rootPath, srcDir, 'background');
-    entryPath && scripts.push(entryPath);
+    const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+    if (entryPath[0]) {
+      scripts.push(entryPath[0]);
+    }
   }
 
   if (isDevMode(mode)) {
-    scripts.push(resolve(selfRootPath, BACKGROUND_RUNTIME_PATH));
+    scripts.push(resolve(selfRootPath, 'static/background_runtime.js'));
   }
 
   if (!scripts.length) return;
@@ -74,8 +77,9 @@ const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, outpu
 };
 
 const backgroundProcessor: ManifestEntryProcessor = {
-  key: 'background',
-  match: (entryName) => entryName === 'background',
+  key,
+  globPaths,
+  match: (entryName) => entryName === key,
   merge: mergeBackgroundEntry,
   read: readBackgroundEntry,
   write: writeBackgroundEntry,

@@ -2,7 +2,15 @@ import { resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './util.js';
+import { getFileContent, GLOB_JS_EXT, getGlobFiles } from './util.js';
+
+const key = 'content';
+const globPaths = [
+  `${key}${GLOB_JS_EXT}`,
+  `${key}/index${GLOB_JS_EXT}`,
+  `contents/*${GLOB_JS_EXT}`,
+  `contents/*/index${GLOB_JS_EXT}`,
+];
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -13,16 +21,7 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
 }) => {
   // collect declarative content scripts
   if (!manifest.content_scripts?.length) {
-    const entryPath: string[] = [];
-    const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, 'content');
-    if (singleEntryPath) {
-      entryPath.push(singleEntryPath);
-    }
-    const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, 'contents');
-    if (multipleEntryPath) {
-      entryPath.push(...multipleEntryPath);
-    }
-
+    const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
     if (entryPath.length) {
       manifest.content_scripts ??= [];
       for (const filePath of entryPath) {
@@ -84,7 +83,8 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
 };
 
 const contentProcessor: ManifestEntryProcessor = {
-  key: 'content',
+  key,
+  globPaths,
   match: (entryName) => entryName.startsWith('content'),
   merge: mergeContentEntry,
   read: readContentEntry,
