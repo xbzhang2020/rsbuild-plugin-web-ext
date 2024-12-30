@@ -10,7 +10,6 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
   rootPath,
   srcDir,
-  files,
   target,
   mode,
   selfRootPath,
@@ -23,7 +22,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'background');
+    const entryPath = await getSingleEntryFile(rootPath, srcDir, 'background');
     entryPath && scripts.push(entryPath);
   }
 

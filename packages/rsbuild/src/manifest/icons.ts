@@ -20,8 +20,8 @@ const getIconAsset = (assets: string[], input: string) => {
   return assets.find((item) => item.endsWith(name));
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
-  const entryPath = await getAssetFiles(rootPath, srcDir, files, (asset) => asset.endsWith('.png'));
+const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
+  const entryPath = await getAssetFiles(rootPath, srcDir);
   if (!entryPath.length) return;
 
   const declarativeIcons = getDeclarativeIcons(entryPath);

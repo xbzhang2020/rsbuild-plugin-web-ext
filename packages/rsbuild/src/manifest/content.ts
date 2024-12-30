@@ -8,18 +8,17 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
   rootPath,
   srcDir,
-  files,
   mode,
   selfRootPath,
 }) => {
   // collect declarative content scripts
   if (!manifest.content_scripts?.length) {
     const entryPath: string[] = [];
-    const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, files, 'content');
+    const singleEntryPath = await getSingleEntryFile(rootPath, srcDir, 'content');
     if (singleEntryPath) {
       entryPath.push(singleEntryPath);
     }
-    const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, files, 'contents');
+    const multipleEntryPath = await getMultipleEntryFiles(rootPath, srcDir, 'contents');
     if (multipleEntryPath) {
       entryPath.push(...multipleEntryPath);
     }

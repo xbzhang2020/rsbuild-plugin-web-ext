@@ -2,12 +2,7 @@
   "name": "rsbuild-plugin-web-ext",
   "version": "0.0.1-alpha.9",
   "description": "A Rsbuild plugin for developing and building browser extensions, making browser extension development simple and efficient.",
-  "keywords": [
-    "web extensions",
-    "browser extensions",
-    "rsbuild plugin",
-    "web-ext"
-  ],
+  "keywords": ["web extensions", "browser extensions", "rsbuild plugin", "web-ext"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xbzhang2020/rsbuild-plugin-web-ext.git"
@@ -25,16 +20,14 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
     "lint": "biome check .",
     "lint:write": "biome check . --write",
     "prepare": "simple-git-hooks && npm run build",
-    "test": "vitest run",
+    "test": "vitest",
     "coverage": "vitest run --coverage",
     "bump": "npx bumpp"
   },

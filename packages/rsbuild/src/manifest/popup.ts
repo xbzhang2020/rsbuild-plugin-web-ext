@@ -2,10 +2,10 @@ import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getFileContent, getSingleEntryFile } from './util.js';
 
-const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
   const { manifest_version } = manifest;
 
-  const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'popup');
+  const entryPath = await getSingleEntryFile(rootPath, srcDir, 'popup');
   if (!entryPath) return;
 
   if (manifest_version === 2) {

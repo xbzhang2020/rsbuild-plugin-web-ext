@@ -1,11 +1,11 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getSingleEntryFile } from './util.js';
 
-const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files, target }) => {
+const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target }) => {
   const { side_panel, sidebar_action } = manifest;
   if (side_panel?.default_path || sidebar_action?.default_panel) return;
 
-  const entryPath = await getSingleEntryFile(rootPath, srcDir, files, 'sidepanel');
+  const entryPath = await getSingleEntryFile(rootPath, srcDir, 'sidepanel');
   if (!entryPath) return;
 
   if (target.includes('firefox')) {

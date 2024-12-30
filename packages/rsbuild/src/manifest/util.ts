@@ -1,65 +1,28 @@
-import type { Dirent } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { glob } from 'glob';
 
-export function isJsEntryFile(file: string, name?: string) {
-  if (name) {
-    const ext = extname(file);
-    const fileBaseName = basename(file, ext);
-    if (fileBaseName !== name) return false;
-  }
-  return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(extname(file));
-}
+const jsExt = '.{ts,tsx,js,jsx,mjs,cjs}';
 
-export const getSingleEntryFile = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
+export const getSingleEntryFile = async (rootPath: string, srcDir: string, key: string) => {
   const srcPath = resolve(rootPath, srcDir);
-  const entryFile = files.find((item) => item.isFile() && isJsEntryFile(item.name, key));
-  if (entryFile) return resolve(srcPath, entryFile.name);
-
-  const entryDir = files.find((item) => item.isDirectory() && item.name === key);
-  if (entryDir) {
-    const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
-    const entryFile = subFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
-    if (entryFile) return resolve(srcPath, entryDir.name, entryFile.name);
-  }
-  return null;
+  const jsFiles = await glob([`${key}${jsExt}`, `${key}/index${jsExt}`], { cwd: srcPath });
+  const res = jsFiles.map((item) => resolve(srcPath, item));
+  return res[0];
 };
 
-export const getMultipleEntryFiles = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
+export const getMultipleEntryFiles = async (rootPath: string, srcDir: string, key: string) => {
   const srcPath = resolve(rootPath, srcDir);
-  const entryDir = files.find((item) => item.isDirectory() && item.name === key);
-  if (!entryDir) return [];
-
-  const entryPath: string[] = [];
-  const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
-  for (const item of subFiles) {
-    if (item.isFile() && isJsEntryFile(item.name)) {
-      entryPath.push(resolve(srcPath, entryDir.name, item.name));
-    } else if (item.isDirectory()) {
-      const grandChildFiles = await readdir(resolve(srcPath, entryDir.name, item.name), {
-        withFileTypes: true,
-      });
-      const indexFile = grandChildFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
-      if (indexFile) {
-        entryPath.push(resolve(srcPath, entryDir.name, item.name, indexFile.name));
-      }
-    }
-  }
-
-  return entryPath;
+  const jsFiles = await glob([`${key}/*${jsExt}`, `${key}/*/index${jsExt}`], { cwd: srcPath });
+  const res = jsFiles.map((item) => resolve(srcPath, item));
+  return res;
 };
 
-export const getAssetFiles = async (
-  rootPath: string,
-  srcDir: string,
-  files: Dirent[],
-  filter = (asset: string) => true,
-) => {
+export const getAssetFiles = async (rootPath: string, srcDir: string) => {
   const srcPath = resolve(rootPath, srcDir);
-  const assets = files.find((item) => item.isDirectory() && item.name === 'assets');
-  if (!assets) return [];
-  const subFiles = await readdir(resolve(srcPath, assets.name), { recursive: true });
-  return subFiles.filter(filter).map((item) => resolve(srcPath, assets.name, item));
+  const imageFiles = await glob(['assets/**/*.png'], { cwd: srcPath });
+  const res = imageFiles.map((item) => resolve(srcPath, item));
+  return res;
 };
 
 export async function readPackageJson(rootPath: string) {

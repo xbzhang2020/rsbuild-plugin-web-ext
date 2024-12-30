@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -82,10 +82,6 @@ export async function normalizeManifest({
   }
 
   try {
-    const srcPath = resolve(rootPath, srcDir);
-    const files = await readdir(srcPath, {
-      withFileTypes: true,
-    });
     for (const processor of entryProcessors) {
       await processor.merge({
         rootPath,
@@ -93,7 +89,6 @@ export async function normalizeManifest({
         manifest: finalManifest,
         target,
         srcDir,
-        files,
         mode,
       });
     }
