@@ -38,7 +38,7 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
     manifest.action ??= {};
     pointer = manifest.action;
   }
-  
+
   if (typeof pointer.default_icon !== 'string') {
     pointer.default_icon = {
       ...declarativeIcons,
