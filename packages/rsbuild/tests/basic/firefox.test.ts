@@ -35,7 +35,7 @@ describe('basic for firefox', () => {
     const sidepanel = sidebar_action?.default_panel;
     expect(existsFile(distPath, sidepanel || '', '.html')).toBeTruthy();
 
-    expect(action?.default_icon).toMatch(basename(defaultIcon));
+    expect(action?.default_icon).toMatch(basename(defaultIcon, '.png'));
   });
 
   it('should build firefox-mv2-prod successfully', async () => {

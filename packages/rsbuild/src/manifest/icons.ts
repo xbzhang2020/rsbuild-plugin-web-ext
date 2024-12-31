@@ -1,26 +1,20 @@
-import { basename } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getGlobFiles } from './util.js';
 
 const key = 'icons';
-const globPaths = ['assets/**/*.png'];
+const globPaths = ['assets/**/icon*.png'];
 
 const getDeclarativeIcons = (entryPath: string[]) => {
-  const declarativeIcons: WebExtensionManifest['icons'] = {};
+  const res: WebExtensionManifest['icons'] = {};
   for (const filePath of entryPath) {
     const match = filePath.match(/icon-?(\d+)\.png$/);
     const size = match ? Number(match[1]) : null;
     if (size) {
-      declarativeIcons[size] = filePath;
+      res[size] = filePath;
     }
   }
-  return Object.keys(declarativeIcons).length ? declarativeIcons : null;
-};
-
-const getIconAsset = (assets: string[], input: string) => {
-  const name = basename(input);
-  return assets.find((item) => item.endsWith(name));
+  return Object.keys(res).length ? res : null;
 };
 
 const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
@@ -44,6 +38,7 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
     manifest.action ??= {};
     pointer = manifest.action;
   }
+  
   if (typeof pointer.default_icon !== 'string') {
     pointer.default_icon = {
       ...declarativeIcons,
@@ -53,62 +48,63 @@ const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, root
 };
 
 const readIconsEntry: ManifestEntryProcessor['read'] = (manifest) => {
-  const paths = new Set<string>();
-
-  function helper(icons?: WebExtensionManifest['icons'] | Manifest.IconPath) {
-    if (!icons) return;
-    if (typeof icons === 'string') {
-      paths.add(icons);
-      return;
-    }
-    for (const key in icons) {
-      paths.add(icons[key]);
-    }
-  }
-
   const { icons, action, browser_action, manifest_version } = manifest || {};
   const pointer = manifest_version === 2 ? browser_action : action;
-  helper(icons);
-  helper(pointer?.default_icon);
+  const entry: ManifestEntryInput = {};
 
-  if (paths.size === 0) return null;
-  const entry: ManifestEntryInput = {
-    icons: {
-      input: Array.from(paths),
-      html: false,
-    },
-  };
-  return entry;
-};
-
-const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, output }) => {
-  if (!output?.length) return;
-
-  function helper(icons: WebExtensionManifest['icons'] | Manifest.IconPath | undefined, assets: string[]) {
-    if (typeof icons !== 'object') return;
+  function helper(icons?: WebExtensionManifest['icons']) {
+    if (!icons) return;
     for (const key in icons) {
-      const output = getIconAsset(assets, icons[key]);
-      if (output) {
-        icons[key] = output;
-      }
+      const entryName = `icon${key}`;
+      entry[entryName] = {
+        html: false,
+        input: [icons[key]],
+      };
     }
   }
 
-  const { icons, action, browser_action, manifest_version } = manifest;
-  helper(icons, output);
+  helper(icons);
 
-  const pointer = manifest_version === 2 ? browser_action : action;
   if (typeof pointer?.default_icon === 'string') {
-    pointer.default_icon = getIconAsset(output, pointer.default_icon);
+    entry.icon_default = {
+      html: false,
+      input: [pointer.default_icon],
+    };
   } else {
-    helper(pointer?.default_icon, output);
+    helper(pointer?.default_icon);
+  }
+
+  return Object.keys(entry).length ? entry : null;
+};
+
+const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, output, name }) => {
+  if (!output?.length) return;
+
+  const { icons, action, browser_action, manifest_version } = manifest;
+  const pointer = manifest_version === 2 ? browser_action : action;
+
+  if (name === 'icon_default') {
+    if (pointer) {
+      pointer.default_icon = output[0];
+    }
+    return;
+  }
+
+  const size = Number(name.replace('icon', ''));
+  if (size) {
+    if (icons) {
+      icons[size] = output[0];
+    }
+    if (typeof pointer?.default_icon === 'object') {
+      pointer.default_icon[size] = output[0];
+    }
   }
 };
 
 const iconsProcessor: ManifestEntryProcessor = {
   key,
   globPaths,
-  match: (entryName) => entryName === 'icons',
+  match: (entryName) => entryName.startsWith('icon'),
   merge: mergeIconsEntry,
   read: readIconsEntry,
   write: writeIconsEntry,

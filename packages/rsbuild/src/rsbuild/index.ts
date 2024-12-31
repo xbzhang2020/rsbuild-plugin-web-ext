@@ -54,7 +54,6 @@ export async function normalizeRsbuildEnvironments({ manifest, config, selfRootP
       output: {
         target: 'web',
         dataUriLimit: 0,
-        filenameHash: false,
       },
     };
   }

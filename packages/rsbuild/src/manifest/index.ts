@@ -162,3 +162,7 @@ export async function copyPublicFiles(rootPath: string, distPath: string) {
   if (!existsSync(publicPath) || !existsSync(distPath)) return;
   await cp(publicPath, distPath, { recursive: true, dereference: true });
 }
+
+export function getWatchFiles() {
+  return entryProcessors.flatMap((item) => item.globPaths);
+}
