@@ -5,6 +5,7 @@ import { debounce } from './util.js';
 
 export type RestartCallback = (props: { filePath: string }) => Promise<unknown> | unknown;
 
+type WatchEvent = 'add' | 'change' | 'unlink';
 type Cleaner = () => Promise<unknown> | unknown;
 
 interface WatchFilesForRestartProps {
@@ -12,14 +13,16 @@ interface WatchFilesForRestartProps {
   files: string[];
   restart: RestartCallback;
   watchOptions?: ChokidarOptions;
+  watchEvents?: WatchEvent[];
 }
 
-export async function watchFilesForRestart({
+export function watchFilesForRestart({
   files,
   root,
   restart,
   watchOptions = {},
-}: WatchFilesForRestartProps): Promise<void> {
+  watchEvents = ['add', 'change', 'unlink'],
+}: WatchFilesForRestartProps) {
   if (!files.length) {
     return;
   }
@@ -36,9 +39,11 @@ export async function watchFilesForRestart({
     await restart({ filePath });
   }, 300);
 
-  watcher.on('add', callback);
-  watcher.on('change', callback);
-  watcher.on('unlink', callback);
+  for (const event of watchEvents) {
+    watcher.on(event, callback);
+  }
+
+  return watcher;
 }
 
 let cleaners: Cleaner[] = [];

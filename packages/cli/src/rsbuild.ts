@@ -5,6 +5,7 @@ import { type RestartCallback, beforeRestart, onBeforeRestart, watchFilesForRest
 import { normalizeWebExtRunConfig } from './web-ext.js';
 import type { TargetType } from './web-ext.js';
 import { zipExtenison } from './zip.js';
+import type { FSWatcher } from 'chokidar';
 
 export interface StartOptions {
   target?: string;
@@ -28,6 +29,7 @@ interface ExtensionRunner {
 
 let commonOptions: StartOptions = {};
 let extensionRunner: ExtensionRunner | null = null;
+let watchers: FSWatcher[] = [];
 
 // forked from https://github.com/web-infra-dev/rsbuild/blob/main/packages/core/src/cli/init.ts
 async function init({
@@ -53,35 +55,6 @@ async function init({
     path: commonOptions.config,
     envMode: commonOptions.envMode,
   });
-
-  const restart = isDev ? restartDevServer : isBuildWatch ? restartBuild : null;
-  if (restart) {
-    const files = [...envs.filePaths];
-
-    if (configFilePath) {
-      files.push(configFilePath);
-    }
-
-    if (config.dev?.watchFiles) {
-      const watchFiles = [config.dev.watchFiles].flat().filter((item) => item.type === 'reload-server');
-      for (const watchFilesConfig of watchFiles) {
-        const paths = [watchFilesConfig.paths].flat();
-        // custom options for chokidar
-        if (watchFilesConfig.options) {
-          watchFilesForRestart({
-            files: paths,
-            root,
-            restart,
-            watchOptions: watchFilesConfig.options,
-          });
-        } else {
-          files.push(...paths);
-        }
-      }
-    }
-
-    watchFilesForRestart({ files, root, restart });
-  }
 
   if (commonOptions.root) {
     config.root = root;
@@ -116,6 +89,49 @@ async function init({
     cwd: root,
     rsbuildConfig: config,
     environment: commonOptions.environment,
+  });
+
+  // clear all watchers
+  for (const wather of watchers) {
+    wather?.close();
+  }
+  watchers = [];
+
+  // set watchers
+  const restart = isDev ? restartDevServer : isBuildWatch ? restartBuild : null;
+  rsbuild.onBeforeCreateCompiler(() => {
+    if (!restart) return;
+
+    const files = [...envs.filePaths];
+    if (configFilePath) {
+      files.push(configFilePath);
+    }
+
+    const config = rsbuild.getNormalizedConfig();
+    if (config.dev?.watchFiles) {
+      const watchFiles = [config.dev.watchFiles].flat().filter((item) => item.type === 'reload-server');
+      for (const watchFilesConfig of watchFiles) {
+        const paths = [watchFilesConfig.paths].flat();
+        if (watchFilesConfig.options) {
+          const watcher = watchFilesForRestart({
+            files: paths,
+            root,
+            restart,
+            watchOptions: watchFilesConfig.options,
+          });
+          if (watcher) {
+            watchers.push(watcher);
+          }
+        } else {
+          files.push(...paths);
+        }
+      }
+    }
+
+    const watcher = watchFilesForRestart({ files, root, restart });
+    if (watcher) {
+      watchers.push(watcher);
+    }
   });
 
   rsbuild.onCloseBuild(envs.cleanup);
