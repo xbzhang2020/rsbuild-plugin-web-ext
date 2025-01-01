@@ -6,11 +6,11 @@ import {
   getOutDir,
   getSrcDir,
   getTarget,
+  getWatchFiles,
   normalizeManifest,
   setTargetEnv,
   writeManifestEntries,
   writeManifestFile,
-  getWatchFiles,
 } from './manifest/index.js';
 import type { ExtensionTarget, ManifestEntryOutput, WebExtensionManifest } from './manifest/types.js';
 import {
