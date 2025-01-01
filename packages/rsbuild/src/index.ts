@@ -44,6 +44,8 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       const target = getTarget(options.target);
       setTargetEnv(target);
 
+      const srcDir = getSrcDir(rootPath, options.srcDir);
+
       const outDir = getOutDir({
         outdir: options.outDir,
         distPath: config.output?.distPath?.root,
@@ -55,7 +57,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         rootPath,
         selfRootPath,
         manifest: options.manifest as WebExtensionManifest,
-        srcDir: getSrcDir(rootPath, options.srcDir),
+        srcDir,
         target,
         mode,
       });

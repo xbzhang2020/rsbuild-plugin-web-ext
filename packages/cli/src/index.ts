@@ -1,7 +1,7 @@
 import { type Command, program } from 'commander';
 import { type GenerateOptions, generateIcons } from './generate.js';
 import { createProject, normalizeInitialOptions } from './init.js';
-import { type StartOptions, startBuild, startDevServer } from './rsbuild-start.js';
+import { type StartOptions, startBuild, startDevServer } from './rsbuild.js';
 import { type ZipOptions, zipExtenison } from './zip.js';
 
 function main() {

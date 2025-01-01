@@ -163,19 +163,14 @@ async function startDevServer(options: StartOptions) {
           extensionRunner = runner;
         });
     });
+
+    rsbuild.onExit(() => {
+      extensionRunner?.exit();
+    });
   }
 
-  let isRestart = false;
-  rsbuild.onCloseDevServer(() => {
-    if (isRestart || !extensionRunner) return;
-    extensionRunner.exit();
-  });
-
   const { server } = await rsbuild.startDevServer();
-  onBeforeRestart(async () => {
-    isRestart = true;
-    await server.close();
-  });
+  onBeforeRestart(server.close);
 }
 
 const restartDevServer: RestartCallback = async ({ filePath }) => {
@@ -184,17 +179,13 @@ const restartDevServer: RestartCallback = async ({ filePath }) => {
   const rsbuild = await init({ isDev: true, isRestart: true });
   if (!rsbuild) return;
 
-  let isRestart = false;
-  rsbuild.onCloseDevServer(() => {
-    if (isRestart || !extensionRunner) return;
-    extensionRunner.exit();
-  });
-
+  if (extensionRunner) {
+    rsbuild.onExit(() => {
+      extensionRunner?.exit();
+    });
+  }
   const { server } = await rsbuild.startDevServer();
-  onBeforeRestart(async () => {
-    isRestart = true;
-    await server.close();
-  });
+  onBeforeRestart(server.close);
 };
 
 async function startBuild(options: StartOptions) {
