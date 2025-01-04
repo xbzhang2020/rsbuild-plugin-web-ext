@@ -50,7 +50,6 @@ export type ManifestEntryOutput = Record<string, Pick<ManifestEntryItem, 'input'
 
 export interface ManifestEntryProcessor {
   key: ManifestEntryKey;
-  globPaths: string[];
   match: (entryName: string) => boolean;
   merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
   read: (manifest?: WebExtensionManifest) => ManifestEntryInput | null;

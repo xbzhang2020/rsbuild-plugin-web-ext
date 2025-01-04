@@ -53,7 +53,6 @@ const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, name }
 
 const overrideProcessors: ManifestEntryProcessor = {
   key: 'overrides',
-  globPaths,
   match: (entryName) => overrides.includes(entryName as PageToOverride),
   merge: mergeOverridesEntry,
   read: readOverridesEntry,

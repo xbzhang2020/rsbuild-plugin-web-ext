@@ -43,7 +43,6 @@ const writeOptionsEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) 
 
 const optionsProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName === 'options',
   merge: mergeOptionsEntry,
   read: readOptionsEntry,

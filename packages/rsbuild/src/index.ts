@@ -6,7 +6,6 @@ import {
   getOutDir,
   getSrcDir,
   getTarget,
-  getWatchFiles,
   normalizeManifest,
   setTargetEnv,
   writeManifestEntries,
@@ -64,7 +63,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       });
 
       const environments = await normalizeRsbuildEnvironments({ manifest, config, selfRootPath });
-      const isSelfCommand = process.argv[2] === 'rsbuild:dev';
       const extraConfig: RsbuildConfig = {
         environments,
         dev: {
@@ -74,18 +72,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
             port: '<port>',
             protocol: 'ws',
           },
-          watchFiles: isSelfCommand
-            ? [
-                {
-                  type: 'reload-server',
-                  paths: getWatchFiles(),
-                  options: {
-                    cwd: resolve(rootPath, srcDir),
-                    ignoreInitial: false,
-                  },
-                },
-              ]
-            : undefined,
         },
         server: {
           printUrls: false,

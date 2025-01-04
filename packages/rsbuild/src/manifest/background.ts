@@ -78,7 +78,6 @@ const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, outpu
 
 const backgroundProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName === key,
   merge: mergeBackgroundEntry,
   read: readBackgroundEntry,

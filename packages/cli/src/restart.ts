@@ -35,7 +35,7 @@ export function watchFilesForRestart({
   });
 
   const callback = debounce(async (filePath) => {
-    watcher.close();
+    await watcher.close();
     await restart({ filePath });
   }, 300);
 

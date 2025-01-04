@@ -32,7 +32,6 @@ const writeDevtoolsEntry: ManifestEntryProcessor['write'] = ({ manifest, name })
 
 const devtoolsProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName === 'devtools',
   merge: mergeDevtoolsEntry,
   read: readDevtoolsEntry,

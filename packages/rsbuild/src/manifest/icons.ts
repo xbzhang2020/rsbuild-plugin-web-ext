@@ -103,7 +103,6 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, output, na
 
 const iconsProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName.startsWith('icon'),
   merge: mergeIconsEntry,
   read: readIconsEntry,

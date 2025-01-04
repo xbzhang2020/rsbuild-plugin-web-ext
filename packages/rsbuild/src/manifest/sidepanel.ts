@@ -52,7 +52,6 @@ const writeSidepanelEntry: ManifestEntryProcessor['write'] = ({ manifest, name }
 
 const sidepanelProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName === 'sidepanel',
   merge: mergeSidepanelEntry,
   read: readSidepanelEntry,

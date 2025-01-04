@@ -55,7 +55,6 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, root
 
 const popupProcessor: ManifestEntryProcessor = {
   key: 'popup',
-  globPaths,
   match: (entryName) => entryName === 'popup',
   merge: mergePopupEntry,
   read: readPopupEntry,

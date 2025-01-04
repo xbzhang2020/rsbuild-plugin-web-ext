@@ -84,7 +84,6 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
 
 const contentProcessor: ManifestEntryProcessor = {
   key,
-  globPaths,
   match: (entryName) => entryName.startsWith('content'),
   merge: mergeContentEntry,
   read: readContentEntry,

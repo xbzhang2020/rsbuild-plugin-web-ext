@@ -49,7 +49,6 @@ const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) 
 
 const sandboxProcessor: ManifestEntryProcessor = {
   key: 'sandbox',
-  globPaths,
   match: (entryName) => entryName.startsWith('sandbox'),
   merge: mergeSandboxEntry,
   read: readSandboxEntry,
