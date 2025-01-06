@@ -1,6 +1,6 @@
-import { readFile, readdir } from 'node:fs/promises';
-import { resolve, extname, basename } from 'node:path';
 import type { Dirent } from 'node:fs';
+import { readFile, readdir } from 'node:fs/promises';
+import { basename, extname, resolve } from 'node:path';
 
 function isJsEntryFile(file: string, name?: string) {
   if (name) {
