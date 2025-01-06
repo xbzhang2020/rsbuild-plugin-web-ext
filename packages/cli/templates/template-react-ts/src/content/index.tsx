@@ -1,9 +1,9 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import type { ContentScriptConfig } from "rsbuild-plugin-web-ext";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import type { ContentScriptConfig } from 'rsbuild-plugin-web-ext';
+import App from './App';
 
-const rootEl = document.createElement("div");
+const rootEl = document.createElement('div');
 document.body.appendChild(rootEl);
 
 if (rootEl) {
@@ -11,10 +11,10 @@ if (rootEl) {
   root.render(
     <StrictMode>
       <App />
-    </StrictMode>
+    </StrictMode>,
   );
 }
 
 export const config: ContentScriptConfig = {
-  matches: ["https://developer.mozilla.org/*"],
+  matches: ['https://developer.mozilla.org/*'],
 };
