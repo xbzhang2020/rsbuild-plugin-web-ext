@@ -1,0 +1,14 @@
+.web-extend-content {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: end;
+  z-index: 1000;
+}
+
+.web-extend-content-main {
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+}

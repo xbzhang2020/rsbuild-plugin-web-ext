@@ -1,12 +1,12 @@
-import './App.css';
+import "./App.css";
 
-const App = () => {
+function App() {
   return (
     <div className="content">
-      <h1>WebExtend with React</h1>
-      <p>Enjoy building your fantastic extension with WenExtend and Rsbuild.</p>
+      <h1>WebExtend + React</h1>
+      <p>This is a popup page.</p>
     </div>
   );
-};
+}
 
 export default App;
