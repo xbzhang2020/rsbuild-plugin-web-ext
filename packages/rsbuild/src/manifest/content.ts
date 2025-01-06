@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getEntryFiles } from './util.js';
+import { getEntryFiles, getFileContent } from './util.js';
 
 const key = 'content';
 const pattern = [

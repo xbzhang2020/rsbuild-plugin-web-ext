@@ -1,6 +1,6 @@
 import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getFileContent, getEntryFiles } from './util.js';
+import { getEntryFiles, getFileContent } from './util.js';
 
 const key = 'popup';
 const pattern = [/^popup([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
