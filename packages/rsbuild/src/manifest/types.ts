@@ -65,7 +65,9 @@ export interface NormalizeManifestProps {
   target: ExtensionTarget;
 }
 
-export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestProps> {}
+export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestProps> {
+  files: string[];
+}
 
 export interface WriteMainfestEntriesProps {
   manifest: WebExtensionManifest;

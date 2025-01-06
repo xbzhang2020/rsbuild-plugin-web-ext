@@ -1,14 +1,14 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'sidepanel';
-const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
+const pattern = [/^sidepanel([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target }) => {
+const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target, files }) => {
   const { side_panel, sidebar_action } = manifest;
   if (side_panel?.default_path || sidebar_action?.default_panel) return;
 
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
     if (target.includes('firefox')) {
       manifest.sidebar_action = {

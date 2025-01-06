@@ -2,10 +2,10 @@ import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import { isDevMode } from './env.js';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'background';
-const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
+const pattern = [/^background([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -14,6 +14,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   target,
   mode,
   selfRootPath,
+  files,
 }) => {
   const { background } = manifest;
   const scripts: string[] = [];
@@ -23,7 +24,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+    const entryPath = getEntryFiles({ files, srcDir, rootPath, pattern });
     if (entryPath[0]) {
       scripts.push(entryPath[0]);
     }

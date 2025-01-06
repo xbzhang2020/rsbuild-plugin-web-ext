@@ -1,19 +1,18 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'sandbox';
-const globPaths = [
-  `${key}${GLOB_JS_EXT}`,
-  `${key}/index${GLOB_JS_EXT}`,
-  `sandboxes/*${GLOB_JS_EXT}`,
-  `sandboxes/*/index${GLOB_JS_EXT}`,
+
+const pattern = [
+  /^sandbox([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
+  /^sandboxes[\\/][^\\/]+([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
 ];
 
-const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target }) => {
+const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target, files }) => {
   const pages = manifest.sandbox?.pages;
   if (pages?.length || target.includes('firefox')) return;
 
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  const entryPath = getEntryFiles({ files, pattern, srcDir, rootPath });
   if (entryPath.length) {
     manifest.sandbox = {
       ...(manifest.sandbox || {}),
@@ -48,8 +47,8 @@ const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) 
 };
 
 const sandboxProcessor: ManifestEntryProcessor = {
-  key: 'sandbox',
-  match: (entryName) => entryName.startsWith('sandbox'),
+  key,
+  match: (entryName) => entryName.startsWith(key),
   merge: mergeSandboxEntry,
   read: readSandboxEntry,
   write: writeSandboxEntry,

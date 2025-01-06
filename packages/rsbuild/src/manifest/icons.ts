@@ -1,9 +1,9 @@
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'icons';
-const globPaths = ['assets/**/icon*.png'];
+const pattern = [/assets[\\/]icon-?(\d+)\.png/];
 
 const getDeclarativeIcons = (entryPath: string[]) => {
   const res: WebExtensionManifest['icons'] = {};
@@ -17,10 +17,8 @@ const getDeclarativeIcons = (entryPath: string[]) => {
   return Object.keys(res).length ? res : null;
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
-  if (!entryPath.length) return;
-
+const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   const declarativeIcons = getDeclarativeIcons(entryPath);
   if (!declarativeIcons) return;
 

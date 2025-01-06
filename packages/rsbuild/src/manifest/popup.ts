@@ -1,14 +1,14 @@
 import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { GLOB_JS_EXT, getFileContent, getGlobFiles } from './util.js';
+import { getFileContent, getEntryFiles } from './util.js';
 
 const key = 'popup';
-const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
+const pattern = [/^popup([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
+const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { manifest_version } = manifest;
 
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
     if (manifest_version === 2) {
       manifest.browser_action ??= {};
@@ -54,8 +54,8 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, root
 };
 
 const popupProcessor: ManifestEntryProcessor = {
-  key: 'popup',
-  match: (entryName) => entryName === 'popup',
+  key,
+  match: (entryName) => entryName === key,
   merge: mergePopupEntry,
   read: readPopupEntry,
   write: writePopupEntry,

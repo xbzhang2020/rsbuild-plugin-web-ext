@@ -1,14 +1,14 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'options';
-const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
+const pattern = [/^options([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
+const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { options_ui, options_page } = manifest;
   if (options_ui?.page || options_page) return;
 
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
     manifest.options_ui = {
       ...(options_ui || {}),

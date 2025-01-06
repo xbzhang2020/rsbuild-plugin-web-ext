@@ -1,14 +1,14 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const key = 'devtools';
-const globPaths = [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`];
+const pattern = [/^devtools([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
+const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { devtools_page } = manifest;
   if (devtools_page) return;
 
-  const entryPath = await getGlobFiles(rootPath, srcDir, globPaths);
+  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
     manifest.devtools_page = entryPath[0];
   }

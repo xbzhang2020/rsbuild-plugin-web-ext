@@ -1,20 +1,16 @@
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntryInput, ManifestEntryProcessor, PageToOverride } from './types.js';
-import { GLOB_JS_EXT, getGlobFiles } from './util.js';
+import { getEntryFiles } from './util.js';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
-const globPaths = overrides.flatMap((key) => [`${key}${GLOB_JS_EXT}`, `${key}/index${GLOB_JS_EXT}`]);
 
-const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir }) => {
+const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
   const { chrome_url_overrides = {} } = manifest;
   if (Object.keys(chrome_url_overrides).length) return;
 
   for (const key of overrides) {
-    const entryPath = await getGlobFiles(
-      rootPath,
-      srcDir,
-      globPaths.filter((item) => item.includes(key)),
-    );
+    const pattern = [new RegExp(`^${key}([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$`)];
+    const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
     if (entryPath[0]) {
       manifest.chrome_url_overrides = {
         ...(manifest.chrome_url_overrides || {}),
