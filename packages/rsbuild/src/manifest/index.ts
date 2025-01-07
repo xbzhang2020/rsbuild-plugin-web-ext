@@ -83,7 +83,7 @@ export async function normalizeManifest({
 
   try {
     const srcPath = resolve(rootPath, srcDir);
-    const files = await readdir(srcPath, { recursive: true });
+    const files = await readdir(srcPath, { withFileTypes: true });
     for (const processor of entryProcessors) {
       await processor.merge({
         selfRootPath,

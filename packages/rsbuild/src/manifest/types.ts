@@ -1,4 +1,5 @@
 import type { Manifest } from 'webextension-polyfill';
+import type { Dirent } from 'node:fs'
 
 export type ExtensionTarget = 'chrome-mv3' | 'firefox-mv2' | 'firefox-mv3' | 'safari-mv3' | 'edge-mv3' | 'opera-mv3';
 
@@ -73,7 +74,7 @@ export interface NormalizeMainfestEntryProps {
   mode: string | undefined;
   manifest: WebExtensionManifest;
   target: ExtensionTarget;
-  files: string[];
+  files: Dirent[];
 }
 
 export interface WriteMainfestEntriesProps {

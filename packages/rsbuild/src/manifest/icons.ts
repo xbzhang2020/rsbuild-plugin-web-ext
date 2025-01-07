@@ -1,13 +1,12 @@
 import type { Manifest } from 'webextension-polyfill';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getEntryFiles } from './util.js';
+import { getAssetFiles } from './util.js';
 
 const key = 'icons';
-const pattern = [/assets[\\/]icon-?(\d+)\.png/];
 
-const getDeclarativeIcons = (entryPath: string[]) => {
+const getDeclarativeIcons = (assetFiles: string[]) => {
   const res: WebExtensionManifest['icons'] = {};
-  for (const filePath of entryPath) {
+  for (const filePath of assetFiles) {
     const match = filePath.match(/icon-?(\d+)\.png$/);
     const size = match ? Number(match[1]) : null;
     if (size) {
@@ -18,8 +17,8 @@ const getDeclarativeIcons = (entryPath: string[]) => {
 };
 
 const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
-  const entryPath = getEntryFiles(srcPath, files, pattern);
-  const declarativeIcons = getDeclarativeIcons(entryPath);
+  const assetFiles = await getAssetFiles(srcPath, files);
+  const declarativeIcons = getDeclarativeIcons(assetFiles);
   if (!declarativeIcons) return;
 
   manifest.icons = {

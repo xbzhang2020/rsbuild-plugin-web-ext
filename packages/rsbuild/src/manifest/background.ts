@@ -2,10 +2,9 @@ import { resolve } from 'node:path';
 import type { Manifest } from 'webextension-polyfill';
 import { isDevMode } from './env.js';
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getEntryFiles } from './util.js';
+import { getSingleEntryFile } from './util.js';
 
 const key = 'background';
-const pattern = [/^background([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
@@ -23,9 +22,9 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = getEntryFiles(srcPath, files, pattern);
-    if (entryPath[0]) {
-      scripts.push(entryPath[0]);
+    const entryPath = await getSingleEntryFile(srcPath, files, key);
+    if (entryPath) {
+      scripts.push(entryPath);
     }
   }
 

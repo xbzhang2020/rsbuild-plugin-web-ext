@@ -1,18 +1,17 @@
 import { readdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getEntryFiles, getMultipleEntryFiles } from './util.js';
+import { getSingleEntryFile, getMultipleEntryFiles } from './util.js';
 
 const key = 'devtools';
-const pattern = [/^devtools([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
   const { devtools_page } = manifest;
   if (devtools_page) return;
 
-  const entryPath = getEntryFiles(srcPath, files, pattern);
-  if (entryPath[0]) {
-    manifest.devtools_page = entryPath[0];
+  const entryPath = await getSingleEntryFile(srcPath, files, key);
+  if (entryPath) {
+    manifest.devtools_page = entryPath;
   }
 };
 

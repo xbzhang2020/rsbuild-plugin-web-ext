@@ -2,18 +2,22 @@ import { resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getEntryFiles, getFileContent } from './util.js';
+import { getFileContent, getSingleEntryFile, getMultipleEntryFiles } from './util.js';
 
 const key = 'content';
-const pattern = [
-  /^content([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
-  /^contents[\\/][^\\/]+([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
-];
 
 const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, mode, selfRootPath, files, srcPath }) => {
-  // collect declarative content scripts
   if (!manifest.content_scripts?.length) {
-    const entryPath = getEntryFiles(srcPath, files, pattern);
+    const entryPath: string[] = [];
+    const singleEntry = await getSingleEntryFile(srcPath, files, key);
+    if (singleEntry) {
+      entryPath.push(singleEntry);
+    }
+    const multipleEntry = await getMultipleEntryFiles(srcPath, files, 'contents');
+    if (multipleEntry.length) {
+      entryPath.push(...multipleEntry);
+    }
+
     if (entryPath.length) {
       manifest.content_scripts ??= [];
       for (const filePath of entryPath) {

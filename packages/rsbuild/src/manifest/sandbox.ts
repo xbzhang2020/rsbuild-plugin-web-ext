@@ -1,18 +1,22 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getEntryFiles } from './util.js';
+import { getSingleEntryFile, getMultipleEntryFiles } from './util.js';
 
 const key = 'sandbox';
-
-const pattern = [
-  /^sandbox([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
-  /^sandboxes[\\/][^\\/]+([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
-];
 
 const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
   const pages = manifest.sandbox?.pages;
   if (pages?.length || target.includes('firefox')) return;
 
-  const entryPath = getEntryFiles(srcPath, files, pattern);
+  const entryPath: string[] = [];
+  const singleEntry = await getSingleEntryFile(srcPath, files, key);
+  if (singleEntry) {
+    entryPath.push(singleEntry);
+  }
+  const multipleEntry = await getMultipleEntryFiles(srcPath, files, 'sandboxes');
+  if (multipleEntry.length) {
+    entryPath.push(...multipleEntry);
+  }
+
   if (entryPath.length) {
     manifest.sandbox = {
       ...(manifest.sandbox || {}),

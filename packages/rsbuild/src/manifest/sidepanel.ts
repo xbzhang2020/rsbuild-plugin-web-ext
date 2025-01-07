@@ -1,8 +1,7 @@
 import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
-import { getEntryFiles } from './util.js';
+import { getSingleEntryFile } from './util.js';
 
 const key = 'sidepanel';
-const pattern = [/^sidepanel([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
   const { side_panel, sidebar_action } = manifest;
@@ -11,18 +10,18 @@ const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, 
     return;
   }
 
-  const entryPath = getEntryFiles(srcPath, files, pattern);
-  if (entryPath[0]) {
+  const entryPath = await getSingleEntryFile(srcPath, files, key);
+  if (entryPath) {
     if (target.includes('firefox')) {
       manifest.sidebar_action = {
-        default_panel: entryPath[0],
+        default_panel: entryPath,
         ...(sidebar_action || {}),
       };
       return;
     }
 
     manifest.side_panel = {
-      default_path: entryPath[0],
+      default_path: entryPath,
       ...(side_panel || {}),
     };
     addSidepanelPermission(manifest);
