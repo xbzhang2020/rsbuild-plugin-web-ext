@@ -11,6 +11,7 @@ const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, ro
   const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
     manifest.options_ui = {
+      open_in_tab: true,
       ...(options_ui || {}),
       page: entryPath[0],
     };

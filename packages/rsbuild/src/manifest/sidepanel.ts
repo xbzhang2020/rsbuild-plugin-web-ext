@@ -1,4 +1,4 @@
-import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
+import type { ManifestEntryInput, ManifestEntryProcessor, WebExtensionManifest } from './types.js';
 import { getEntryFiles } from './util.js';
 
 const key = 'sidepanel';
@@ -6,7 +6,10 @@ const pattern = [/^sidepanel([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target, files }) => {
   const { side_panel, sidebar_action } = manifest;
-  if (side_panel?.default_path || sidebar_action?.default_panel) return;
+  if (side_panel?.default_path || sidebar_action?.default_panel) {
+    addSidepanelPermission(manifest);
+    return;
+  }
 
   const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
   if (entryPath[0]) {
@@ -22,6 +25,7 @@ const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, 
       default_path: entryPath[0],
       ...(side_panel || {}),
     };
+    addSidepanelPermission(manifest);
   }
 };
 
@@ -57,5 +61,12 @@ const sidepanelProcessor: ManifestEntryProcessor = {
   read: readSidepanelEntry,
   write: writeSidepanelEntry,
 };
+
+function addSidepanelPermission(manifest: WebExtensionManifest) {
+  if (manifest.side_panel?.default_path && !manifest.permissions?.includes('sidePanel')) {
+    manifest.permissions ??= [];
+    manifest.permissions.push('sidePanel');
+  }
+}
 
 export default sidepanelProcessor;
