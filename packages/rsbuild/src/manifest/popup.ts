@@ -1,6 +1,6 @@
 import { parseExportObject } from './parser/export.js';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getSingleEntryFile, getFileContent } from './util.js';
+import { getFileContent, getSingleEntryFile } from './util.js';
 
 const key = 'popup';
 

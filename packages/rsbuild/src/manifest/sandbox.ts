@@ -1,5 +1,5 @@
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
-import { getSingleEntryFile, getMultipleEntryFiles } from './util.js';
+import { getMultipleEntryFiles, getSingleEntryFile } from './util.js';
 
 const key = 'sandbox';
 
