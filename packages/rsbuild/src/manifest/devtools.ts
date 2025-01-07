@@ -1,7 +1,7 @@
+import { readdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import type { ManifestEntryInput, ManifestEntryProcessor } from './types.js';
 import { getEntryFiles, getMultipleEntryFiles } from './util.js';
-import { dirname } from 'node:path';
-import { readdir } from 'node:fs/promises';
 
 const key = 'devtools';
 const pattern = [/^devtools([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
