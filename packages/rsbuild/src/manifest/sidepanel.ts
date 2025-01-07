@@ -4,14 +4,14 @@ import { getEntryFiles } from './util.js';
 const key = 'sidepanel';
 const pattern = [/^sidepanel([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target, files }) => {
+const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
   const { side_panel, sidebar_action } = manifest;
   if (side_panel?.default_path || sidebar_action?.default_panel) {
     addSidepanelPermission(manifest);
     return;
   }
 
-  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
+  const entryPath = getEntryFiles(srcPath, files, pattern);
   if (entryPath[0]) {
     if (target.includes('firefox')) {
       manifest.sidebar_action = {

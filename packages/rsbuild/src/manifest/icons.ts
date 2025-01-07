@@ -17,8 +17,8 @@ const getDeclarativeIcons = (entryPath: string[]) => {
   return Object.keys(res).length ? res : null;
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
-  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
+const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
+  const entryPath = getEntryFiles(srcPath, files, pattern);
   const declarativeIcons = getDeclarativeIcons(entryPath);
   if (!declarativeIcons) return;
 

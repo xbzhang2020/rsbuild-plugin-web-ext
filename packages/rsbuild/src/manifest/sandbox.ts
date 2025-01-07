@@ -8,11 +8,11 @@ const pattern = [
   /^sandboxes[\\/][^\\/]+([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
 ];
 
-const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, target, files }) => {
+const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
   const pages = manifest.sandbox?.pages;
   if (pages?.length || target.includes('firefox')) return;
 
-  const entryPath = getEntryFiles({ files, pattern, srcDir, rootPath });
+  const entryPath = getEntryFiles(srcPath, files, pattern);
   if (entryPath.length) {
     manifest.sandbox = {
       ...(manifest.sandbox || {}),

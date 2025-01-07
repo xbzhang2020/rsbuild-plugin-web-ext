@@ -38,7 +38,7 @@ interface NormalizeEnvironmentProps {
 }
 
 export async function normalizeRsbuildEnvironments({ manifest, config, selfRootPath }: NormalizeEnvironmentProps) {
-  const { icons, background, content, ...others } = readManifestEntries(manifest);
+  const { icons, background, content, ...others } = await readManifestEntries(manifest);
   const mode = config.mode || process.env.NODE_ENV;
 
   const environments: {

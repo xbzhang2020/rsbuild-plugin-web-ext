@@ -82,13 +82,15 @@ export async function normalizeManifest({
   }
 
   try {
-    const files = await readdir(resolve(rootPath, srcDir), { recursive: true });
+    const srcPath = resolve(rootPath, srcDir)
+    const files = await readdir(srcPath, { recursive: true });
     for (const processor of entryProcessors) {
       await processor.merge({
         rootPath,
         selfRootPath,
         manifest: finalManifest,
         target,
+        srcPath,
         srcDir,
         mode,
         files,
@@ -123,11 +125,13 @@ async function getDefaultManifest(rootPath: string, target?: ExtensionTarget) {
   return manifest;
 }
 
-export function readManifestEntries(manifest: WebExtensionManifest) {
-  return entryProcessors.reduce(
-    (res, processor) => Object.assign(res, { [processor.key]: processor.read(manifest) }),
-    {} as Record<ManifestEntryProcessor['key'], ManifestEntryInput | null>,
-  );
+export async function readManifestEntries(manifest: WebExtensionManifest) {
+  const res = {} as Record<ManifestEntryProcessor['key'], ManifestEntryInput | null>;
+  for (const processor of entryProcessors) {
+    const entry = await processor.read(manifest);
+    res[processor.key] = entry;
+  }
+  return res;
 }
 
 export async function writeManifestEntries({ manifest, rootPath, entry }: WriteMainfestEntriesProps) {

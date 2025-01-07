@@ -9,12 +9,11 @@ const pattern = [/^background([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
 const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   manifest,
-  rootPath,
-  srcDir,
   target,
   mode,
   selfRootPath,
   files,
+  srcPath,
 }) => {
   const { background } = manifest;
   const scripts: string[] = [];
@@ -24,7 +23,7 @@ const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
   } else if (background && 'scripts' in background && background.scripts) {
     scripts.push(...background.scripts);
   } else {
-    const entryPath = getEntryFiles({ files, srcDir, rootPath, pattern });
+    const entryPath = getEntryFiles(srcPath, files, pattern);
     if (entryPath[0]) {
       scripts.push(entryPath[0]);
     }

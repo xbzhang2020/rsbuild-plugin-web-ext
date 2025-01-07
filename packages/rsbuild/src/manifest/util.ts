@@ -2,7 +2,7 @@ import type { Dirent } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, extname, resolve } from 'node:path';
 
-function isJsEntryFile(file: string, name?: string) {
+function isJavaScriptFile(file: string, name?: string) {
   if (name) {
     const ext = extname(file);
     const fileBaseName = basename(file, ext);
@@ -11,39 +11,44 @@ function isJsEntryFile(file: string, name?: string) {
   return /\.(ts|js|tsx|jsx|mjs|cjs)$/.test(extname(file));
 }
 
-const getSingleEntryFile = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
-  const srcPath = resolve(rootPath, srcDir);
-  const entryFile = files.find((item) => item.isFile() && isJsEntryFile(item.name, key));
-  if (entryFile) return resolve(srcPath, entryFile.name);
+export const getSingleEntryFile = async (srcPath: string, files: Dirent[], key: string) => {
+  const entryFile = files.find((item) => item.isFile() && isJavaScriptFile(item.name, key));
+  if (entryFile) {
+    return resolve(srcPath, entryFile.name);
+  }
+
   const entryDir = files.find((item) => item.isDirectory() && item.name === key);
   if (entryDir) {
     const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
-    const entryFile = subFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
+    const entryFile = subFiles.find((item) => item.isFile() && isJavaScriptFile(item.name, 'index'));
     if (entryFile) return resolve(srcPath, entryDir.name, entryFile.name);
   }
   return null;
 };
 
-const getMultipleEntryFiles = async (rootPath: string, srcDir: string, files: Dirent[], key: string) => {
-  const srcPath = resolve(rootPath, srcDir);
+export const getMultipleEntryFiles = async (srcPath: string, files: Dirent[], key: string) => {
   const entryDir = files.find((item) => item.isDirectory() && item.name === key);
   if (!entryDir) return [];
-  const entryPath: string[] = [];
+
+  const res: string[] = [];
   const subFiles = await readdir(resolve(srcPath, entryDir.name), { withFileTypes: true });
   for (const item of subFiles) {
-    if (item.isFile() && isJsEntryFile(item.name)) {
-      entryPath.push(resolve(srcPath, entryDir.name, item.name));
-    } else if (item.isDirectory()) {
+    const subFilePath = resolve(srcPath, entryDir.name, item.name);
+    if (item.isFile() && isJavaScriptFile(item.name)) {
+      res.push(subFilePath);
+      continue;
+    }
+    if (item.isDirectory()) {
       const grandChildFiles = await readdir(resolve(srcPath, entryDir.name, item.name), {
         withFileTypes: true,
       });
-      const indexFile = grandChildFiles.find((item) => item.isFile() && isJsEntryFile(item.name, 'index'));
+      const indexFile = grandChildFiles.find((item) => item.isFile() && isJavaScriptFile(item.name, 'index'));
       if (indexFile) {
-        entryPath.push(resolve(srcPath, entryDir.name, item.name, indexFile.name));
+        res.push(resolve(subFilePath, indexFile.name));
       }
     }
   }
-  return entryPath;
+  return res;
 };
 
 const getAssetFiles = async (rootPath: string, srcDir: string, files: Dirent[], filter = (asset: string) => true) => {
@@ -65,13 +70,6 @@ export async function getFileContent(rootPath: string, filePath: string) {
   return code;
 }
 
-interface GetEntryFilesProps {
-  rootPath: string;
-  srcDir: string;
-  pattern: RegExp[];
-  files: string[];
-}
-
-export function getEntryFiles({ files, pattern, rootPath, srcDir }: GetEntryFilesProps) {
-  return files.filter((item) => pattern.some((p) => p.test(item))).map((item) => resolve(rootPath, srcDir, item));
+export function getEntryFiles(srcPath: string, files: string[], pattern: RegExp[]) {
+  return files.filter((item) => pattern.some((p) => p.test(item))).map((item) => resolve(srcPath, item));
 }

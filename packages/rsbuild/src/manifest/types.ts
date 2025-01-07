@@ -48,12 +48,14 @@ interface ManifestEntryItem {
 export type ManifestEntryInput = Record<string, Omit<ManifestEntryItem, 'output'>>;
 export type ManifestEntryOutput = Record<string, Pick<ManifestEntryItem, 'input' | 'output'>>;
 
+export type MaybePromise<T = unknown> = T | Promise<T>;
+
 export interface ManifestEntryProcessor {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
-  merge: (props: NormalizeMainfestEntryProps) => void | Promise<void>;
-  read: (manifest?: WebExtensionManifest) => ManifestEntryInput | null;
-  write: (props: WriteMainfestEntryItemProps) => void | Promise<void>;
+  merge: (props: NormalizeMainfestEntryProps) => MaybePromise<void>;
+  read: (manifest?: WebExtensionManifest) => MaybePromise<ManifestEntryInput | null>;
+  write: (props: WriteMainfestEntryItemProps) => MaybePromise<void>;
 }
 
 export interface NormalizeManifestProps {
@@ -65,7 +67,12 @@ export interface NormalizeManifestProps {
   target: ExtensionTarget;
 }
 
-export interface NormalizeMainfestEntryProps extends Required<NormalizeManifestProps> {
+export interface NormalizeMainfestEntryProps {
+  srcPath: string;
+  selfRootPath: string;
+  mode: string | undefined;
+  manifest: WebExtensionManifest;
+  target: ExtensionTarget;
   files: string[];
 }
 

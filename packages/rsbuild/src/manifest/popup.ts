@@ -5,10 +5,10 @@ import { getEntryFiles, getFileContent } from './util.js';
 const key = 'popup';
 const pattern = [/^popup([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { manifest_version } = manifest;
 
-  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
+  const entryPath = getEntryFiles(srcPath, files, pattern);
   if (entryPath[0]) {
     if (manifest_version === 2) {
       manifest.browser_action ??= {};

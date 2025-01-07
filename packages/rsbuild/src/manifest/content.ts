@@ -10,17 +10,10 @@ const pattern = [
   /^contents[\\/][^\\/]+([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/,
 ];
 
-const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({
-  manifest,
-  rootPath,
-  srcDir,
-  mode,
-  selfRootPath,
-  files,
-}) => {
+const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, mode, selfRootPath, files, srcPath }) => {
   // collect declarative content scripts
   if (!manifest.content_scripts?.length) {
-    const entryPath = getEntryFiles({ files, pattern, srcDir, rootPath });
+    const entryPath = getEntryFiles(srcPath, files, pattern);
     if (entryPath.length) {
       manifest.content_scripts ??= [];
       for (const filePath of entryPath) {

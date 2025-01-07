@@ -4,11 +4,11 @@ import { getEntryFiles } from './util.js';
 const key = 'options';
 const pattern = [/^options([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$/];
 
-const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { options_ui, options_page } = manifest;
   if (options_ui?.page || options_page) return;
 
-  const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
+  const entryPath = getEntryFiles(srcPath, files, pattern);
   if (entryPath[0]) {
     manifest.options_ui = {
       open_in_tab: true,

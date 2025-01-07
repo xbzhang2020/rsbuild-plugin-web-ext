@@ -4,13 +4,13 @@ import { getEntryFiles } from './util.js';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
 
-const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, rootPath, srcDir, files }) => {
+const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
   const { chrome_url_overrides = {} } = manifest;
   if (Object.keys(chrome_url_overrides).length) return;
 
   for (const key of overrides) {
     const pattern = [new RegExp(`^${key}([\\/]index)?\.(ts|tsx|js|jsx|mjs|cjs)$`)];
-    const entryPath = getEntryFiles({ files, pattern, rootPath, srcDir });
+    const entryPath = getEntryFiles(srcPath, files, pattern);
     if (entryPath[0]) {
       manifest.chrome_url_overrides = {
         ...(manifest.chrome_url_overrides || {}),
