@@ -137,8 +137,8 @@ importers:
         specifier: ^19.0.0
         version: 19.0.2(@types/react@19.0.1)
       rsbuild-plugin-web-ext:
-        specifier: 0.0.1-alpha.9
-        version: 0.0.1-alpha.9(@rsbuild/core@1.1.12)
+        specifier: 0.0.1-alpha.10
+        version: 0.0.1-alpha.10(@rsbuild/core@1.1.12)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -2726,8 +2726,8 @@ packages:
       typescript:
         optional: true
 
-  rsbuild-plugin-web-ext@0.0.1-alpha.9:
-    resolution: {integrity: sha512-3nXyicGUnoUmn8vRpuh9U9NYL0YgAFAyJMXlsB0Ty1QoPax3LPFO9gUzRdonPq8X9FCw3K0J4KBTRcnnnqFxgQ==}
+  rsbuild-plugin-web-ext@0.0.1-alpha.10:
+    resolution: {integrity: sha512-YRVffcuUjeqtXoS5IlHwp+dSY04EOzKTD0gqESM6ujrkbgpDY4243b7Eq0dA7mcXcdO3n37UiGGuaOjXFWIhow==}
     peerDependencies:
       '@rsbuild/core': 1.x
     peerDependenciesMeta:
@@ -5664,7 +5664,7 @@ snapshots:
       '@microsoft/api-extractor': 7.48.1(@types/node@22.10.1)
       typescript: 5.7.2
 
-  rsbuild-plugin-web-ext@0.0.1-alpha.9(@rsbuild/core@1.1.12):
+  rsbuild-plugin-web-ext@0.0.1-alpha.10(@rsbuild/core@1.1.12):
     dependencies:
       '@babel/parser': 7.26.3
       '@babel/traverse': 7.26.4
