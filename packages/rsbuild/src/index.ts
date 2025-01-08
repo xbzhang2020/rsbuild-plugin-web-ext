@@ -95,17 +95,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         return;
       }
 
-      if (isDevMode(mode) && environment.name === 'background') {
-        const config = api.getNormalizedConfig().dev.client;
-        for (const name in assets) {
-          if (!name.endsWith('background.js')) continue;
-          const oldContent = assets[name].source() as string;
-          const newContent = oldContent.replace('RSBUILD_CLIENT_CONFIG', JSON.stringify(config));
-          const source = new sources.RawSource(newContent);
-          compilation.updateAsset(name, source);
-        }
-      }
-
       // support content hmr in dev mode
       if (isDevMode(mode) && environment.name === 'content') {
         const entries = Object.keys(environment.entry);

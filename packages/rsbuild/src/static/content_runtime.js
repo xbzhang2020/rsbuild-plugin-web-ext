@@ -11,6 +11,8 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
 
     __webpack_require__.l.origin = __webpack_require__.l;
     __webpack_require__.l = (url, done) => {
+      window.__web_extend_contentChanged = true;
+
       if (inProgress[url]) {
         inProgress[url].push(done);
         return;
@@ -25,25 +27,24 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
       const CHUNK_LOAD_TIMEOUT = 120000;
       setTimeout(onScriptComplete, CHUNK_LOAD_TIMEOUT);
 
-      const file = url?.split('/').at(-1);
-      if (file) {
-        browser.runtime
-          .sendMessage({ type: 'web-extend:execute-script', file })
-          .then(onScriptComplete)
-          .catch(onScriptComplete);
-      }
+      const file = url.split('/').at(-1);
+      browser.runtime
+        .sendMessage({ type: 'web-extend:execute-script', file })
+        .then(onScriptComplete)
+        .catch(onScriptComplete);
     };
   }
   initializeWebpackLoader();
 }
 
 // Initialize reload handler once per window instance
-if (!window.__WEB_EXTEND_RELOAD_INIT__) {
-  window.__WEB_EXTEND_RELOAD_INIT__ = true;
+if (!window.__web_extend_reloadInitialized && browser.runtime) {
+  window.__web_extend_reloadInitialized = true;
 
   function reloadExtension() {
-    if (!browser.runtime) return;
-    browser.runtime.sendMessage({ type: 'web-extend:reload-extension' });
+    if (window.__web_extend_contentChanged === true) {
+      browser.runtime.sendMessage({ type: 'web-extend:reload-extension' });
+    }
   }
 
   window.addEventListener('beforeunload', reloadExtension);
