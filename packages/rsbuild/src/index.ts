@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { RsbuildConfig, RsbuildPlugin } from '@rsbuild/core';
 import {
   copyPublicFiles,
@@ -97,9 +95,19 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         return;
       }
 
+      if (isDevMode(mode) && environment.name === 'background') {
+        const config = api.getNormalizedConfig().dev.client;
+        for (const name in assets) {
+          if (!name.endsWith('background.js')) continue;
+          const oldContent = assets[name].source() as string;
+          const newContent = oldContent.replace('RSBUILD_CLIENT_CONFIG', JSON.stringify(config));
+          const source = new sources.RawSource(newContent);
+          compilation.updateAsset(name, source);
+        }
+      }
+
       // support content hmr in dev mode
       if (isDevMode(mode) && environment.name === 'content') {
-        const reloadExtensionCode = await readFile(resolve(selfRootPath, './static/content_reload.js'), 'utf-8');
         const entries = Object.keys(environment.entry);
         for (const name in assets) {
           if (!name.endsWith('.js')) continue;
@@ -110,12 +118,6 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
               'webpackHotUpdateWebExtend_content',
               `webpackHotUpdateWebExtend_${entryName}`,
             );
-            const source = new sources.RawSource(newContent);
-            compilation.updateAsset(name, source);
-          } else {
-            const oldContent = assets[name].source() as string;
-            const reg = /\b(?:window\.)?location\.reload\(\);?/g;
-            const newContent = oldContent.replace(reg, `{\n${reloadExtensionCode}\n$&\n}`);
             const source = new sources.RawSource(newContent);
             compilation.updateAsset(name, source);
           }
