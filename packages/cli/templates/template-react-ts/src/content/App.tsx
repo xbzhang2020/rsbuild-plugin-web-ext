@@ -1,5 +1,5 @@
-import "./App.css";
-import { useState } from "react";
+import './App.css';
+import { useState } from 'react';
 
 function App() {
   const [visible, setVisible] = useState(false);
@@ -23,7 +23,7 @@ function App() {
           xmlns="http://www.w3.org/2000/svg"
           width="48"
           height="48"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
         >
           <title>toggle icon</title>
           <circle cx="512" cy="512" r="512" fill="#1296db" />
