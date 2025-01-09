@@ -130,6 +130,9 @@ importers:
       '@rsbuild/plugin-react':
         specifier: ^1.0.7
         version: 1.1.0(@rsbuild/core@1.1.12)
+      '@types/chrome':
+        specifier: ^0.0.290
+        version: 0.0.290
       '@types/react':
         specifier: ^19.0.0
         version: 19.0.1
