@@ -1,17 +1,22 @@
-// Initialize browser instance
-if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
-  globalThis.browser = chrome;
-}
-
-// Initialize webpack loader once per module to handle script loading
 if (__webpack_require__.l && !__webpack_require__.l.origin) {
-  function initializeWebpackLoader() {
-    if (!browser.runtime) return;
-    const inProgress = {};
+  function flagContentChanged() {
+    const bridgeEl = document.getElementById('web-extend-content-bridge');
+    if (bridgeEl) {
+      bridgeEl.dataset.contentChanged = 'true';
+    }
+  }
 
+  function initializeWebpackLoader() {
+    const inProgress = {};
+    const originLoad = __webpack_require__.l;
     __webpack_require__.l.origin = __webpack_require__.l;
-    __webpack_require__.l = (url, done) => {
-      window.__web_extend_contentChanged = true;
+
+    __webpack_require__.l = (url, done, ...args) => {
+      flagContentChanged();
+
+      if (typeof browser !== 'object' || !browser.runtime) {
+        return originLoad(url, done, ...args);
+      }
 
       if (inProgress[url]) {
         inProgress[url].push(done);
@@ -35,17 +40,4 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
     };
   }
   initializeWebpackLoader();
-}
-
-// Initialize reload handler once per window instance
-if (!window.__web_extend_reloadInitialized && browser.runtime) {
-  window.__web_extend_reloadInitialized = true;
-
-  function reloadExtension() {
-    if (window.__web_extend_contentChanged === true) {
-      browser.runtime.sendMessage({ type: 'web-extend:reload-extension' });
-    }
-  }
-
-  window.addEventListener('beforeunload', reloadExtension);
 }

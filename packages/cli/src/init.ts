@@ -34,6 +34,7 @@ const variants = [
   {
     name: 'JavaScript',
     value: 'js',
+    disabled: true,
   },
 ];
 

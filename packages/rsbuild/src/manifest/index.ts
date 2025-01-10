@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { cp, mkdir, readFile, readdir, writeFile, copyFile } from 'node:fs/promises';
+import { join, resolve, basename, extname, dirname } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
@@ -155,6 +155,37 @@ export async function readManifestFile(distPath: string) {
 export async function writeManifestFile({ distPath, manifest, mode }: WriteManifestFileProps) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
+  }
+
+  // TODO: contentScript 处理
+  const { content_scripts = [] } = manifest;
+  if (content_scripts.length) {
+    const mainContentScripts = content_scripts.filter((item) => item.world === 'MAIN');
+    if (mainContentScripts.length !== content_scripts.length) {
+      const runtime = mainContentScripts[0].js?.find((js) => js.includes('rsbuild_core'));
+      if (runtime) {
+        const runtimeDir = dirname(runtime);
+        const ext = extname(runtime);
+        const oldName = basename(runtime, ext);
+        const newName = `${oldName}_main`;
+        const newFileName = `${newName}${ext}`;
+        await copyFile(resolve(distPath, runtime), resolve(distPath, runtimeDir, newFileName));
+        for (const contentScript of mainContentScripts) {
+          if (!contentScript.js?.length) continue;
+
+          const runtimeIndex = contentScript.js.findIndex((item) => runtime === item);
+          if (runtimeIndex === -1) continue;
+
+          contentScript.js[runtimeIndex] = join(runtimeDir, newFileName);
+          const js = contentScript.js?.findLast((item) => item.includes('content'));
+          if (!js) continue;
+          const filePath = resolve(distPath, js);
+          const oldContent = await readFile(filePath, 'utf-8');
+          const newContent = oldContent.replaceAll(oldName, newName);
+          await writeFile(filePath, newContent, 'utf-8');
+        }
+      }
+    }
   }
 
   const data = isDevMode(mode) ? JSON.stringify(manifest, null, 2) : JSON.stringify(manifest);

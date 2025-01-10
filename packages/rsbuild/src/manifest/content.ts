@@ -31,9 +31,16 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, mo
 
   // inject content runtime script for each entry in dev mode
   if (isDevMode(mode) && manifest.content_scripts?.length) {
-    const contentRuntimePath = resolve(selfRootPath, 'static/content_runtime.js');
+    const contentLoadPath = resolve(selfRootPath, 'static/content_load.js');
+    const contentBridgePath = resolve(selfRootPath, 'static/content_bridge.js');
+
+    manifest.content_scripts.push({
+      matches: ['<all_urls>'],
+      js: [contentBridgePath],
+    });
+
     manifest.content_scripts.forEach((item) => {
-      item.js?.push(contentRuntimePath);
+      item.js?.push(contentLoadPath);
     });
   }
 };
