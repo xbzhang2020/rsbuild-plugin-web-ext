@@ -2,7 +2,7 @@ if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
   globalThis.browser = chrome;
 }
 
-console.log('bridge')
+console.log('bridge');
 
 function createBridgeElement() {
   let bridgeEl = document.getElementById('web-extend-content-bridge');

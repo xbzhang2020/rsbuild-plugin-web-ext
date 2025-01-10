@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
-import { cp, mkdir, readFile, readdir, writeFile, copyFile } from 'node:fs/promises';
-import { join, resolve, basename, extname, dirname } from 'node:path';
+import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
