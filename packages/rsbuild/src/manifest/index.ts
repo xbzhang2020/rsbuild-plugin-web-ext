@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
@@ -169,7 +169,10 @@ export async function writeManifestFile({ distPath, manifest, mode }: WriteManif
         const oldName = basename(runtime, ext);
         const newName = `${oldName}_main`;
         const newFileName = `${newName}${ext}`;
-        await copyFile(resolve(distPath, runtime), resolve(distPath, runtimeDir, newFileName));
+        const oldRuntimeContent = await readFile(resolve(distPath, runtime), 'utf-8');
+        const newRuntimeContent = oldRuntimeContent.replaceAll(oldName, newName);
+        await writeFile(resolve(distPath, runtimeDir, newFileName), newRuntimeContent, 'utf-8');
+
         for (const contentScript of mainContentScripts) {
           if (!contentScript.js?.length) continue;
 
