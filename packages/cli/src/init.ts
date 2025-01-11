@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve, relative } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { input, select, checkbox } from '@inquirer/prompts';
+import { checkbox, input, select } from '@inquirer/prompts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
