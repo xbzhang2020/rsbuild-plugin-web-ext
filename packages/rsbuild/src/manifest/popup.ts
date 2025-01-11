@@ -4,7 +4,7 @@ import { getFileContent, getSingleEntryFile } from './util.js';
 
 const key = 'popup';
 
-const mergePopupEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
+const normalizePopupEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, srcPath, files }) => {
   const { manifest_version } = manifest;
 
   const entryPath = await getSingleEntryFile(srcPath, files, key);
@@ -55,7 +55,7 @@ const writePopupEntry: ManifestEntryProcessor['write'] = async ({ manifest, root
 const popupProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName === key,
-  merge: mergePopupEntry,
+  normalize: normalizePopupEntry,
   read: readPopupEntry,
   write: writePopupEntry,
 };

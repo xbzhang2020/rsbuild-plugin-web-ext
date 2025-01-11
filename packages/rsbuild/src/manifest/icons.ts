@@ -16,7 +16,7 @@ const getDeclarativeIcons = (assetFiles: string[]) => {
   return Object.keys(res).length ? res : null;
 };
 
-const mergeIconsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
+const normalizeIconsEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, files, srcPath }) => {
   const assetFiles = await getAssetFiles(srcPath, files);
   const declarativeIcons = getDeclarativeIcons(assetFiles);
   if (!declarativeIcons) return;
@@ -101,7 +101,7 @@ const writeIconsEntry: ManifestEntryProcessor['write'] = ({ manifest, output, na
 const iconsProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName.startsWith('icon'),
-  merge: mergeIconsEntry,
+  normalize: normalizeIconsEntry,
   read: readIconsEntry,
   write: writeIconsEntry,
 };

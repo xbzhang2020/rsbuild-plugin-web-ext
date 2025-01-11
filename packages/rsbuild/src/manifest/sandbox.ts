@@ -3,7 +3,7 @@ import { getMultipleEntryFiles, getSingleEntryFile } from './util.js';
 
 const key = 'sandbox';
 
-const mergeSandboxEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
+const normalizeSandboxEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, srcPath, target, files }) => {
   const pages = manifest.sandbox?.pages;
   if (pages?.length || target.includes('firefox')) return;
 
@@ -53,7 +53,7 @@ const writeSandboxEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) 
 const sandboxProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName.startsWith(key),
-  merge: mergeSandboxEntry,
+  normalize: normalizeSandboxEntry,
   read: readSandboxEntry,
   write: writeSandboxEntry,
 };

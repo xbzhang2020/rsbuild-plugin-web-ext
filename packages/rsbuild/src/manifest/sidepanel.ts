@@ -3,7 +3,7 @@ import { getSingleEntryFile } from './util.js';
 
 const key = 'sidepanel';
 
-const mergeSidepanelEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, target, files }) => {
+const normalizeSidepanelEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, srcPath, target, files }) => {
   const { side_panel, sidebar_action } = manifest;
   if (side_panel?.default_path || sidebar_action?.default_panel) {
     addSidepanelPermission(manifest);
@@ -56,7 +56,7 @@ const writeSidepanelEntry: ManifestEntryProcessor['write'] = ({ manifest, name }
 const sidepanelProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName === 'sidepanel',
-  merge: mergeSidepanelEntry,
+  normalize: normalizeSidepanelEntry,
   read: readSidepanelEntry,
   write: writeSidepanelEntry,
 };

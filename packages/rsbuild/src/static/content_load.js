@@ -1,3 +1,7 @@
+if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
+  globalThis.browser = chrome;
+}
+
 if (__webpack_require__.l && !__webpack_require__.l.origin) {
   function flagContentChanged() {
     const bridgeEl = document.getElementById('web-extend-content-bridge');
@@ -9,7 +13,7 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
   function initializeWebpackLoader() {
     const inProgress = {};
     const originLoad = __webpack_require__.l;
-    __webpack_require__.l.origin = __webpack_require__.l;
+    __webpack_require__.l.origin = originLoad;
 
     __webpack_require__.l = (url, done, ...args) => {
       flagContentChanged();
@@ -18,6 +22,7 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
         return originLoad(url, done, ...args);
       }
 
+      // custom load
       if (inProgress[url]) {
         inProgress[url].push(done);
         return;
@@ -39,5 +44,6 @@ if (__webpack_require__.l && !__webpack_require__.l.origin) {
         .catch(onScriptComplete);
     };
   }
+
   initializeWebpackLoader();
 }

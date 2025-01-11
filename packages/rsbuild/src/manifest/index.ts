@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import backgroundProcessor from './background.js';
 import contentProcessor from './content.js';
 import devtoolsProcessor from './devtools.js';
@@ -85,7 +85,7 @@ export async function normalizeManifest({
     const srcPath = resolve(rootPath, srcDir);
     const files = await readdir(srcPath, { withFileTypes: true });
     for (const processor of entryProcessors) {
-      await processor.merge({
+      await processor.normalize({
         selfRootPath,
         manifest: finalManifest,
         target,
@@ -152,42 +152,14 @@ export async function readManifestFile(distPath: string) {
   return manifest;
 }
 
-export async function writeManifestFile({ distPath, manifest, mode }: WriteManifestFileProps) {
+export async function writeManifestFile({ distPath, manifest, mode, selfRootPath }: WriteManifestFileProps) {
   if (!existsSync(distPath)) {
     await mkdir(distPath, { recursive: true });
   }
 
-  // TODO: contentScript 处理
-  const { content_scripts = [] } = manifest;
-  if (content_scripts.length) {
-    const mainContentScripts = content_scripts.filter((item) => item.world === 'MAIN');
-    if (mainContentScripts.length !== content_scripts.length) {
-      const runtime = mainContentScripts[0].js?.find((js) => js.includes('rsbuild_core'));
-      if (runtime) {
-        const runtimeDir = dirname(runtime);
-        const ext = extname(runtime);
-        const oldName = basename(runtime, ext);
-        const newName = `${oldName}_main`;
-        const newFileName = `${newName}${ext}`;
-        const oldRuntimeContent = await readFile(resolve(distPath, runtime), 'utf-8');
-        const newRuntimeContent = oldRuntimeContent.replaceAll(oldName, newName);
-        await writeFile(resolve(distPath, runtimeDir, newFileName), newRuntimeContent, 'utf-8');
-
-        for (const contentScript of mainContentScripts) {
-          if (!contentScript.js?.length) continue;
-
-          const runtimeIndex = contentScript.js.findIndex((item) => runtime === item);
-          if (runtimeIndex === -1) continue;
-
-          contentScript.js[runtimeIndex] = join(runtimeDir, newFileName);
-          const js = contentScript.js?.findLast((item) => item.includes('content'));
-          if (!js) continue;
-          const filePath = resolve(distPath, js);
-          const oldContent = await readFile(filePath, 'utf-8');
-          const newContent = oldContent.replaceAll(oldName, newName);
-          await writeFile(filePath, newContent, 'utf-8');
-        }
-      }
+  for (const processor of entryProcessors) {
+    if (processor.onAfterBuild) {
+      await processor.onAfterBuild({ distPath, manifest, mode, selfRootPath });
     }
   }
 

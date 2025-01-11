@@ -2,9 +2,7 @@ if (typeof browser === 'undefined' && typeof chrome !== 'undefined') {
   globalThis.browser = chrome;
 }
 
-console.log('bridge');
-
-function createBridgeElement() {
+function initBridge() {
   let bridgeEl = document.getElementById('web-extend-content-bridge');
   if (!bridgeEl) {
     bridgeEl = document.createElement('div');
@@ -25,7 +23,7 @@ function reloadExtension() {
   }
 }
 
-createBridgeElement();
+initBridge();
 
 if (!window.__web_extend_reloadInitialized) {
   window.__web_extend_reloadInitialized = true;

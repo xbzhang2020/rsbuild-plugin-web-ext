@@ -3,7 +3,7 @@ import { getSingleEntryFile } from './util.js';
 
 const key = 'options';
 
-const mergeOptionsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
+const normalizeOptionsEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, srcPath, files }) => {
   const { options_ui, options_page } = manifest;
   if (options_ui?.page || options_page) return;
 
@@ -44,7 +44,7 @@ const writeOptionsEntry: ManifestEntryProcessor['write'] = ({ manifest, name }) 
 const optionsProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName === 'options',
-  merge: mergeOptionsEntry,
+  normalize: normalizeOptionsEntry,
   read: readOptionsEntry,
   write: writeOptionsEntry,
 };

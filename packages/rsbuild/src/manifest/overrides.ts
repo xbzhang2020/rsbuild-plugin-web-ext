@@ -4,7 +4,7 @@ import { getSingleEntryFile } from './util.js';
 
 const overrides: PageToOverride[] = ['newtab', 'history', 'bookmarks'];
 
-const mergeOverridesEntry: ManifestEntryProcessor['merge'] = async ({ manifest, srcPath, files }) => {
+const normalizeOverridesEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, srcPath, files }) => {
   const { chrome_url_overrides = {} } = manifest;
   if (Object.keys(chrome_url_overrides).length) return;
 
@@ -49,7 +49,7 @@ const writeOverridesEntry: ManifestEntryProcessor['write'] = ({ manifest, name }
 const overrideProcessors: ManifestEntryProcessor = {
   key: 'overrides',
   match: (entryName) => overrides.includes(entryName as PageToOverride),
-  merge: mergeOverridesEntry,
+  normalize: normalizeOverridesEntry,
   read: readOverridesEntry,
   write: writeOverridesEntry,
 };

@@ -1,4 +1,6 @@
-import { resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { mkdir, copyFile } from 'node:fs/promises';
+import { basename, dirname, join, resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
 import type { ContentScriptConfig, ManifestEntryInput, ManifestEntryProcessor } from './types.js';
@@ -6,7 +8,7 @@ import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './uti
 
 const key = 'content';
 
-const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, mode, selfRootPath, files, srcPath }) => {
+const normalizeContentEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, mode, selfRootPath, files, srcPath }) => {
   if (!manifest.content_scripts?.length) {
     const entryPath: string[] = [];
     const singleEntry = await getSingleEntryFile(srcPath, files, key);
@@ -32,12 +34,6 @@ const mergeContentEntry: ManifestEntryProcessor['merge'] = async ({ manifest, mo
   // inject content runtime script for each entry in dev mode
   if (isDevMode(mode) && manifest.content_scripts?.length) {
     const contentLoadPath = resolve(selfRootPath, 'static/content_load.js');
-    const contentBridgePath = resolve(selfRootPath, 'static/content_bridge.js');
-
-    manifest.content_scripts.push({
-      matches: ['<all_urls>'],
-      js: [contentBridgePath],
-    });
 
     manifest.content_scripts.forEach((item) => {
       item.js?.push(contentLoadPath);
@@ -85,12 +81,51 @@ const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, ro
   content_scripts[index].css = output.filter((item) => item.endsWith('.css'));
 };
 
+const onAfterBuild: ManifestEntryProcessor['onAfterBuild'] = async ({ distPath, manifest, mode, selfRootPath }) => {
+  const { content_scripts = [] } = manifest;
+  if (!content_scripts.length) return;
+
+  const mainContentScripts = content_scripts.filter((item) => item.world === 'MAIN');
+  const ioslatedScripts = content_scripts.filter((item) => item.world !== 'MAIN').flatMap((item) => item.js || []);
+  if (mainContentScripts.length && mainContentScripts.length !== content_scripts.length) {
+    for (const contentScript of mainContentScripts) {
+      const { js } = contentScript;
+      if (!js?.length) continue;
+      for (const [key, script] of Object.entries(js)) {
+        if (ioslatedScripts.includes(script)) {
+          const dir = dirname(script);
+          const name = basename(script);
+          const copyDir = join(dir, 'copy');
+          const copyDirPath = resolve(distPath, copyDir);
+          if (!existsSync(copyDirPath)) {
+            await mkdir(copyDirPath);
+          }
+          await copyFile(resolve(distPath, script), resolve(copyDirPath, name));
+          const index = Number(key);
+          js[index] = join(copyDir, name);
+        }
+      }
+    }
+  }
+
+  if (isDevMode(mode)) {
+    const contentBridgePath = resolve(selfRootPath, 'static/content_bridge.js');
+    const name = basename(contentBridgePath);
+    await copyFile(contentBridgePath, resolve(distPath, name));
+    content_scripts.push({
+      matches: ['<all_urls>'],
+      js: [name],
+    });
+  }
+};
+
 const contentProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName.startsWith('content'),
-  merge: mergeContentEntry,
+  normalize: normalizeContentEntry,
   read: readContentEntry,
   write: writeContentEntry,
+  onAfterBuild,
 };
 
 export default contentProcessor;

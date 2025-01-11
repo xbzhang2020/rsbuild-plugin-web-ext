@@ -6,7 +6,7 @@ import { getSingleEntryFile } from './util.js';
 
 const key = 'background';
 
-const mergeBackgroundEntry: ManifestEntryProcessor['merge'] = async ({
+const normalizeBackgroundEntry: ManifestEntryProcessor['normalize'] = async ({
   manifest,
   target,
   mode,
@@ -78,7 +78,7 @@ const writeBackgroundEntry: ManifestEntryProcessor['write'] = ({ manifest, outpu
 const backgroundProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName === key,
-  merge: mergeBackgroundEntry,
+  normalize: normalizeBackgroundEntry,
   read: readBackgroundEntry,
   write: writeBackgroundEntry,
 };

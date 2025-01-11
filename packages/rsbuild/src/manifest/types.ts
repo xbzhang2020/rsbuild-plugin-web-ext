@@ -54,9 +54,10 @@ export type MaybePromise<T = unknown> = T | Promise<T>;
 export interface ManifestEntryProcessor {
   key: ManifestEntryKey;
   match: (entryName: string) => boolean;
-  merge: (props: NormalizeMainfestEntryProps) => MaybePromise<void>;
+  normalize: (props: NormalizeMainfestEntryProps) => MaybePromise<void>;
   read: (manifest?: WebExtensionManifest) => MaybePromise<ManifestEntryInput | null>;
   write: (props: WriteMainfestEntryItemProps) => MaybePromise<void>;
+  onAfterBuild?: (props: WriteManifestFileProps) => MaybePromise<void>;
 }
 
 export interface NormalizeManifestProps {
@@ -92,6 +93,7 @@ export interface WriteMainfestEntryItemProps {
 }
 
 export interface WriteManifestFileProps {
+  selfRootPath: string;
   distPath: string;
   manifest: WebExtensionManifest;
   mode: string | undefined;

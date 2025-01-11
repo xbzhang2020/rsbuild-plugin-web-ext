@@ -5,7 +5,7 @@ import { getMultipleEntryFiles, getSingleEntryFile } from './util.js';
 
 const key = 'devtools';
 
-const mergeDevtoolsEntry: ManifestEntryProcessor['merge'] = async ({ manifest, files, srcPath }) => {
+const normalizeDevtoolsEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, files, srcPath }) => {
   const { devtools_page } = manifest;
   if (devtools_page) return;
 
@@ -50,7 +50,7 @@ const writeDevtoolsEntry: ManifestEntryProcessor['write'] = ({ manifest, name })
 const devtoolsProcessor: ManifestEntryProcessor = {
   key,
   match: (entryName) => entryName === 'devtools',
-  merge: mergeDevtoolsEntry,
+  normalize: normalizeDevtoolsEntry,
   read: readDevtoolsEntry,
   write: writeDevtoolsEntry,
 };
