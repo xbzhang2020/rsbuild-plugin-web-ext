@@ -45,11 +45,15 @@ function applyInitCommand(command: Command) {
   command
     .argument('[dir]')
     .option('-t, --template <name>', 'specify the template name')
+    .option('-e, --entry <name>', 'specify entry ponts')
     .action(async (projectName, cliOptions) => {
+      const { entry, ...other } = cliOptions;
+      const entrypoints = entry ? entry.split(',') : undefined;
       try {
         const options = await normalizeInitialOptions({
           projectName,
-          ...cliOptions,
+          entry: entrypoints,
+          ...other,
         });
         if (options) {
           await createProject(options);

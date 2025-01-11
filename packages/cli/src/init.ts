@@ -1,14 +1,15 @@
 import { existsSync } from 'node:fs';
 import { copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { input, select } from '@inquirer/prompts';
+import { input, select, checkbox } from '@inquirer/prompts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface InitialOptions {
   projectName?: string;
   template?: string;
+  entry?: string[];
 }
 
 const frameworks = [
@@ -35,6 +36,33 @@ const variants = [
     name: 'JavaScript',
     value: 'js',
     disabled: true,
+  },
+];
+
+const entrypoints = [
+  {
+    name: 'background',
+    value: 'background',
+  },
+  {
+    name: 'content',
+    value: 'content',
+  },
+  {
+    name: 'popup',
+    value: 'popup',
+  },
+  {
+    name: 'options',
+    value: 'options',
+  },
+  {
+    name: 'devtools',
+    value: 'devtools',
+  },
+  {
+    name: 'sidepanel',
+    value: 'sidepanel',
   },
 ];
 
@@ -77,8 +105,14 @@ export async function normalizeInitialOptions(options: InitialOptions) {
       throw new Error("Template doesn't exist");
     }
 
-    console.log();
-    console.log('Done. Next step:');
+    if (!options.entry) {
+      options.entry = await checkbox({
+        message: 'Select entry points',
+        choices: entrypoints,
+      });
+    }
+
+    console.log('\nDone. Next step:');
     console.group();
     console.log(`cd ${options.projectName}`);
     console.log('npm install');
@@ -87,7 +121,7 @@ export async function normalizeInitialOptions(options: InitialOptions) {
     return options;
   } catch (error) {
     if (error instanceof Error && error.name === 'ExitPromptError') {
-      console.log('Canceled');
+      console.log('Canceled\n');
     } else {
       throw error;
     }
@@ -104,33 +138,47 @@ export async function createProject(options: InitialOptions) {
   const destPath = resolve(root, projectName);
 
   await mkdir(destPath);
-  await copyDirectory(templatePath, destPath);
+  await copyTemplate(templatePath, destPath);
+  await copyEntryFiles(templatePath, destPath, options);
   await modifyPackageJson(destPath, projectName);
-}
-
-async function copyDirectory(src: string, dest: string) {
-  const entries = await readdir(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = join(src, entry.name);
-    const destPath = join(dest, entry.name);
-
-    if (['node_modules', 'dist'].includes(entry.name)) continue;
-
-    if (entry.isDirectory()) {
-      await cp(srcPath, destPath, { recursive: true });
-    } else {
-      await copyFile(srcPath, destPath);
-    }
-  }
 }
 
 function getTemplatePath(template: string) {
   const templatePath = resolve(__dirname, `../templates/template-${template}`);
   if (!existsSync(templatePath)) {
-    throw Error(`Cannot find template ${template}`);
+    throw new Error(`Cannot find template ${template}`);
   }
   return templatePath;
+}
+
+async function copyTemplate(source: string, dest: string) {
+  const files = await readdir(source, { withFileTypes: true });
+  const ingoredEntrypoints = entrypoints.map((item) => item.value);
+
+  for (const file of files) {
+    const { name } = file;
+    const srcPath = resolve(source, name);
+    const destPath = resolve(dest, name);
+
+    if (['node_modules', 'dist'].includes(name)) continue;
+
+    if (file.isDirectory()) {
+      await cp(srcPath, destPath, {
+        recursive: true,
+        filter: (s) => {
+          if (name === 'src') {
+            // exclude all entrypoints
+            const entryPath = relative(srcPath, s);
+            const ignored = ingoredEntrypoints.some((item) => entryPath.includes(item));
+            return !ignored;
+          }
+          return true;
+        },
+      });
+    } else {
+      await copyFile(srcPath, destPath);
+    }
+  }
 }
 
 async function modifyPackageJson(root: string, projectName: string) {
@@ -139,4 +187,32 @@ async function modifyPackageJson(root: string, projectName: string) {
   const newContent = JSON.parse(content);
   newContent.name = projectName;
   await writeFile(pkgPath, JSON.stringify(newContent, null, 2), 'utf-8');
+}
+
+async function copyEntryFiles(source: string, dest: string, optons: InitialOptions) {
+  const srcPath = resolve(source, 'src');
+  const destSrcPath = resolve(dest, 'src');
+
+  if (!existsSync(srcPath)) {
+    throw new Error('Cannot find src directory');
+  }
+  if (!existsSync(destSrcPath)) {
+    await mkdir(destSrcPath);
+  }
+
+  const files = await readdir(srcPath, { withFileTypes: true });
+  const entries = optons.entry || [];
+
+  for (const entry of entries) {
+    let entryName = entry;
+    if (entry.startsWith('contents/')) {
+      entryName = 'content';
+    }
+
+    const file = files.find((item) => item.name.startsWith(entryName));
+    if (!file) continue;
+    const { name } = file;
+    const destName = file.isFile() ? name : entry;
+    await cp(resolve(srcPath, name), resolve(destSrcPath, destName), { recursive: true });
+  }
 }
