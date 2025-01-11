@@ -139,11 +139,11 @@ export async function createProject(options: InitialOptions) {
 
   await mkdir(destPath);
   await copyTemplate(templatePath, destPath);
-  await copyEntryFiles(templatePath, destPath, options);
+  await copyEntryFiles(resolve(templatePath, 'src'), resolve(destPath, 'src'), options.entry);
   await modifyPackageJson(destPath, projectName);
 }
 
-function getTemplatePath(template: string) {
+export function getTemplatePath(template: string) {
   const templatePath = resolve(__dirname, `../templates/template-${template}`);
   if (!existsSync(templatePath)) {
     throw new Error(`Cannot find template ${template}`);
@@ -189,30 +189,30 @@ async function modifyPackageJson(root: string, projectName: string) {
   await writeFile(pkgPath, JSON.stringify(newContent, null, 2), 'utf-8');
 }
 
-async function copyEntryFiles(source: string, dest: string, optons: InitialOptions) {
-  const srcPath = resolve(source, 'src');
-  const destSrcPath = resolve(dest, 'src');
+export async function copyEntryFiles(source: string, dest: string, entries?: string[]) {
+  if (!entries?.length) return;
 
-  if (!existsSync(srcPath)) {
-    throw new Error('Cannot find src directory');
+  if (!existsSync(source)) {
+    throw new Error('Cannot find source');
   }
-  if (!existsSync(destSrcPath)) {
-    await mkdir(destSrcPath);
+  if (!existsSync(dest)) {
+    await mkdir(dest);
   }
 
-  const files = await readdir(srcPath, { withFileTypes: true });
-  const entries = optons.entry || [];
-
+  const files = await readdir(source, { withFileTypes: true });
   for (const entry of entries) {
     let entryName = entry;
+    let custom = false;
     if (entry.startsWith('contents/')) {
       entryName = 'content';
+      custom = true;
     }
 
     const file = files.find((item) => item.name.startsWith(entryName));
     if (!file) continue;
+
     const { name } = file;
-    const destName = file.isFile() ? name : entry;
-    await cp(resolve(srcPath, name), resolve(destSrcPath, destName), { recursive: true });
+    const destName = custom ? entry : name;
+    await cp(resolve(source, name), resolve(dest, destName), { recursive: true });
   }
 }

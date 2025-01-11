@@ -1,49 +1,52 @@
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import sharp from 'sharp';
-import { getSrcDir } from './util.js';
+import { copyEntryFiles, getTemplatePath } from './init.js';
 
 export interface GenerateOptions {
-  root?: string;
+  type: string;
+  root: string;
   template?: string;
-  srcDir?: string;
   outDir?: string;
+  // only vald for icons
   filename?: string;
   size?: string;
 }
 
 const ICON_SIZES = [16, 32, 48, 64, 128];
 
-function getTemplateIconPath(root: string, template: string | undefined) {
-  let templatePath = '';
+const getProjectSrcDir = (rootPath: string, srcDir?: string | undefined) => {
+  if (srcDir) return srcDir;
+  return existsSync(resolve(rootPath, 'src')) ? './src' : './';
+};
 
+function getIconTemplatePath(root: string, template?: string) {
+  let templatePath = '';
   if (template) {
     templatePath = resolve(root, template);
-    if (!existsSync(template)) {
-      throw new Error("The template doesn't exist");
+  } else {
+    const name = 'icon.png';
+    const srcPath = resolve(root, getProjectSrcDir(root));
+    templatePath = resolve(srcPath, 'assets', name);
+    if (!existsSync(templatePath)) {
+      templatePath = resolve(srcPath, name);
     }
-    return templatePath;
   }
 
-  const defaultTemplate = 'icon.png';
-  const srcPath = resolve(root, getSrcDir(root));
-  templatePath = resolve(srcPath, 'assets', defaultTemplate);
-  if (existsSync(templatePath)) return templatePath;
-
-  templatePath = resolve(srcPath, defaultTemplate);
-  if (existsSync(templatePath)) return templatePath;
-
-  throw new Error('Icon template not found');
+  if (!existsSync(templatePath)) {
+    throw new Error(`Cannot find template ${template}`);
+  }
+  return templatePath;
 }
 
 async function generateIcons({
-  root = process.cwd(),
+  root,
   template,
   outDir,
   size = ICON_SIZES.join(','),
   filename = 'icon-{size}.png',
 }: GenerateOptions) {
-  const input = getTemplateIconPath(root, template);
+  const templatePath = getIconTemplatePath(root, template);
 
   const sizes = size
     .split(',')
@@ -51,10 +54,24 @@ async function generateIcons({
     .filter((item) => Number.isInteger(item) && item > 0);
 
   for (const size of sizes) {
-    const newIncoName = filename.replace('{size}', String(size));
-    const newIconPath = outDir ? resolve(root, outDir, newIncoName) : resolve(dirname(input), newIncoName);
-    await sharp(input).resize(size).toFile(newIconPath);
+    const name = filename.replace('{size}', String(size));
+    const destPath = outDir ? resolve(root, outDir) : resolve(dirname(templatePath));
+    await sharp(templatePath).resize(size).toFile(resolve(destPath, name));
   }
 }
 
-export { generateIcons };
+async function generateEntryFiles({ type, root, template, outDir }: GenerateOptions) {
+  if (!template) {
+    throw new Error('Template is not defined');
+  }
+  const templatePath = getTemplatePath(template || '');
+  const destPath = outDir ? resolve(root, outDir) : resolve(root, getProjectSrcDir(root));
+  await copyEntryFiles(resolve(templatePath, 'src'), destPath, [type]);
+}
+
+export async function generate(options: GenerateOptions) {
+  if (options.type === 'icons') {
+    return generateIcons(options);
+  }
+  return generateEntryFiles(options);
+}

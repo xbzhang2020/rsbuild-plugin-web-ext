@@ -1,5 +1,5 @@
 import { type Command, program } from 'commander';
-import { type GenerateOptions, generateIcons } from './generate.js';
+import { type GenerateOptions, generate } from './generate.js';
 import { createProject, normalizeInitialOptions } from './init.js';
 import { type StartOptions, startBuild, startDevServer } from './rsbuild.js';
 import { type ZipOptions, zipExtenison } from './zip.js';
@@ -18,27 +18,6 @@ function main() {
   applyZipCommand(zipCommand);
 
   program.parse();
-}
-
-function applyGenerateCommand(command: Command) {
-  command
-    .argument('<type>', 'type of files')
-    .option('-r, --root <dir>', 'specify the project root directory')
-    .option('-t, --template <name>', 'specify the template name or path')
-    .option('-o, --out-dir <dir>', 'specify the output directory')
-    .option('-n, --filename <name>', 'specify the output filename')
-    .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)')
-    .action(async (type, options: GenerateOptions) => {
-      try {
-        if (type === 'icons') {
-          await generateIcons(options);
-        }
-        console.log(`Generated ${type} successfully!`);
-      } catch (error) {
-        console.error(`Generated ${type} failed:`, (error as Error).message);
-        process.exit(1);
-      }
-    });
 }
 
 function applyInitCommand(command: Command) {
@@ -61,6 +40,29 @@ function applyInitCommand(command: Command) {
       } catch (err) {
         console.error('Failed to create the project.');
         console.error(err);
+        process.exit(1);
+      }
+    });
+}
+
+function applyGenerateCommand(command: Command) {
+  command
+    .argument('<type>', 'type of files')
+    .option('-r, --root <dir>', 'specify the project root directory')
+    .option('-t, --template <name>', 'specify the template name or path')
+    .option('-o, --out-dir <dir>', 'specify the output directory')
+    .option('-n, --filename <name>', 'specify the output filename')
+    .option('--size <size>', 'specify sizes of output icons (defaults to 16,32,48,64,128)')
+    .action(async (type, options: GenerateOptions) => {
+      try {
+        options.type = type;
+        if (!options.root) {
+          options.root = process.cwd();
+        }
+        await generate(options);
+        console.log(`Generated ${type} successfully!`);
+      } catch (error) {
+        console.error(`Generated ${type} failed:`, (error as Error).message);
         process.exit(1);
       }
     });
