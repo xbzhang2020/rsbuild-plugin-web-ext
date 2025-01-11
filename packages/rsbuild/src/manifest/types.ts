@@ -79,14 +79,13 @@ export interface NormalizeMainfestEntryProps {
 }
 
 export interface WriteMainfestEntriesProps {
+  normalizedManifest: WebExtensionManifest;
   manifest: WebExtensionManifest;
   rootPath: string;
   entry: ManifestEntryOutput;
 }
 
-export interface WriteMainfestEntryItemProps {
-  manifest: WebExtensionManifest;
-  rootPath: string;
+export interface WriteMainfestEntryItemProps extends Omit<WriteMainfestEntriesProps, 'entry'> {
   name: string;
   input?: ManifestEntryItem['input'];
   output?: ManifestEntryItem['output'];

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, copyFile } from 'node:fs/promises';
+import { copyFile, mkdir } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { isDevMode } from './env.js';
 import { parseExportObject } from './parser/export.js';
@@ -8,7 +8,13 @@ import { getFileContent, getMultipleEntryFiles, getSingleEntryFile } from './uti
 
 const key = 'content';
 
-const normalizeContentEntry: ManifestEntryProcessor['normalize'] = async ({ manifest, mode, selfRootPath, files, srcPath }) => {
+const normalizeContentEntry: ManifestEntryProcessor['normalize'] = async ({
+  manifest,
+  mode,
+  selfRootPath,
+  files,
+  srcPath,
+}) => {
   if (!manifest.content_scripts?.length) {
     const entryPath: string[] = [];
     const singleEntry = await getSingleEntryFile(srcPath, files, key);
@@ -57,17 +63,26 @@ const readContentEntry: ManifestEntryProcessor['read'] = (manifest) => {
   return entry;
 };
 
-const writeContentEntry: ManifestEntryProcessor['write'] = async ({ manifest, rootPath, name, input, output }) => {
+const writeContentEntry: ManifestEntryProcessor['write'] = async ({
+  normalizedManifest,
+  manifest,
+  rootPath,
+  name,
+  input,
+  output,
+}) => {
   const { content_scripts } = manifest;
   if (!content_scripts?.length || !output?.length) return;
 
-  // normal content
   const index = Number(name.replace('content', '') || '0');
-  if (!content_scripts[index]) return;
+  const normalizedContentScript = normalizedManifest.content_scripts?.[index];
 
-  const { matches } = content_scripts[index];
-  if (!matches?.length && input?.[0]) {
-    const code = await getFileContent(rootPath, resolve(rootPath, input[0]));
+  if (!content_scripts[index] || !normalizedContentScript) return;
+  content_scripts[index] = JSON.parse(JSON.stringify(normalizedContentScript));
+
+  const entryMain = input?.[0];
+  if (entryMain) {
+    const code = await getFileContent(rootPath, resolve(rootPath, entryMain));
     const config = parseExportObject<ContentScriptConfig>(code, 'config') || {
       matches: ['<all_urls>'],
     };
@@ -109,13 +124,16 @@ const onAfterBuild: ManifestEntryProcessor['onAfterBuild'] = async ({ distPath, 
   }
 
   if (isDevMode(mode)) {
-    const contentBridgePath = resolve(selfRootPath, 'static/content_bridge.js');
-    const name = basename(contentBridgePath);
-    await copyFile(contentBridgePath, resolve(distPath, name));
-    content_scripts.push({
-      matches: ['<all_urls>'],
-      js: [name],
-    });
+    const contentbridgeName = 'content_bridge.js';
+    const contentBridgePath = resolve(selfRootPath, 'static', contentbridgeName);
+    await copyFile(contentBridgePath, resolve(distPath, contentbridgeName));
+    const hasExisted = ioslatedScripts.find((item) => item.endsWith(contentbridgeName));
+    if (!hasExisted) {
+      content_scripts.push({
+        matches: ['<all_urls>'],
+        js: [contentbridgeName],
+      });
+    }
   }
 };
 

@@ -31,8 +31,10 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
   setup: (api) => {
     const rootPath = api.context.rootPath;
     const selfRootPath = __dirname;
-    let manifest = {} as WebExtensionManifest;
     let mode = process.env.NODE_ENV as RsbuildConfig['mode'];
+
+    let normalizedManifest = {} as WebExtensionManifest;
+    let manifest = {} as WebExtensionManifest;
 
     api.modifyRsbuildConfig(async (config, { mergeRsbuildConfig }) => {
       if (config.mode) {
@@ -81,6 +83,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
         },
       };
 
+      normalizedManifest = JSON.parse(JSON.stringify(manifest));
       // extraConfig must be at the end, for dev.writeToDisk
       return mergeRsbuildConfig(config, extraConfig);
     });
@@ -135,6 +138,7 @@ export const pluginWebExt = (options: PluginWebExtOptions = {}): RsbuildPlugin =
       }
 
       await writeManifestEntries({
+        normalizedManifest,
         manifest,
         rootPath,
         entry: manifestEntry,

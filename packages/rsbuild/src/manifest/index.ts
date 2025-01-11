@@ -132,11 +132,17 @@ export async function readManifestEntries(manifest: WebExtensionManifest) {
   return res;
 }
 
-export async function writeManifestEntries({ manifest, rootPath, entry }: WriteMainfestEntriesProps) {
+export async function writeManifestEntries({
+  normalizedManifest,
+  manifest,
+  rootPath,
+  entry,
+}: WriteMainfestEntriesProps) {
   for (const entryName in entry) {
     const processor = entryProcessors.find((item) => item.match(entryName));
     if (!processor) continue;
     await processor.write({
+      normalizedManifest,
       manifest,
       rootPath,
       name: entryName,
