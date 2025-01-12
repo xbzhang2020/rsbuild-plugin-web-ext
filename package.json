@@ -1,68 +1,35 @@
 {
-  "name": "rsbuild-plugin-web-ext",
-  "version": "0.0.1-alpha.6",
-  "description": "A Rsbuild plugin for developing and building browser extensions, making browser extension development simple and efficient.",
-  "keywords": ["web extensions", "browser extensions", "rsbuild plugin", "web-ext"],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/xbzhang2020/rsbuild-plugin-web-ext.git"
-  },
-  "homepage": "https://github.com/xbzhang2020/rsbuild-plugin-web-ext.git",
-  "license": "MIT",
+  "name": "web-ext",
+  "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
+  "private": "true",
+  "directories": {
+    "example": "examples"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "dependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "simple-git-hooks": "^2.11.1",
+    "typescript": "^5.7.2"
+  },
   "scripts": {
-    "build": "rslib build",
-    "dev": "rslib build --watch",
+    "test": "echo skip",
     "lint": "biome check .",
-    "lint:write": "biome check . --write",
-    "prepare": "simple-git-hooks && npm run build",
-    "test": "playwright test",
-    "bump": "npx bumpp"
+    "lint:write": "biome check . --write"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run lint:write"
   },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@microsoft/api-extractor": "^7.48.0",
-    "@playwright/test": "^1.48.2",
-    "@rsbuild/core": "^1.1.6",
-    "@rslib/core": "^0.1.0",
-    "@types/babel__generator": "^7.6.8",
-    "@types/babel__traverse": "^7.20.6",
-    "@types/node": "^22.8.6",
-    "playwright": "^1.48.2",
-    "simple-git-hooks": "^2.11.1",
-    "typescript": "^5.6.3"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-infra-dev/rsbuild.git"
   },
-  "peerDependencies": {
-    "@rsbuild/core": "1.x"
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/web-infra-dev/rsbuild/issues"
   },
-  "peerDependenciesMeta": {
-    "@rsbuild/core": {
-      "optional": true
-    }
-  },
-  "packageManager": "pnpm@9.12.3",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "dependencies": {
-    "@babel/parser": "^7.26.2",
-    "@babel/traverse": "^7.25.9",
-    "@babel/types": "^7.26.0",
-    "@types/chrome": "^0.0.287"
-  }
+  "homepage": "https://github.com/web-infra-dev/rsbuild#readme",
+  "description": "",
+  "packageManager": "pnpm@9.12.3"
 }

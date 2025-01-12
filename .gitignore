@@ -13,3 +13,4 @@ test-results
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea
+coverage

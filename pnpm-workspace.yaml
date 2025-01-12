@@ -1,2 +1,5 @@
 packages:
   - "examples/*"
+  - "packages/*"
+  - "website"
+  - "packages/cli/templates/*"

@@ -1,0 +1,15 @@
+{
+  "name": "basic",
+  "version": "1.0.0-alpha.1",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx rsbuild dev",
+    "build": "npx rsbuild build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "basic demo"
+}

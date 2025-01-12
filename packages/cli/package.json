@@ -1,0 +1,48 @@
+{
+  "name": "web-extend",
+  "version": "0.0.1-alpha.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "web-extend": "bin/index.js",
+    "we": "bin/index.js"
+  },
+  "scripts": {
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": ["dist", "bin", "templates"],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.1",
+    "archiver": "^7.0.1",
+    "chokidar": "^4.0.3",
+    "commander": "^12.1.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.12",
+    "@rslib/core": "^0.1.0",
+    "@types/archiver": "^6.0.3",
+    "typescript": "^5.7.2",
+    "web-ext": "^8.3.0"
+  },
+  "optionalDependencies": {
+    "web-ext": "^8.3.0"
+  },
+  "peerDependencies": {
+    "@rsbuild/core": "1.x"
+  },
+  "peerDependenciesMeta": {
+    "@rsbuild/core": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=16.7.0"
+  }
+}
