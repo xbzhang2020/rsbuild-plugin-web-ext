@@ -8,11 +8,15 @@
     "we": "bin/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "tsx src/index.ts"
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "files": ["dist", "bin", "templates"],
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -26,9 +30,12 @@
   },
   "devDependencies": {
     "@rsbuild/core": "^1.1.12",
+    "@rslib/core": "^0.1.0",
     "@types/archiver": "^6.0.3",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
+    "web-ext": "^8.3.0"
+  },
+  "optionalDependencies": {
     "web-ext": "^8.3.0"
   },
   "peerDependencies": {
@@ -38,5 +45,8 @@
     "@rsbuild/core": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=16.7.0"
   }
 }

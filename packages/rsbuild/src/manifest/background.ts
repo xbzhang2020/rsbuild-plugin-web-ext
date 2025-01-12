@@ -27,7 +27,6 @@ const normalizeBackgroundEntry: ManifestEntryProcessor['normalize'] = async ({
       scripts.push(entryPath);
     }
   }
-
   if (isDevMode(mode)) {
     scripts.push(resolve(selfRootPath, 'static/background_runtime.js'));
   }
