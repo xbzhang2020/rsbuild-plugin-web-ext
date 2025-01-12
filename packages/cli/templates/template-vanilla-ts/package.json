@@ -1,0 +1,16 @@
+{
+  "name": "template-vanilla-ts",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.8",
+    "@types/chrome": "^0.0.290",
+    "rsbuild-plugin-web-ext": "0.0.1-alpha.11",
+    "typescript": "^5.7.2"
+  }
+}

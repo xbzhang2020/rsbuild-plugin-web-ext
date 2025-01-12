@@ -146,6 +146,21 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
+  packages/cli/templates/template-vanilla-ts:
+    devDependencies:
+      '@rsbuild/core':
+        specifier: ^1.1.8
+        version: 1.1.12
+      '@types/chrome':
+        specifier: ^0.0.290
+        version: 0.0.290
+      rsbuild-plugin-web-ext:
+        specifier: 0.0.1-alpha.11
+        version: 0.0.1-alpha.11(@rsbuild/core@1.1.12)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.2
+
   packages/cli/templates/template-vue-ts:
     dependencies:
       vue:
