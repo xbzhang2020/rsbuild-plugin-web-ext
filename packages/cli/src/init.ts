@@ -68,6 +68,31 @@ const entrypoints = [
 
 const templates = ['vanilla-js', 'vanilla-ts', 'react-js', 'react-ts', 'vue-js', 'vue-ts'];
 
+export async function normalizeTemplate(text?: string) {
+  let template = '';
+  if (!text) {
+    const framework = await select({
+      message: 'Select a framework',
+      choices: frameworks,
+    });
+    const variant = await select({
+      message: 'Select a variant',
+      choices: variants,
+    });
+    template = `${framework}-${variant}`;
+  } else {
+    const list = text.split('-');
+    const framework = list[0];
+    const variant = list[1] || 'js';
+    template = `${framework}-${variant}`;
+  }
+
+  if (!templates.includes(template)) {
+    throw new Error("Template doesn't exist");
+  }
+  return template;
+}
+
 export async function normalizeInitialOptions(options: InitialOptions) {
   try {
     console.log();
@@ -83,27 +108,7 @@ export async function normalizeInitialOptions(options: InitialOptions) {
       return null;
     }
 
-    if (!options.template) {
-      const framework = await select({
-        message: 'Select a framework',
-        choices: frameworks,
-      });
-      const variant = await select({
-        message: 'Select a variant',
-        choices: variants,
-      });
-      options.template = `${framework}-${variant}`;
-    } else {
-      const list = options.template.split('-');
-      const framework = list[0];
-      const variant = list[1] || 'js';
-      options.template = `${framework}-${variant}`;
-    }
-
-    const hasTemplate = templates.includes(options.template);
-    if (!hasTemplate) {
-      throw new Error("Template doesn't exist");
-    }
+    options.template = await normalizeTemplate(options.template);
 
     if (!options.entry) {
       options.entry = await checkbox({
@@ -214,5 +219,12 @@ export async function copyEntryFiles(source: string, dest: string, entries?: str
     const { name } = file;
     const destName = custom ? entry : name;
     await cp(resolve(source, name), resolve(dest, destName), { recursive: true });
+  }
+}
+
+export async function init(cliOptions: InitialOptions) {
+  const options = await normalizeInitialOptions(cliOptions);
+  if (options) {
+    await createProject(options);
   }
 }

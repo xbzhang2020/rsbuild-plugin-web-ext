@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import sharp from 'sharp';
-import { copyEntryFiles, getTemplatePath } from './init.js';
+import { copyEntryFiles, getTemplatePath, normalizeTemplate } from './init.js';
 
 export interface GenerateOptions {
   type: string;
@@ -12,8 +12,6 @@ export interface GenerateOptions {
   filename?: string;
   size?: string;
 }
-
-const ICON_SIZES = [16, 32, 48, 64, 128];
 
 const getProjectSrcDir = (rootPath: string, srcDir?: string | undefined) => {
   if (srcDir) return srcDir;
@@ -39,6 +37,8 @@ function getIconTemplatePath(root: string, template?: string) {
   return templatePath;
 }
 
+const ICON_SIZES = [16, 32, 48, 64, 128];
+
 async function generateIcons({
   root,
   template,
@@ -61,10 +61,8 @@ async function generateIcons({
 }
 
 async function generateEntryFiles({ type, root, template, outDir }: GenerateOptions) {
-  if (!template) {
-    throw new Error('Template is not defined');
-  }
-  const templatePath = getTemplatePath(template || '');
+  const finalTemplate = await normalizeTemplate(template);
+  const templatePath = getTemplatePath(finalTemplate);
   const destPath = outDir ? resolve(root, outDir) : resolve(root, getProjectSrcDir(root));
   await copyEntryFiles(resolve(templatePath, 'src'), destPath, [type]);
 }

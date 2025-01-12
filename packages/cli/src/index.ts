@@ -1,6 +1,6 @@
 import { type Command, program } from 'commander';
 import { type GenerateOptions, generate } from './generate.js';
-import { createProject, normalizeInitialOptions } from './init.js';
+import { init } from './init.js';
 import { type StartOptions, startBuild, startDevServer } from './rsbuild.js';
 import { type ZipOptions, zipExtenison } from './zip.js';
 
@@ -22,21 +22,18 @@ function main() {
 
 function applyInitCommand(command: Command) {
   command
-    .argument('[dir]')
+    .argument('[project-name]')
     .option('-t, --template <name>', 'specify the template name')
     .option('-e, --entry <name>', 'specify entry ponts')
     .action(async (projectName, cliOptions) => {
-      const { entry, ...other } = cliOptions;
+      const { entry, ...otherOptions } = cliOptions;
       const entrypoints = entry ? entry.split(',') : undefined;
       try {
-        const options = await normalizeInitialOptions({
+        await init({
           projectName,
           entry: entrypoints,
-          ...other,
+          ...otherOptions,
         });
-        if (options) {
-          await createProject(options);
-        }
       } catch (err) {
         console.error('Failed to create the project.');
         console.error(err);
@@ -62,7 +59,8 @@ function applyGenerateCommand(command: Command) {
         await generate(options);
         console.log(`Generated ${type} successfully!`);
       } catch (error) {
-        console.error(`Generated ${type} failed:`, (error as Error).message);
+        console.error(`Generated ${type} failed.`);
+        console.log(error);
         process.exit(1);
       }
     });
