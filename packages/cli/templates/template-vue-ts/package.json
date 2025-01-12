@@ -13,7 +13,8 @@
   "devDependencies": {
     "@rsbuild/core": "^1.1.8",
     "@rsbuild/plugin-vue": "^1.0.5",
-    "rsbuild-plugin-web-ext": "0.0.1-alpha.10",
+    "@types/chrome": "^0.0.290",
+    "rsbuild-plugin-web-ext": "0.0.1-alpha.11",
     "typescript": "^5.7.2"
   }
 }

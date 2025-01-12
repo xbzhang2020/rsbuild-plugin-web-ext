@@ -6,7 +6,6 @@
 </template>
 
 <style scoped>
-
 .content {
   text-align: center;
   padding: 12px;
@@ -22,5 +21,4 @@
   font-weight: 400;
   opacity: 0.5;
 }
-
 </style>

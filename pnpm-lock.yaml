@@ -158,9 +158,12 @@ importers:
       '@rsbuild/plugin-vue':
         specifier: ^1.0.5
         version: 1.0.5(@rsbuild/core@1.1.12)(vue@3.5.13(typescript@5.7.2))
+      '@types/chrome':
+        specifier: ^0.0.290
+        version: 0.0.290
       rsbuild-plugin-web-ext:
-        specifier: 0.0.1-alpha.10
-        version: 0.0.1-alpha.10(@rsbuild/core@1.1.12)
+        specifier: 0.0.1-alpha.11
+        version: 0.0.1-alpha.11(@rsbuild/core@1.1.12)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -2926,6 +2929,14 @@ packages:
 
   rsbuild-plugin-web-ext@0.0.1-alpha.10:
     resolution: {integrity: sha512-YRVffcuUjeqtXoS5IlHwp+dSY04EOzKTD0gqESM6ujrkbgpDY4243b7Eq0dA7mcXcdO3n37UiGGuaOjXFWIhow==}
+    peerDependencies:
+      '@rsbuild/core': 1.x
+    peerDependenciesMeta:
+      '@rsbuild/core':
+        optional: true
+
+  rsbuild-plugin-web-ext@0.0.1-alpha.11:
+    resolution: {integrity: sha512-JwrVCE0d/hA/wWQwz6WDtGovOk3XKUZ97TZwABdMosXaxNHaqd7oWbY0PO1NJdJBEosMDbQ8szJJTTAC6LlY0A==}
     peerDependencies:
       '@rsbuild/core': 1.x
     peerDependenciesMeta:
@@ -6169,6 +6180,16 @@ snapshots:
       typescript: 5.7.2
 
   rsbuild-plugin-web-ext@0.0.1-alpha.10(@rsbuild/core@1.1.12):
+    dependencies:
+      '@babel/parser': 7.26.3
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
+    optionalDependencies:
+      '@rsbuild/core': 1.1.12
+    transitivePeerDependencies:
+      - supports-color
+
+  rsbuild-plugin-web-ext@0.0.1-alpha.11(@rsbuild/core@1.1.12):
     dependencies:
       '@babel/parser': 7.26.3
       '@babel/traverse': 7.26.4
