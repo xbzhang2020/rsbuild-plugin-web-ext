@@ -1,5 +1,5 @@
-# web-ext
+# rsbuild-plugin-web-ext
 
-## Packages
+## Note
 
-[rsbuild-plugin-web-ext](./packages/rsbuild/README.md)
+The project has been upgraded to web-extend, please refer to https://github.com/web-extend/web-extend.
